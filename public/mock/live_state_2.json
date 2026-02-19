@@ -1,0 +1,243 @@
+{
+  "snapshot_id": "snap-20250218-002",
+  "timestamp": "2025-02-18T14:35:00Z",
+  "district_risk": "HIGH",
+  "active_alerts": 5,
+  "avg_latency_ms": 158,
+  "camera_health_pct": 91.2,
+  "forecast_horizon_min": 30,
+  "zones": [
+    {
+      "zone_id": "zone-001",
+      "name": "Lincoln Elementary",
+      "risk_level": "MED",
+      "risk_score": 0.45,
+      "speed_avg_mph": 22.7,
+      "pedestrian_count": 18,
+      "vehicle_count": 41,
+      "active_cameras": 6,
+      "total_cameras": 6,
+      "forecast_30m": [
+        { "time": "14:35", "risk": 0.45, "confidence": 0.89 },
+        { "time": "14:40", "risk": 0.50, "confidence": 0.86 },
+        { "time": "14:45", "risk": 0.54, "confidence": 0.83 },
+        { "time": "14:50", "risk": 0.52, "confidence": 0.80 },
+        { "time": "14:55", "risk": 0.46, "confidence": 0.78 },
+        { "time": "15:00", "risk": 0.40, "confidence": 0.76 },
+        { "time": "15:05", "risk": 0.35, "confidence": 0.74 }
+      ],
+      "recommendations": [
+        {
+          "id": "rec-009",
+          "action": "Deploy crossing guard to Oak & 12th",
+          "impact": "Reduce pedestrian risk during dismissal",
+          "confidence": 0.83,
+          "priority": "MED"
+        }
+      ],
+      "events": [
+        { "time": "14:34:00", "type": "pedestrian_surge", "detail": "Dismissal wave — 18 pedestrians" },
+        { "time": "14:32:00", "type": "speed_violation", "detail": "Vehicle at 28mph in 20mph zone" },
+        { "time": "14:30:00", "type": "congestion", "detail": "Moderate backup on Oak Ave" }
+      ],
+      "interventions": []
+    },
+    {
+      "zone_id": "zone-002",
+      "name": "Washington Middle School",
+      "risk_level": "HIGH",
+      "risk_score": 0.72,
+      "speed_avg_mph": 30.5,
+      "pedestrian_count": 35,
+      "vehicle_count": 78,
+      "active_cameras": 7,
+      "total_cameras": 8,
+      "forecast_30m": [
+        { "time": "14:35", "risk": 0.72, "confidence": 0.86 },
+        { "time": "14:40", "risk": 0.78, "confidence": 0.83 },
+        { "time": "14:45", "risk": 0.82, "confidence": 0.79 },
+        { "time": "14:50", "risk": 0.79, "confidence": 0.76 },
+        { "time": "14:55", "risk": 0.70, "confidence": 0.73 },
+        { "time": "15:00", "risk": 0.62, "confidence": 0.71 },
+        { "time": "15:05", "risk": 0.55, "confidence": 0.69 }
+      ],
+      "recommendations": [
+        {
+          "id": "rec-010",
+          "action": "Dispatch traffic officer to Maple & 8th",
+          "impact": "Immediate speed enforcement, reduce risk ~35%",
+          "confidence": 0.88,
+          "priority": "HIGH"
+        },
+        {
+          "id": "rec-011",
+          "action": "Activate all crosswalk flashers on Maple Dr",
+          "impact": "Improve pedestrian visibility",
+          "confidence": 0.84,
+          "priority": "HIGH"
+        }
+      ],
+      "events": [
+        { "time": "14:34:00", "type": "near_miss", "detail": "Near-miss at Maple & 8th crosswalk" },
+        { "time": "14:33:00", "type": "speed_violation", "detail": "3 vehicles exceeding 30mph" },
+        { "time": "14:31:00", "type": "pedestrian_surge", "detail": "35 pedestrians at crosswalk" },
+        { "time": "14:29:00", "type": "camera_offline", "detail": "Camera CAM-202 still offline" }
+      ],
+      "interventions": [
+        {
+          "id": "int-001",
+          "action": "Speed sign activated",
+          "applied_at": "14:20:00",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "zone_id": "zone-003",
+      "name": "Jefferson High School",
+      "risk_level": "HIGH",
+      "risk_score": 0.88,
+      "speed_avg_mph": 35.1,
+      "pedestrian_count": 52,
+      "vehicle_count": 125,
+      "active_cameras": 10,
+      "total_cameras": 12,
+      "forecast_30m": [
+        { "time": "14:35", "risk": 0.88, "confidence": 0.88 },
+        { "time": "14:40", "risk": 0.91, "confidence": 0.85 },
+        { "time": "14:45", "risk": 0.93, "confidence": 0.81 },
+        { "time": "14:50", "risk": 0.89, "confidence": 0.78 },
+        { "time": "14:55", "risk": 0.82, "confidence": 0.75 },
+        { "time": "15:00", "risk": 0.74, "confidence": 0.72 },
+        { "time": "15:05", "risk": 0.66, "confidence": 0.70 }
+      ],
+      "recommendations": [
+        {
+          "id": "rec-012",
+          "action": "Request police presence at Elm & 34th",
+          "impact": "Critical speed enforcement needed",
+          "confidence": 0.93,
+          "priority": "HIGH"
+        },
+        {
+          "id": "rec-013",
+          "action": "Close Elm St to through traffic temporarily",
+          "impact": "Eliminate vehicle-pedestrian conflicts",
+          "confidence": 0.78,
+          "priority": "HIGH"
+        },
+        {
+          "id": "rec-014",
+          "action": "Activate emergency crosswalk signals",
+          "impact": "Maximum pedestrian protection",
+          "confidence": 0.90,
+          "priority": "HIGH"
+        }
+      ],
+      "events": [
+        { "time": "14:34:00", "type": "incident", "detail": "Vehicle ran red light at Elm & 34th" },
+        { "time": "14:32:00", "type": "near_miss", "detail": "Second near-miss at crosswalk" },
+        { "time": "14:30:00", "type": "speed_violation", "detail": "Vehicle clocked at 42mph" },
+        { "time": "14:28:00", "type": "camera_offline", "detail": "Cameras CAM-305, CAM-308 offline" },
+        { "time": "14:25:00", "type": "pedestrian_surge", "detail": "52 pedestrians in zone" }
+      ],
+      "interventions": [
+        {
+          "id": "int-002",
+          "action": "Crosswalk flashers activated",
+          "applied_at": "14:22:00",
+          "status": "active"
+        },
+        {
+          "id": "int-004",
+          "action": "Traffic officer dispatched",
+          "applied_at": "14:31:00",
+          "status": "en_route"
+        }
+      ]
+    },
+    {
+      "zone_id": "zone-004",
+      "name": "Roosevelt Academy",
+      "risk_level": "LOW",
+      "risk_score": 0.18,
+      "speed_avg_mph": 16.0,
+      "pedestrian_count": 10,
+      "vehicle_count": 22,
+      "active_cameras": 4,
+      "total_cameras": 4,
+      "forecast_30m": [
+        { "time": "14:35", "risk": 0.18, "confidence": 0.92 },
+        { "time": "14:40", "risk": 0.21, "confidence": 0.90 },
+        { "time": "14:45", "risk": 0.24, "confidence": 0.87 },
+        { "time": "14:50", "risk": 0.22, "confidence": 0.85 },
+        { "time": "14:55", "risk": 0.19, "confidence": 0.83 },
+        { "time": "15:00", "risk": 0.16, "confidence": 0.81 },
+        { "time": "15:05", "risk": 0.14, "confidence": 0.79 }
+      ],
+      "recommendations": [
+        {
+          "id": "rec-015",
+          "action": "No action required",
+          "impact": "Zone operating within safe parameters",
+          "confidence": 0.94,
+          "priority": "LOW"
+        }
+      ],
+      "events": [
+        { "time": "14:33:00", "type": "speed_check", "detail": "All vehicles within limit" },
+        { "time": "14:30:00", "type": "pedestrian_detected", "detail": "10 pedestrians near school" }
+      ],
+      "interventions": []
+    },
+    {
+      "zone_id": "zone-005",
+      "name": "Adams Preparatory",
+      "risk_level": "MED",
+      "risk_score": 0.52,
+      "speed_avg_mph": 25.8,
+      "pedestrian_count": 24,
+      "vehicle_count": 58,
+      "active_cameras": 5,
+      "total_cameras": 6,
+      "forecast_30m": [
+        { "time": "14:35", "risk": 0.52, "confidence": 0.85 },
+        { "time": "14:40", "risk": 0.57, "confidence": 0.82 },
+        { "time": "14:45", "risk": 0.61, "confidence": 0.79 },
+        { "time": "14:50", "risk": 0.58, "confidence": 0.76 },
+        { "time": "14:55", "risk": 0.51, "confidence": 0.74 },
+        { "time": "15:00", "risk": 0.45, "confidence": 0.72 },
+        { "time": "15:05", "risk": 0.40, "confidence": 0.70 }
+      ],
+      "recommendations": [
+        {
+          "id": "rec-016",
+          "action": "Extend pedestrian crossing phase by 15 seconds",
+          "impact": "Reduce pedestrian wait and jaywalking risk",
+          "confidence": 0.82,
+          "priority": "MED"
+        },
+        {
+          "id": "rec-017",
+          "action": "Activate dynamic speed sign on Cedar Ln",
+          "impact": "Reduce avg speed by ~4mph",
+          "confidence": 0.77,
+          "priority": "MED"
+        }
+      ],
+      "events": [
+        { "time": "14:34:00", "type": "speed_violation", "detail": "Vehicle at 31mph in 20mph zone" },
+        { "time": "14:32:00", "type": "congestion", "detail": "Heavy traffic on Cedar Ln" },
+        { "time": "14:29:00", "type": "camera_offline", "detail": "Camera CAM-506 offline" }
+      ],
+      "interventions": [
+        {
+          "id": "int-003",
+          "action": "Signal timing adjusted",
+          "applied_at": "14:15:00",
+          "status": "active"
+        }
+      ]
+    }
+  ]
+}

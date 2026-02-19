@@ -1,0 +1,205 @@
+[
+  {
+    "incident_id": "INC-2025-0041",
+    "zone_id": "zone-003",
+    "zone_name": "Jefferson High School",
+    "severity": "HIGH",
+    "type": "near_miss",
+    "title": "Near-Miss: Pedestrian-Vehicle Conflict at Elm & 34th",
+    "summary": "A vehicle traveling at 35mph failed to yield to pedestrians in a marked crosswalk during school dismissal. No injuries reported. Crosswalk flashers were active at the time of the incident.",
+    "reported_at": "2025-02-18T14:30:00Z",
+    "status": "investigating",
+    "events": [
+      {
+        "event_id": "evt-001",
+        "timestamp": "2025-02-18T14:20:00Z",
+        "type": "detection",
+        "description": "Pedestrian surge detected — 45 students at crosswalk",
+        "payload": { "pedestrian_count": 45, "camera_id": "CAM-301" }
+      },
+      {
+        "event_id": "evt-002",
+        "timestamp": "2025-02-18T14:22:00Z",
+        "type": "intervention",
+        "description": "Crosswalk flashers activated automatically",
+        "payload": { "device_id": "FLASH-301", "trigger": "auto" }
+      },
+      {
+        "event_id": "evt-003",
+        "timestamp": "2025-02-18T14:28:00Z",
+        "type": "alert",
+        "description": "Speed violation detected — vehicle at 35mph in 20mph zone",
+        "payload": { "speed_mph": 35, "limit_mph": 20, "camera_id": "CAM-303" }
+      },
+      {
+        "event_id": "evt-004",
+        "timestamp": "2025-02-18T14:30:00Z",
+        "type": "incident",
+        "description": "Near-miss event — vehicle failed to yield at crosswalk",
+        "payload": { "distance_ft": 4.2, "camera_id": "CAM-303", "pedestrians_at_risk": 3 }
+      },
+      {
+        "event_id": "evt-005",
+        "timestamp": "2025-02-18T14:31:00Z",
+        "type": "response",
+        "description": "Traffic officer dispatched to Elm & 34th",
+        "payload": { "officer_id": "OFC-112", "eta_min": 4 }
+      },
+      {
+        "event_id": "evt-006",
+        "timestamp": "2025-02-18T14:35:00Z",
+        "type": "response",
+        "description": "Officer arrived on scene, directing traffic",
+        "payload": { "officer_id": "OFC-112", "status": "on_scene" }
+      }
+    ],
+    "model_metadata": {
+      "model_name": "SchoolZone-Risk-v3.2",
+      "model_version": "3.2.1",
+      "prediction_confidence": 0.87,
+      "features_used": ["speed_avg", "pedestrian_count", "time_of_day", "historical_incidents", "weather"],
+      "training_data_range": "2023-01-01 to 2025-01-31",
+      "inference_latency_ms": 23
+    }
+  },
+  {
+    "incident_id": "INC-2025-0040",
+    "zone_id": "zone-002",
+    "zone_name": "Washington Middle School",
+    "severity": "MED",
+    "type": "speed_violation",
+    "title": "Repeated Speed Violations on Maple Dr",
+    "summary": "Multiple vehicles recorded exceeding the 20mph school zone speed limit on Maple Dr between 2:00 PM and 2:30 PM. Dynamic speed sign was activated but compliance remained low.",
+    "reported_at": "2025-02-18T14:15:00Z",
+    "status": "monitoring",
+    "events": [
+      {
+        "event_id": "evt-010",
+        "timestamp": "2025-02-18T14:00:00Z",
+        "type": "detection",
+        "description": "Speed monitoring initiated for school dismissal window",
+        "payload": { "zone_speed_limit": 20, "camera_ids": ["CAM-201", "CAM-203"] }
+      },
+      {
+        "event_id": "evt-011",
+        "timestamp": "2025-02-18T14:10:00Z",
+        "type": "alert",
+        "description": "5 vehicles recorded above 25mph in 10-minute window",
+        "payload": { "violation_count": 5, "max_speed_mph": 32 }
+      },
+      {
+        "event_id": "evt-012",
+        "timestamp": "2025-02-18T14:12:00Z",
+        "type": "intervention",
+        "description": "Dynamic speed sign activated showing real-time speed",
+        "payload": { "device_id": "SIGN-201", "trigger": "threshold" }
+      },
+      {
+        "event_id": "evt-013",
+        "timestamp": "2025-02-18T14:20:00Z",
+        "type": "alert",
+        "description": "Compliance rate below 70% despite active signage",
+        "payload": { "compliance_pct": 68, "vehicles_monitored": 42 }
+      }
+    ],
+    "model_metadata": {
+      "model_name": "SchoolZone-Risk-v3.2",
+      "model_version": "3.2.1",
+      "prediction_confidence": 0.82,
+      "features_used": ["speed_avg", "vehicle_count", "time_of_day", "day_of_week"],
+      "training_data_range": "2023-01-01 to 2025-01-31",
+      "inference_latency_ms": 19
+    }
+  },
+  {
+    "incident_id": "INC-2025-0039",
+    "zone_id": "zone-003",
+    "zone_name": "Jefferson High School",
+    "severity": "HIGH",
+    "type": "congestion",
+    "title": "Critical Congestion During Dismissal at Jefferson HS",
+    "summary": "Severe traffic congestion on Elm St northbound caused gridlock during afternoon dismissal. Pedestrian-vehicle conflicts increased as students attempted to cross between stopped vehicles.",
+    "reported_at": "2025-02-17T15:05:00Z",
+    "status": "resolved",
+    "events": [
+      {
+        "event_id": "evt-020",
+        "timestamp": "2025-02-17T14:50:00Z",
+        "type": "detection",
+        "description": "Traffic flow rate dropped below 5mph on Elm St",
+        "payload": { "avg_speed_mph": 4.2, "queue_length_vehicles": 38 }
+      },
+      {
+        "event_id": "evt-021",
+        "timestamp": "2025-02-17T14:55:00Z",
+        "type": "alert",
+        "description": "Pedestrians crossing between stopped vehicles detected",
+        "payload": { "jaywalking_count": 8, "camera_id": "CAM-304" }
+      },
+      {
+        "event_id": "evt-022",
+        "timestamp": "2025-02-17T15:00:00Z",
+        "type": "intervention",
+        "description": "Traffic officer redirected northbound traffic to alternate route",
+        "payload": { "officer_id": "OFC-108", "alternate_route": "Pine Blvd" }
+      },
+      {
+        "event_id": "evt-023",
+        "timestamp": "2025-02-17T15:15:00Z",
+        "type": "resolution",
+        "description": "Traffic flow restored to normal levels",
+        "payload": { "avg_speed_mph": 18.5, "queue_length_vehicles": 6 }
+      }
+    ],
+    "model_metadata": {
+      "model_name": "SchoolZone-Risk-v3.2",
+      "model_version": "3.2.0",
+      "prediction_confidence": 0.79,
+      "features_used": ["traffic_flow", "vehicle_count", "time_of_day", "weather", "event_calendar"],
+      "training_data_range": "2023-01-01 to 2025-01-15",
+      "inference_latency_ms": 21
+    }
+  },
+  {
+    "incident_id": "INC-2025-0038",
+    "zone_id": "zone-005",
+    "zone_name": "Adams Preparatory",
+    "severity": "LOW",
+    "type": "equipment_failure",
+    "title": "Camera CAM-506 Intermittent Connection",
+    "summary": "Camera CAM-506 on Cedar Ln experienced intermittent connectivity issues, reducing coverage for the east crosswalk approach. Backup camera maintained partial coverage.",
+    "reported_at": "2025-02-18T13:45:00Z",
+    "status": "monitoring",
+    "events": [
+      {
+        "event_id": "evt-030",
+        "timestamp": "2025-02-18T13:30:00Z",
+        "type": "detection",
+        "description": "Camera CAM-506 heartbeat missed",
+        "payload": { "camera_id": "CAM-506", "last_heartbeat": "2025-02-18T13:28:00Z" }
+      },
+      {
+        "event_id": "evt-031",
+        "timestamp": "2025-02-18T13:35:00Z",
+        "type": "alert",
+        "description": "Camera offline confirmed — switching to backup coverage",
+        "payload": { "camera_id": "CAM-506", "backup_camera": "CAM-505", "coverage_pct": 65 }
+      },
+      {
+        "event_id": "evt-032",
+        "timestamp": "2025-02-18T13:45:00Z",
+        "type": "intervention",
+        "description": "Maintenance ticket created for CAM-506",
+        "payload": { "ticket_id": "MT-2025-0891", "priority": "medium" }
+      }
+    ],
+    "model_metadata": {
+      "model_name": "SchoolZone-Risk-v3.2",
+      "model_version": "3.2.1",
+      "prediction_confidence": 0.91,
+      "features_used": ["camera_health", "coverage_map", "redundancy_score"],
+      "training_data_range": "2023-01-01 to 2025-01-31",
+      "inference_latency_ms": 12
+    }
+  }
+]
