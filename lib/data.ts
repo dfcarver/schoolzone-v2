@@ -1,31 +1,66 @@
 import { LiveState, Incident, School } from "./types";
+import { scenarioBasePath, ScenarioId } from "./demoConfig";
+import * as logger from "./logger";
+import { recordFetch } from "./metrics";
 
-export async function loadSchools(): Promise<School[]> {
+export async function loadSchools(
+  scenario: ScenarioId = "normal",
+  signal?: AbortSignal
+): Promise<School[]> {
+  const start = performance.now();
   try {
-    const res = await fetch("/mock/schools.json");
+    const res = await fetch(`${scenarioBasePath(scenario)}/schools.json`, { signal });
     if (!res.ok) throw new Error(`Failed to load schools: ${res.status}`);
-    return (await res.json()) as School[];
-  } catch {
+    const data = (await res.json()) as School[];
+    recordFetch(performance.now() - start, true);
+    return data;
+  } catch (err) {
+    if ((err as Error).name !== "AbortError") {
+      logger.error("loadSchools failed", err);
+      recordFetch(performance.now() - start, false);
+    }
     return [];
   }
 }
 
-export async function loadLiveState(snapshot: string): Promise<LiveState | null> {
+export async function loadLiveState(
+  snapshot: string,
+  scenario: ScenarioId = "normal",
+  signal?: AbortSignal
+): Promise<LiveState | null> {
+  const start = performance.now();
   try {
-    const res = await fetch(`/mock/${snapshot}`);
+    const res = await fetch(`${scenarioBasePath(scenario)}/${snapshot}`, { signal });
     if (!res.ok) throw new Error(`Failed to load live state: ${res.status}`);
-    return (await res.json()) as LiveState;
-  } catch {
+    const data = (await res.json()) as LiveState;
+    recordFetch(performance.now() - start, true);
+    logger.info(`Loaded snapshot ${snapshot} (${scenario})`);
+    return data;
+  } catch (err) {
+    if ((err as Error).name !== "AbortError") {
+      logger.error("loadLiveState failed", err);
+      recordFetch(performance.now() - start, false);
+    }
     return null;
   }
 }
 
-export async function loadIncidents(): Promise<Incident[]> {
+export async function loadIncidents(
+  scenario: ScenarioId = "normal",
+  signal?: AbortSignal
+): Promise<{ data: Incident[]; error: string | null }> {
+  const start = performance.now();
   try {
-    const res = await fetch("/mock/incidents.json");
+    const res = await fetch(`${scenarioBasePath(scenario)}/incidents.json`, { signal });
     if (!res.ok) throw new Error(`Failed to load incidents: ${res.status}`);
-    return (await res.json()) as Incident[];
-  } catch {
-    return [];
+    const data = (await res.json()) as Incident[];
+    recordFetch(performance.now() - start, true);
+    return { data, error: null };
+  } catch (err) {
+    if ((err as Error).name !== "AbortError") {
+      logger.error("loadIncidents failed", err);
+      recordFetch(performance.now() - start, false);
+    }
+    return { data: [], error: "Demo Data Unavailable" };
   }
 }
