@@ -1,5 +1,17 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
+  "/governance/controls/page": "app/governance/controls/page.js",
+  "/governance/incidents/page": "app/governance/incidents/page.js",
+  "/incidents/[incidentId]/page": "app/incidents/[incidentId]/page.js",
+  "/executive/zones/[zoneId]/page": "app/executive/zones/[zoneId]/page.js",
+  "/governance/incidents/[incidentId]/page": "app/governance/incidents/[incidentId]/page.js",
+  "/operations/queue/page": "app/operations/queue/page.js",
+  "/executive/page": "app/executive/page.js",
   "/dashboard/page": "app/dashboard/page.js",
   "/zones/[zoneId]/page": "app/zones/[zoneId]/page.js",
-  "/incidents/page": "app/incidents/page.js"
+  "/incidents/page": "app/incidents/page.js",
+  "/operations/zones/[zoneId]/page": "app/operations/zones/[zoneId]/page.js",
+  "/operations/dashboard/page": "app/operations/dashboard/page.js",
+  "/page": "app/page.js",
+  "/settings/page": "app/settings/page.js"
 }

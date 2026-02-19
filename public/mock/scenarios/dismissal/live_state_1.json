@@ -1,0 +1,254 @@
+{
+  "snapshot_id": "snap-dismissal-001",
+  "timestamp": "2025-02-18T15:00:00Z",
+  "district_risk": "HIGH",
+  "active_alerts": 8,
+  "avg_latency_ms": 155,
+  "camera_health_pct": 92.0,
+  "forecast_horizon_min": 30,
+  "zones": [
+    {
+      "zone_id": "zone-001",
+      "name": "Lincoln Elementary",
+      "risk_level": "HIGH",
+      "risk_score": 0.68,
+      "speed_avg_mph": 25.5,
+      "pedestrian_count": 55,
+      "vehicle_count": 48,
+      "active_cameras": 6,
+      "total_cameras": 6,
+      "forecast_30m": [
+        { "time": "15:00", "risk": 0.68, "confidence": 0.90 },
+        { "time": "15:05", "risk": 0.75, "confidence": 0.87 },
+        { "time": "15:10", "risk": 0.80, "confidence": 0.84 },
+        { "time": "15:15", "risk": 0.78, "confidence": 0.81 },
+        { "time": "15:20", "risk": 0.70, "confidence": 0.78 },
+        { "time": "15:25", "risk": 0.58, "confidence": 0.76 },
+        { "time": "15:30", "risk": 0.42, "confidence": 0.74 }
+      ],
+      "recommendations": [
+        {
+          "id": "rec-d01",
+          "action": "Deploy both crossing guards to Oak Ave intersections",
+          "impact": "Critical for dismissal pedestrian safety",
+          "confidence": 0.92,
+          "priority": "HIGH"
+        },
+        {
+          "id": "rec-d02",
+          "action": "Activate parent pick-up lane traffic signals",
+          "impact": "Reduce congestion in pick-up zone",
+          "confidence": 0.85,
+          "priority": "MED"
+        }
+      ],
+      "events": [
+        { "time": "15:00:00", "type": "pedestrian_surge", "detail": "Dismissal bell — 55 students exiting" },
+        { "time": "14:58:00", "type": "congestion", "detail": "Parent vehicles queuing on Oak Ave" }
+      ],
+      "interventions": [
+        {
+          "id": "int-d01",
+          "action": "Crossing guards deployed",
+          "applied_at": "14:55:00",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "zone_id": "zone-002",
+      "name": "Washington Middle School",
+      "risk_level": "HIGH",
+      "risk_score": 0.75,
+      "speed_avg_mph": 28.0,
+      "pedestrian_count": 70,
+      "vehicle_count": 85,
+      "active_cameras": 8,
+      "total_cameras": 8,
+      "forecast_30m": [
+        { "time": "15:00", "risk": 0.75, "confidence": 0.88 },
+        { "time": "15:05", "risk": 0.82, "confidence": 0.85 },
+        { "time": "15:10", "risk": 0.86, "confidence": 0.82 },
+        { "time": "15:15", "risk": 0.83, "confidence": 0.79 },
+        { "time": "15:20", "risk": 0.74, "confidence": 0.76 },
+        { "time": "15:25", "risk": 0.62, "confidence": 0.74 },
+        { "time": "15:30", "risk": 0.50, "confidence": 0.72 }
+      ],
+      "recommendations": [
+        {
+          "id": "rec-d03",
+          "action": "Dispatch traffic officer to Maple & 8th",
+          "impact": "Manage dismissal traffic surge",
+          "confidence": 0.90,
+          "priority": "HIGH"
+        },
+        {
+          "id": "rec-d04",
+          "action": "Activate all crosswalk flashers on Maple Dr",
+          "impact": "Maximum pedestrian visibility during dismissal",
+          "confidence": 0.87,
+          "priority": "HIGH"
+        }
+      ],
+      "events": [
+        { "time": "15:00:00", "type": "pedestrian_surge", "detail": "Dismissal — 70 students at crosswalks" },
+        { "time": "14:58:00", "type": "speed_violation", "detail": "Vehicle at 32mph during dismissal" },
+        { "time": "14:55:00", "type": "congestion", "detail": "Gridlock forming on Maple Dr" }
+      ],
+      "interventions": [
+        {
+          "id": "int-d02",
+          "action": "Speed sign activated",
+          "applied_at": "14:50:00",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "zone_id": "zone-003",
+      "name": "Jefferson High School",
+      "risk_level": "HIGH",
+      "risk_score": 0.88,
+      "speed_avg_mph": 34.0,
+      "pedestrian_count": 120,
+      "vehicle_count": 150,
+      "active_cameras": 11,
+      "total_cameras": 12,
+      "forecast_30m": [
+        { "time": "15:00", "risk": 0.88, "confidence": 0.91 },
+        { "time": "15:05", "risk": 0.92, "confidence": 0.88 },
+        { "time": "15:10", "risk": 0.95, "confidence": 0.84 },
+        { "time": "15:15", "risk": 0.92, "confidence": 0.81 },
+        { "time": "15:20", "risk": 0.84, "confidence": 0.78 },
+        { "time": "15:25", "risk": 0.72, "confidence": 0.75 },
+        { "time": "15:30", "risk": 0.58, "confidence": 0.73 }
+      ],
+      "recommendations": [
+        {
+          "id": "rec-d05",
+          "action": "Close Elm St to through traffic during dismissal",
+          "impact": "Eliminate vehicle-pedestrian conflicts",
+          "confidence": 0.93,
+          "priority": "HIGH"
+        },
+        {
+          "id": "rec-d06",
+          "action": "Deploy 2 officers to Elm & 34th",
+          "impact": "Maximum enforcement at highest-risk intersection",
+          "confidence": 0.91,
+          "priority": "HIGH"
+        }
+      ],
+      "events": [
+        { "time": "15:00:00", "type": "pedestrian_surge", "detail": "Dismissal wave — 120 students exiting" },
+        { "time": "14:58:00", "type": "near_miss", "detail": "Vehicle failed to stop for students at Elm & 34th" },
+        { "time": "14:55:00", "type": "congestion", "detail": "Complete gridlock on Elm St northbound" },
+        { "time": "14:50:00", "type": "speed_violation", "detail": "Multiple vehicles >30mph approaching school" }
+      ],
+      "interventions": [
+        {
+          "id": "int-d03",
+          "action": "Crosswalk flashers activated",
+          "applied_at": "14:45:00",
+          "status": "active"
+        },
+        {
+          "id": "int-d04",
+          "action": "Traffic officer on scene",
+          "applied_at": "14:52:00",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "zone_id": "zone-004",
+      "name": "Roosevelt Academy",
+      "risk_level": "MED",
+      "risk_score": 0.45,
+      "speed_avg_mph": 20.0,
+      "pedestrian_count": 35,
+      "vehicle_count": 30,
+      "active_cameras": 4,
+      "total_cameras": 4,
+      "forecast_30m": [
+        { "time": "15:00", "risk": 0.45, "confidence": 0.91 },
+        { "time": "15:05", "risk": 0.52, "confidence": 0.88 },
+        { "time": "15:10", "risk": 0.56, "confidence": 0.85 },
+        { "time": "15:15", "risk": 0.52, "confidence": 0.82 },
+        { "time": "15:20", "risk": 0.44, "confidence": 0.80 },
+        { "time": "15:25", "risk": 0.36, "confidence": 0.78 },
+        { "time": "15:30", "risk": 0.28, "confidence": 0.76 }
+      ],
+      "recommendations": [
+        {
+          "id": "rec-d07",
+          "action": "Deploy crossing guard to Pine & 5th",
+          "impact": "Standard dismissal safety measure",
+          "confidence": 0.88,
+          "priority": "MED"
+        }
+      ],
+      "events": [
+        { "time": "15:00:00", "type": "pedestrian_surge", "detail": "Dismissal — 35 students exiting" },
+        { "time": "14:58:00", "type": "congestion", "detail": "Parent vehicles queuing on Pine Blvd" }
+      ],
+      "interventions": [
+        {
+          "id": "int-d05",
+          "action": "Crossing guard deployed",
+          "applied_at": "14:55:00",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "zone_id": "zone-005",
+      "name": "Adams Preparatory",
+      "risk_level": "HIGH",
+      "risk_score": 0.72,
+      "speed_avg_mph": 27.5,
+      "pedestrian_count": 65,
+      "vehicle_count": 70,
+      "active_cameras": 6,
+      "total_cameras": 6,
+      "forecast_30m": [
+        { "time": "15:00", "risk": 0.72, "confidence": 0.87 },
+        { "time": "15:05", "risk": 0.78, "confidence": 0.84 },
+        { "time": "15:10", "risk": 0.82, "confidence": 0.81 },
+        { "time": "15:15", "risk": 0.79, "confidence": 0.78 },
+        { "time": "15:20", "risk": 0.70, "confidence": 0.75 },
+        { "time": "15:25", "risk": 0.58, "confidence": 0.73 },
+        { "time": "15:30", "risk": 0.45, "confidence": 0.71 }
+      ],
+      "recommendations": [
+        {
+          "id": "rec-d08",
+          "action": "Deploy crossing guard to Cedar & 21st",
+          "impact": "Protect dismissal pedestrian flow",
+          "confidence": 0.89,
+          "priority": "HIGH"
+        },
+        {
+          "id": "rec-d09",
+          "action": "Activate dynamic speed signs on Cedar Ln",
+          "impact": "Reduce speed during peak dismissal",
+          "confidence": 0.84,
+          "priority": "MED"
+        }
+      ],
+      "events": [
+        { "time": "15:00:00", "type": "pedestrian_surge", "detail": "Dismissal — 65 students at crosswalks" },
+        { "time": "14:58:00", "type": "congestion", "detail": "Heavy traffic on Cedar Ln" },
+        { "time": "14:55:00", "type": "speed_violation", "detail": "Vehicle at 33mph in school zone" }
+      ],
+      "interventions": [
+        {
+          "id": "int-d06",
+          "action": "Signal timing adjusted for dismissal",
+          "applied_at": "14:50:00",
+          "status": "active"
+        }
+      ]
+    }
+  ]
+}

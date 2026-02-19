@@ -24,7 +24,7 @@ export default function ZoneTile({ zone }: ZoneTileProps) {
 
   return (
     <button
-      onClick={() => router.push(`/zones/${zone.zone_id}`)}
+      onClick={() => router.push(`/operations/zones/${zone.zone_id}`)}
       className={`text-left border-l-4 ${RISK_COLORS[zone.risk_level]} rounded-lg p-4 hover:shadow-md transition-shadow bg-white cursor-pointer w-full`}
     >
       <div className="flex items-center justify-between mb-2">

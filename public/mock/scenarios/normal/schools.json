@@ -1,0 +1,52 @@
+[
+  {
+    "zone_id": "zone-001",
+    "name": "Lincoln Elementary",
+    "address": "1200 Oak Ave, Springfield",
+    "lat": 39.7817,
+    "lng": -89.6501,
+    "type": "elementary",
+    "enrollment": 485,
+    "cameras": 6
+  },
+  {
+    "zone_id": "zone-002",
+    "name": "Washington Middle School",
+    "address": "800 Maple Dr, Springfield",
+    "lat": 39.7900,
+    "lng": -89.6440,
+    "type": "middle",
+    "enrollment": 720,
+    "cameras": 8
+  },
+  {
+    "zone_id": "zone-003",
+    "name": "Jefferson High School",
+    "address": "3400 Elm St, Springfield",
+    "lat": 39.7755,
+    "lng": -89.6580,
+    "type": "high",
+    "enrollment": 1100,
+    "cameras": 12
+  },
+  {
+    "zone_id": "zone-004",
+    "name": "Roosevelt Academy",
+    "address": "560 Pine Blvd, Springfield",
+    "lat": 39.7832,
+    "lng": -89.6390,
+    "type": "elementary",
+    "enrollment": 320,
+    "cameras": 4
+  },
+  {
+    "zone_id": "zone-005",
+    "name": "Adams Preparatory",
+    "address": "2100 Cedar Ln, Springfield",
+    "lat": 39.7950,
+    "lng": -89.6520,
+    "type": "middle",
+    "enrollment": 610,
+    "cameras": 6
+  }
+]

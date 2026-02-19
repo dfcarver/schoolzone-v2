@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
+import { DemoConfigProvider } from "@/lib/demoConfig";
 import { LiveStateProvider } from "@/lib/LiveStateProvider";
+import { ToastProvider } from "@/components/Toast";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,12 +21,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
-        <LiveStateProvider>
-          <div className="flex min-h-screen">
-            <Sidebar />
-            <main className="flex-1 bg-gray-50">{children}</main>
-          </div>
-        </LiveStateProvider>
+        <DemoConfigProvider>
+          <LiveStateProvider>
+            <ToastProvider>
+              <div className="flex min-h-screen">
+                <Sidebar />
+                <main className="flex-1 bg-gray-50 min-w-0">{children}</main>
+              </div>
+            </ToastProvider>
+          </LiveStateProvider>
+        </DemoConfigProvider>
       </body>
     </html>
   );

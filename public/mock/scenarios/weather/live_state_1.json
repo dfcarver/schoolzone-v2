@@ -1,0 +1,217 @@
+{
+  "snapshot_id": "snap-weather-001",
+  "timestamp": "2025-02-18T14:30:00Z",
+  "district_risk": "HIGH",
+  "active_alerts": 6,
+  "avg_latency_ms": 165,
+  "camera_health_pct": 85.0,
+  "forecast_horizon_min": 30,
+  "zones": [
+    {
+      "zone_id": "zone-001",
+      "name": "Lincoln Elementary",
+      "risk_level": "MED",
+      "risk_score": 0.50,
+      "speed_avg_mph": 24.0,
+      "pedestrian_count": 15,
+      "vehicle_count": 40,
+      "active_cameras": 5,
+      "total_cameras": 6,
+      "forecast_30m": [
+        { "time": "14:30", "risk": 0.50, "confidence": 0.82 },
+        { "time": "14:35", "risk": 0.55, "confidence": 0.79 },
+        { "time": "14:40", "risk": 0.60, "confidence": 0.76 },
+        { "time": "14:45", "risk": 0.62, "confidence": 0.73 },
+        { "time": "14:50", "risk": 0.58, "confidence": 0.70 },
+        { "time": "14:55", "risk": 0.52, "confidence": 0.68 },
+        { "time": "15:00", "risk": 0.46, "confidence": 0.66 }
+      ],
+      "recommendations": [
+        {
+          "id": "rec-w01",
+          "action": "Activate wet-weather speed advisory signs",
+          "impact": "Reduce speed in slippery conditions",
+          "confidence": 0.80,
+          "priority": "MED"
+        }
+      ],
+      "events": [
+        { "time": "14:28:00", "type": "weather_alert", "detail": "Heavy rain — visibility reduced" },
+        { "time": "14:25:00", "type": "speed_violation", "detail": "Vehicle hydroplaning risk at Oak Ave" }
+      ],
+      "interventions": []
+    },
+    {
+      "zone_id": "zone-002",
+      "name": "Washington Middle School",
+      "risk_level": "HIGH",
+      "risk_score": 0.74,
+      "speed_avg_mph": 29.0,
+      "pedestrian_count": 22,
+      "vehicle_count": 70,
+      "active_cameras": 6,
+      "total_cameras": 8,
+      "forecast_30m": [
+        { "time": "14:30", "risk": 0.74, "confidence": 0.80 },
+        { "time": "14:35", "risk": 0.79, "confidence": 0.77 },
+        { "time": "14:40", "risk": 0.83, "confidence": 0.74 },
+        { "time": "14:45", "risk": 0.85, "confidence": 0.71 },
+        { "time": "14:50", "risk": 0.80, "confidence": 0.68 },
+        { "time": "14:55", "risk": 0.73, "confidence": 0.66 },
+        { "time": "15:00", "risk": 0.65, "confidence": 0.64 }
+      ],
+      "recommendations": [
+        {
+          "id": "rec-w02",
+          "action": "Reduce speed limit to 15mph during rain",
+          "impact": "Improve stopping distance on wet roads",
+          "confidence": 0.86,
+          "priority": "HIGH"
+        },
+        {
+          "id": "rec-w03",
+          "action": "Deploy crossing guard with reflective gear",
+          "impact": "Improve pedestrian visibility in rain",
+          "confidence": 0.83,
+          "priority": "HIGH"
+        }
+      ],
+      "events": [
+        { "time": "14:29:00", "type": "weather_alert", "detail": "Standing water on Maple Dr" },
+        { "time": "14:27:00", "type": "camera_offline", "detail": "CAM-202 lens obscured by rain" },
+        { "time": "14:24:00", "type": "speed_violation", "detail": "Braking distance incidents on Maple" }
+      ],
+      "interventions": [
+        {
+          "id": "int-w01",
+          "action": "Speed advisory signs activated",
+          "applied_at": "14:18:00",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "zone_id": "zone-003",
+      "name": "Jefferson High School",
+      "risk_level": "HIGH",
+      "risk_score": 0.86,
+      "speed_avg_mph": 31.0,
+      "pedestrian_count": 38,
+      "vehicle_count": 100,
+      "active_cameras": 9,
+      "total_cameras": 12,
+      "forecast_30m": [
+        { "time": "14:30", "risk": 0.86, "confidence": 0.82 },
+        { "time": "14:35", "risk": 0.89, "confidence": 0.79 },
+        { "time": "14:40", "risk": 0.92, "confidence": 0.75 },
+        { "time": "14:45", "risk": 0.90, "confidence": 0.72 },
+        { "time": "14:50", "risk": 0.84, "confidence": 0.69 },
+        { "time": "14:55", "risk": 0.77, "confidence": 0.67 },
+        { "time": "15:00", "risk": 0.70, "confidence": 0.65 }
+      ],
+      "recommendations": [
+        {
+          "id": "rec-w04",
+          "action": "Close Elm St crosswalk — redirect to covered crossing",
+          "impact": "Eliminate wet-surface pedestrian risk",
+          "confidence": 0.88,
+          "priority": "HIGH"
+        },
+        {
+          "id": "rec-w05",
+          "action": "Dispatch officer with rain gear to Elm & 34th",
+          "impact": "Manual traffic control in low-visibility",
+          "confidence": 0.85,
+          "priority": "HIGH"
+        }
+      ],
+      "events": [
+        { "time": "14:30:00", "type": "weather_alert", "detail": "Flash flood warning for Elm St area" },
+        { "time": "14:28:00", "type": "near_miss", "detail": "Vehicle skidded near crosswalk" },
+        { "time": "14:25:00", "type": "camera_offline", "detail": "CAM-305, CAM-308 offline (weather)" }
+      ],
+      "interventions": [
+        {
+          "id": "int-w02",
+          "action": "Emergency flashers activated",
+          "applied_at": "14:20:00",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "zone_id": "zone-004",
+      "name": "Roosevelt Academy",
+      "risk_level": "LOW",
+      "risk_score": 0.28,
+      "speed_avg_mph": 17.0,
+      "pedestrian_count": 8,
+      "vehicle_count": 20,
+      "active_cameras": 4,
+      "total_cameras": 4,
+      "forecast_30m": [
+        { "time": "14:30", "risk": 0.28, "confidence": 0.85 },
+        { "time": "14:35", "risk": 0.32, "confidence": 0.82 },
+        { "time": "14:40", "risk": 0.35, "confidence": 0.79 },
+        { "time": "14:45", "risk": 0.33, "confidence": 0.76 },
+        { "time": "14:50", "risk": 0.29, "confidence": 0.74 },
+        { "time": "14:55", "risk": 0.25, "confidence": 0.72 },
+        { "time": "15:00", "risk": 0.22, "confidence": 0.70 }
+      ],
+      "recommendations": [
+        {
+          "id": "rec-w06",
+          "action": "Monitor conditions — no action required",
+          "impact": "Zone within safe parameters despite weather",
+          "confidence": 0.90,
+          "priority": "LOW"
+        }
+      ],
+      "events": [
+        { "time": "14:26:00", "type": "weather_alert", "detail": "Light rain — roads damp" }
+      ],
+      "interventions": []
+    },
+    {
+      "zone_id": "zone-005",
+      "name": "Adams Preparatory",
+      "risk_level": "MED",
+      "risk_score": 0.55,
+      "speed_avg_mph": 25.0,
+      "pedestrian_count": 18,
+      "vehicle_count": 48,
+      "active_cameras": 4,
+      "total_cameras": 6,
+      "forecast_30m": [
+        { "time": "14:30", "risk": 0.55, "confidence": 0.80 },
+        { "time": "14:35", "risk": 0.60, "confidence": 0.77 },
+        { "time": "14:40", "risk": 0.64, "confidence": 0.74 },
+        { "time": "14:45", "risk": 0.62, "confidence": 0.71 },
+        { "time": "14:50", "risk": 0.56, "confidence": 0.69 },
+        { "time": "14:55", "risk": 0.50, "confidence": 0.67 },
+        { "time": "15:00", "risk": 0.44, "confidence": 0.65 }
+      ],
+      "recommendations": [
+        {
+          "id": "rec-w07",
+          "action": "Activate wet-weather advisory on Cedar Ln",
+          "impact": "Reduce speed in wet conditions",
+          "confidence": 0.81,
+          "priority": "MED"
+        }
+      ],
+      "events": [
+        { "time": "14:29:00", "type": "camera_offline", "detail": "CAM-506 offline (water damage)" },
+        { "time": "14:27:00", "type": "weather_alert", "detail": "Heavy rain on Cedar Ln" }
+      ],
+      "interventions": [
+        {
+          "id": "int-w03",
+          "action": "Signal timing adjusted for wet conditions",
+          "applied_at": "14:15:00",
+          "status": "active"
+        }
+      ]
+    }
+  ]
+}

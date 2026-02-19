@@ -6,6 +6,8 @@ import {
   Recommendation,
   SnapshotPhase,
 } from "./types";
+import { recordDemoMutation } from "./metrics";
+import * as logger from "./logger";
 
 export function nextSnapshotPhase(current: SnapshotPhase): SnapshotPhase {
   switch (current) {
@@ -35,9 +37,9 @@ export function applyDemoIntervention(
 ): LiveState {
   const now = new Date();
   const timeStr = [
-    String(now.getHours()).padStart(2, "0"),
-    String(now.getMinutes()).padStart(2, "0"),
-    String(now.getSeconds()).padStart(2, "0"),
+    String(now.getUTCHours()).padStart(2, "0"),
+    String(now.getUTCMinutes()).padStart(2, "0"),
+    String(now.getUTCSeconds()).padStart(2, "0"),
   ].join(":");
 
   const newIntervention: Intervention = {
@@ -61,6 +63,9 @@ export function applyDemoIntervention(
       events: [...zone.events, newEvent],
     };
   });
+
+  recordDemoMutation();
+  logger.info(`Demo intervention applied: ${recommendation.action} in ${zoneId}`);
 
   return {
     ...liveState,
