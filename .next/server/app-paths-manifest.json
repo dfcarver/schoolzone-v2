@@ -1,1 +1,6 @@
-{}
+{
+  "/incidents/page": "app/incidents/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/zones/[zoneId]/page": "app/zones/[zoneId]/page.js",
+  "/page": "app/page.js"
+}
