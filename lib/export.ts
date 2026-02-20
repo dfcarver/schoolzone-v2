@@ -40,3 +40,7 @@ export function exportExecutiveSummaryJSON(rollup: DistrictRollup): void {
   };
   downloadJSON(payload, `executive-summary-${Date.now()}.json`);
 }
+
+export function exportProcurementJSON(data: unknown, section: string): void {
+  downloadJSON(data, `procurement-${section}-${Date.now()}.json`);
+}
