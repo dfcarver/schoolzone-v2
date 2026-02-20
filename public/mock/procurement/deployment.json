@@ -1,0 +1,114 @@
+{
+  "title": "Deployment Phasing",
+  "subtitle": "Phased Rollout Strategy — From Pilot Corridors to Inter-Emirate Expansion",
+  "phases": [
+    {
+      "id": "DP-001",
+      "name": "Pilot Corridors",
+      "status": "Active",
+      "scope": "3 school zone corridors (6 schools, 12 camera nodes) in Abu Dhabi central district.",
+      "integrations": [
+        "Camera network connectivity validation",
+        "Static data pipeline verification",
+        "UI deployment on Vercel (static frontend)"
+      ],
+      "training": [
+        "Operator onboarding for Operations tier",
+        "Executive briefing on Command Brief interpretation",
+        "Governance team training on audit export procedures"
+      ],
+      "deliverables": [
+        { "name": "Pilot Deployment Package", "description": "Deployed UI with static mock data, validated against Appendix A schemas." },
+        { "name": "Operator Training Materials", "description": "Documentation for each tier's interface, workflow procedures, and escalation paths." },
+        { "name": "Validation Report", "description": "Runtime validation results confirming schema compliance across all pilot scenarios." }
+      ],
+      "exitCriteria": [
+        "All 3 corridors reporting telemetry within SLA thresholds",
+        "Zero critical validation failures over 30-day observation period",
+        "Operator proficiency assessment completed for all assigned personnel",
+        "Executive stakeholder sign-off on Command Brief accuracy"
+      ]
+    },
+    {
+      "id": "DP-002",
+      "name": "District Integration",
+      "status": "Planned",
+      "scope": "Full Abu Dhabi district coverage: 15 school zones, 45 camera nodes, integrated signal control.",
+      "integrations": [
+        "Live sensor data pipeline activation",
+        "Signal control system integration (abstracted API)",
+        "Identity provider integration for role-based access"
+      ],
+      "training": [
+        "District-wide operator certification program",
+        "Governance audit workflow training",
+        "Incident response procedure drills"
+      ],
+      "deliverables": [
+        { "name": "District Deployment Package", "description": "Production-grade deployment with live data pipelines replacing static mocks." },
+        { "name": "Integration Validation Report", "description": "End-to-end integration test results for all connected systems." },
+        { "name": "SLA Baseline Report", "description": "30-day performance baseline establishing production SLA metrics." }
+      ],
+      "exitCriteria": [
+        "All 15 zones operational with live data feeds",
+        "Signal control integration validated in controlled environment",
+        "SLA metrics meet or exceed defined thresholds for 30 consecutive days",
+        "Governance audit demonstrates full traceability chain"
+      ]
+    },
+    {
+      "id": "DP-003",
+      "name": "Emirate-Wide Deployment",
+      "status": "Planned",
+      "scope": "All school zones across Abu Dhabi Emirate: 60+ zones, 200+ camera nodes, multi-district coordination.",
+      "integrations": [
+        "Multi-district data aggregation pipeline",
+        "Cross-district incident correlation engine",
+        "Centralized governance and compliance reporting"
+      ],
+      "training": [
+        "Regional coordinator training program",
+        "Cross-district incident management procedures",
+        "Executive reporting and KPI interpretation workshops"
+      ],
+      "deliverables": [
+        { "name": "Emirate Deployment Package", "description": "Scaled infrastructure supporting emirate-wide coverage with regional aggregation." },
+        { "name": "Cross-District Correlation Report", "description": "Validated incident correlation across district boundaries." },
+        { "name": "Governance Compliance Certificate", "description": "Independent audit confirming compliance with all Appendix A requirements." }
+      ],
+      "exitCriteria": [
+        "All emirate school zones operational and reporting",
+        "Cross-district incident correlation accuracy exceeds 90%",
+        "Emirate-level executive dashboard validated by senior leadership",
+        "Full compliance audit passed with no critical findings"
+      ]
+    },
+    {
+      "id": "DP-004",
+      "name": "Inter-Emirate Expansion",
+      "status": "Planned",
+      "scope": "Expansion to additional UAE emirates with federated governance and standardized integration contracts.",
+      "integrations": [
+        "Federated data exchange protocol between emirates",
+        "Standardized API contracts for inter-emirate interoperability",
+        "National-level governance and compliance framework"
+      ],
+      "training": [
+        "Inter-emirate coordination team formation",
+        "National governance framework training",
+        "Technology transfer and knowledge sharing program"
+      ],
+      "deliverables": [
+        { "name": "Federation Architecture", "description": "Documented architecture for multi-emirate data exchange and governance." },
+        { "name": "National Standards Package", "description": "Standardized contracts, schemas, and procedures for national adoption." },
+        { "name": "Expansion Readiness Assessment", "description": "Technical and operational readiness evaluation for each target emirate." }
+      ],
+      "exitCriteria": [
+        "Federation protocol validated between at least 2 emirates",
+        "National governance framework ratified by participating authorities",
+        "Standardized contracts adopted by all participating entities",
+        "Scalability validated through load testing at national scale projections"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "title": "Reference Architecture",
+  "subtitle": "School Zone Digital Twin — Layered Architecture & Contract Boundaries",
+  "principles": [
+    {
+      "id": "P-001",
+      "name": "Secure by Design",
+      "description": "All components enforce data minimization, role-based access, and audit traceability from initial design through deployment."
+    },
+    {
+      "id": "P-002",
+      "name": "Modular Deployment",
+      "description": "Each functional layer is independently deployable, testable, and replaceable without affecting adjacent layers."
+    },
+    {
+      "id": "P-003",
+      "name": "Contract-First Integration",
+      "description": "All inter-layer communication adheres to versioned, schema-validated payload contracts defined in Appendix A."
+    },
+    {
+      "id": "P-004",
+      "name": "Observability",
+      "description": "Structured logging, metrics collection, and validation reporting are embedded at every layer boundary."
+    },
+    {
+      "id": "P-005",
+      "name": "Human-in-the-Loop",
+      "description": "All automated recommendations require explicit operator approval before enforcement. No autonomous action without human confirmation."
+    }
+  ],
+  "layers": [
+    {
+      "id": "L-001",
+      "name": "Edge & Sensor Layer",
+      "description": "Camera networks, IoT sensors, and edge compute nodes providing real-time telemetry from school zone corridors.",
+      "components": ["Camera Network", "Speed Sensors", "Pedestrian Counters", "Edge Compute Nodes", "Signal Controllers"]
+    },
+    {
+      "id": "L-002",
+      "name": "Ingestion & Normalization",
+      "description": "Data ingestion pipelines that normalize heterogeneous sensor feeds into canonical Appendix A schema format.",
+      "components": ["Stream Ingestion", "Schema Validation", "Data Normalization", "Deduplication", "Timestamping (UTC)"]
+    },
+    {
+      "id": "L-003",
+      "name": "Processing & Analytics",
+      "description": "Risk scoring engines, forecasting models, and recommendation generators operating on normalized telemetry.",
+      "components": ["Risk Scoring Engine", "30-Minute Forecast Model", "Recommendation Generator", "Drift Detection", "Model Registry"]
+    },
+    {
+      "id": "L-004",
+      "name": "Control & Orchestration",
+      "description": "Intervention management, workflow orchestration, and state machine governing snapshot lifecycle and demo mutations.",
+      "components": ["State Machine", "Intervention Manager", "Snapshot Rotation", "Demo Mutation Engine", "Workflow Orchestrator"]
+    },
+    {
+      "id": "L-005",
+      "name": "Presentation & Governance",
+      "description": "Three-tier UI (Executive, Operations, Governance) with procurement views, audit logging, and evidence export.",
+      "components": ["Executive Dashboard", "Operations Console", "Governance Controls", "Procurement Pack", "Audit Export"]
+    }
+  ],
+  "contractBoundary": {
+    "title": "Appendix A Contract Boundary",
+    "description": "All data exchange between layers conforms to the Appendix A Technical Contract, which defines canonical schemas for LiveState, Incidents, Schools, and Procurement payloads. The contract boundary ensures that any production data provider can replace the demo mock layer without requiring UI or logic changes.",
+    "schemas": [
+      "LiveState (snapshot_id, timestamp, district_risk, zones[])",
+      "ZoneLiveState (zone_id, risk_level, risk_score, forecast_30m[], recommendations[], interventions[])",
+      "Incident (incident_id, severity, status, events[], model_metadata)",
+      "School (zone_id, name, address, coordinates, enrollment)",
+      "Procurement Payloads (architecture, security, performance, deployment, risk, integration)"
+    ],
+    "reference": "Appendix A — Technical Contracts & State Model"
+  }
+}

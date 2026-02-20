@@ -1,0 +1,76 @@
+{
+  "title": "Security & Compliance Controls",
+  "subtitle": "Control Framework — Data Protection, Access Management, and Audit Assurance",
+  "controls": [
+    {
+      "id": "SC-001",
+      "domain": "Data Minimization",
+      "statement": "No personally identifiable information (PII) is collected, stored, or transmitted. All telemetry is aggregated and anonymized at the sensor layer.",
+      "mechanism": "Schema validation rejects PII fields; ingestion pipeline strips identifiers before normalization.",
+      "evidence": "Runtime validation report; schema definition in Appendix A; governance controls audit log.",
+      "status": "Implemented"
+    },
+    {
+      "id": "SC-002",
+      "domain": "Role-Based Access Control",
+      "statement": "Access to operational and governance views is restricted by role tier (Executive, Operations, Governance).",
+      "mechanism": "Three-tier navigation enforces view separation. Production deployment integrates with organizational identity provider.",
+      "evidence": "UI route structure; role-based navigation configuration; integration specification.",
+      "status": "Demo"
+    },
+    {
+      "id": "SC-003",
+      "domain": "Audit Logging",
+      "statement": "All system events, data fetches, validation outcomes, and demo mutations are recorded in a structured audit log.",
+      "mechanism": "In-memory structured log buffer with timestamp, level, and message. Exportable as JSON artifact.",
+      "evidence": "Governance Controls page; audit log export; logger module source.",
+      "status": "Implemented"
+    },
+    {
+      "id": "SC-004",
+      "domain": "Tamper Evidence",
+      "statement": "Snapshot integrity is verified through runtime validation on every data load cycle.",
+      "mechanism": "Schema validation function checks required fields, data types, enum values, and array structures on each snapshot rotation.",
+      "evidence": "Validation results displayed on Governance Controls page; validation failure metrics.",
+      "status": "Demo"
+    },
+    {
+      "id": "SC-005",
+      "domain": "Runtime Validation",
+      "statement": "All ingested data undergoes runtime schema validation before rendering. Invalid data triggers error state, not crash.",
+      "mechanism": "validateLiveState() checks all required fields, nested structures, and enum values. Failures are logged and counted.",
+      "evidence": "Governance Controls page; validation module source; metrics counters.",
+      "status": "Implemented"
+    },
+    {
+      "id": "SC-006",
+      "domain": "Drift Monitoring",
+      "statement": "Model drift is continuously monitored by comparing current risk distributions against baseline thresholds.",
+      "mechanism": "deriveDriftStatus() computes drift from zone risk scores, camera health, and latency metrics.",
+      "evidence": "Governance Controls page drift status indicator; rollups module source.",
+      "status": "Implemented"
+    },
+    {
+      "id": "SC-007",
+      "domain": "Secure Transport",
+      "statement": "All production data transport uses TLS 1.3 encryption. Demo environment uses local static file serving.",
+      "mechanism": "Vercel deployment enforces HTTPS. Local development uses localhost with no external calls.",
+      "evidence": "Deployment configuration; Vercel platform security documentation.",
+      "status": "Planned"
+    },
+    {
+      "id": "SC-008",
+      "domain": "Change Control & Versioning",
+      "statement": "All code changes are tracked through version control with commit-level traceability.",
+      "mechanism": "Git repository with structured commit messages. Appendix A contract versioning for schema changes.",
+      "evidence": "GitHub repository history; Appendix A version header.",
+      "status": "Implemented"
+    }
+  ],
+  "statements": [
+    "No PII is stored, processed, or transmitted in demo or production data payloads.",
+    "Audit package export is available from the Governance Controls interface.",
+    "All data schemas are defined in Appendix A and validated at runtime.",
+    "Demo mutations are applied in-memory only and do not persist across sessions."
+  ]
+}

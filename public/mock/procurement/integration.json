@@ -1,0 +1,65 @@
+{
+  "title": "Integration & Interoperability",
+  "subtitle": "Integration Readiness Assessment — System Interfaces, Standards, and Contract Boundaries",
+  "integrations": [
+    {
+      "id": "INT-001",
+      "system": "Signal Control Systems",
+      "description": "Bidirectional integration with traffic signal controllers for automated timing adjustments based on risk recommendations.",
+      "contractType": "Abstracted API — Contract-First",
+      "status": "Planned",
+      "notes": "Interface defined in Appendix A. Demo uses static mock data. Production activates live signal control API."
+    },
+    {
+      "id": "INT-002",
+      "system": "Event Stream Platform",
+      "description": "Real-time event ingestion from sensor networks, camera analytics, and edge compute nodes via standardized event streams.",
+      "contractType": "Schema-Validated Stream",
+      "status": "Planned",
+      "notes": "Event schema defined in Appendix A. Demo rotates static snapshots. Production connects to live event bus."
+    },
+    {
+      "id": "INT-003",
+      "system": "Standards-Based Payload Contracts",
+      "description": "All data exchange uses versioned, schema-validated JSON payloads conforming to Appendix A definitions.",
+      "contractType": "Appendix A Schema Contract",
+      "status": "Ready",
+      "notes": "Runtime validation enforces schema compliance. Contract versioning supports backward compatibility."
+    },
+    {
+      "id": "INT-004",
+      "system": "API Integration Model",
+      "description": "RESTful API layer with contract-first design. Mock provider swappable for production provider without UI modification.",
+      "contractType": "Contract-First REST API",
+      "status": "Ready",
+      "notes": "Data loader abstraction supports provider swap. Interface contracts defined, validated at runtime."
+    },
+    {
+      "id": "INT-005",
+      "system": "Observability Platform",
+      "description": "Structured logging, metrics collection, and health monitoring integrated with enterprise observability infrastructure.",
+      "contractType": "Structured Log + Metrics Export",
+      "status": "In Progress",
+      "notes": "In-memory logging and metrics implemented. Production integration exports to centralized observability platform."
+    },
+    {
+      "id": "INT-006",
+      "system": "Identity & Access Management",
+      "description": "Integration with organizational identity provider for role-based access control across Executive, Operations, and Governance tiers.",
+      "contractType": "OIDC / SAML Federation",
+      "status": "Planned",
+      "notes": "Three-tier navigation structure pre-configured for role mapping. Production integrates with enterprise IdP."
+    }
+  ],
+  "boundary": {
+    "title": "Integration Boundary Model",
+    "description": "The UI consumes a canonical contract defined in Appendix A. The integration boundary cleanly separates presentation logic from data provision. Any production data provider that conforms to the Appendix A schema can replace the demo mock layer without requiring UI, logic, or component modifications.",
+    "principles": [
+      "UI consumes canonical Appendix A contract — no provider-specific logic in presentation layer",
+      "Mock data provider is structurally identical to production provider interface",
+      "Schema validation at the boundary ensures contract compliance regardless of data source",
+      "Provider swap requires configuration change only — zero code modification in UI layer",
+      "All integration interfaces are versioned and backward-compatible by contract"
+    ]
+  }
+}

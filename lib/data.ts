@@ -1,4 +1,14 @@
-import { LiveState, Incident, School } from "./types";
+import {
+  LiveState,
+  Incident,
+  School,
+  ArchitectureData,
+  SecurityData,
+  PerformanceData,
+  DeploymentData,
+  RiskMatrixData,
+  IntegrationData,
+} from "./types";
 import { scenarioBasePath, ScenarioId } from "./demoConfig";
 import * as logger from "./logger";
 import { recordFetch } from "./metrics";
@@ -62,5 +72,38 @@ export async function loadIncidents(
       recordFetch(performance.now() - start, false);
     }
     return { data: [], error: "Demo Data Unavailable" };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Procurement Pack Loaders
+// ---------------------------------------------------------------------------
+
+type ProcurementPayload =
+  | ArchitectureData
+  | SecurityData
+  | PerformanceData
+  | DeploymentData
+  | RiskMatrixData
+  | IntegrationData;
+
+export async function loadProcurementData<T extends ProcurementPayload>(
+  file: string,
+  signal?: AbortSignal
+): Promise<{ data: T | null; error: string | null }> {
+  const start = performance.now();
+  try {
+    const res = await fetch(`/mock/procurement/${file}`, { signal });
+    if (!res.ok) throw new Error(`Failed to load procurement/${file}: ${res.status}`);
+    const data = (await res.json()) as T;
+    recordFetch(performance.now() - start, true);
+    logger.info(`Loaded procurement/${file}`);
+    return { data, error: null };
+  } catch (err) {
+    if ((err as Error).name !== "AbortError") {
+      logger.error(`loadProcurementData(${file}) failed`, err);
+      recordFetch(performance.now() - start, false);
+    }
+    return { data: null, error: "Procurement data unavailable" };
   }
 }

@@ -1,0 +1,75 @@
+{
+  "title": "Performance & SLA Targets",
+  "subtitle": "Service Level Objectives — Latency, Availability, and Responsiveness Metrics",
+  "metrics": [
+    {
+      "id": "SLA-001",
+      "metric": "Snapshot Refresh Interval",
+      "target": "5 seconds",
+      "current": "5 seconds",
+      "unit": "seconds",
+      "notes": "Configurable via Settings (3s–15s). Production target aligned with sensor telemetry cadence."
+    },
+    {
+      "id": "SLA-002",
+      "metric": "Median Page Load Time",
+      "target": "< 800ms",
+      "current": "620ms",
+      "unit": "milliseconds",
+      "notes": "Measured from navigation start to first contentful paint. Static asset serving via Vercel CDN."
+    },
+    {
+      "id": "SLA-003",
+      "metric": "P95 Page Load Time",
+      "target": "< 1500ms",
+      "current": "1180ms",
+      "unit": "milliseconds",
+      "notes": "95th percentile under simulated concurrent user load. Excludes initial cold start."
+    },
+    {
+      "id": "SLA-004",
+      "metric": "UI Render Responsiveness",
+      "target": "< 100ms interaction delay",
+      "current": "Responsive",
+      "unit": "qualitative",
+      "notes": "All user interactions (navigation, filters, toggles) respond within perceptible threshold."
+    },
+    {
+      "id": "SLA-005",
+      "metric": "Uptime Target",
+      "target": "99.9%",
+      "current": "Stated",
+      "unit": "percentage",
+      "notes": "Production uptime SLA. Demo environment hosted on Vercel with automatic failover."
+    },
+    {
+      "id": "SLA-006",
+      "metric": "Inference Latency (Model)",
+      "target": "< 150ms",
+      "current": "92ms",
+      "unit": "milliseconds",
+      "notes": "End-to-end model inference including feature extraction. Production target per Appendix A."
+    },
+    {
+      "id": "SLA-007",
+      "metric": "Camera Health Threshold",
+      "target": ">= 95%",
+      "current": "97%",
+      "unit": "percentage",
+      "notes": "Minimum operational camera percentage before degraded mode alert triggers."
+    },
+    {
+      "id": "SLA-008",
+      "metric": "Data Validation Pass Rate",
+      "target": "100%",
+      "current": "100%",
+      "unit": "percentage",
+      "notes": "All ingested snapshots must pass runtime schema validation. Failures trigger governance alerts."
+    }
+  ],
+  "disclaimers": [
+    "Demo metrics are simulated from static data; production targets are defined in the operational SLA agreement.",
+    "Performance measurements reflect Vercel-hosted static frontend. Production architecture may introduce additional latency from live data pipelines.",
+    "Uptime target applies to production deployment with redundancy; demo environment does not carry SLA obligations."
+  ]
+}

@@ -119,3 +119,132 @@ export interface School {
   enrollment: number;
   cameras: number;
 }
+
+// ---------------------------------------------------------------------------
+// Procurement Pack Types
+// ---------------------------------------------------------------------------
+
+export type ControlStatus = "Implemented" | "Demo" | "Planned";
+export type RiskStatus = "Open" | "Mitigated" | "Monitoring" | "Accepted";
+export type IntegrationStatus = "Ready" | "In Progress" | "Planned" | "Not Started";
+export type PhaseStatus = "Complete" | "Active" | "Planned";
+
+export interface ArchitecturePrinciple {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface ArchitectureLayer {
+  id: string;
+  name: string;
+  description: string;
+  components: string[];
+}
+
+export interface ContractBoundary {
+  title: string;
+  description: string;
+  schemas: string[];
+  reference: string;
+}
+
+export interface ArchitectureData {
+  title: string;
+  subtitle: string;
+  principles: ArchitecturePrinciple[];
+  layers: ArchitectureLayer[];
+  contractBoundary: ContractBoundary;
+}
+
+export interface SecurityControl {
+  id: string;
+  domain: string;
+  statement: string;
+  mechanism: string;
+  evidence: string;
+  status: ControlStatus;
+}
+
+export interface SecurityData {
+  title: string;
+  subtitle: string;
+  controls: SecurityControl[];
+  statements: string[];
+}
+
+export interface PerformanceMetric {
+  id: string;
+  metric: string;
+  target: string;
+  current: string;
+  unit: string;
+  notes: string;
+}
+
+export interface PerformanceData {
+  title: string;
+  subtitle: string;
+  metrics: PerformanceMetric[];
+  disclaimers: string[];
+}
+
+export interface PhaseDeliverable {
+  name: string;
+  description: string;
+}
+
+export interface DeploymentPhase {
+  id: string;
+  name: string;
+  status: PhaseStatus;
+  scope: string;
+  integrations: string[];
+  training: string[];
+  deliverables: PhaseDeliverable[];
+  exitCriteria: string[];
+}
+
+export interface DeploymentData {
+  title: string;
+  subtitle: string;
+  phases: DeploymentPhase[];
+}
+
+export interface RiskEntry {
+  id: string;
+  risk: string;
+  impact: string;
+  likelihood: string;
+  mitigation: string;
+  owner: string;
+  status: RiskStatus;
+}
+
+export interface RiskMatrixData {
+  title: string;
+  subtitle: string;
+  risks: RiskEntry[];
+}
+
+export interface IntegrationItem {
+  id: string;
+  system: string;
+  description: string;
+  contractType: string;
+  status: IntegrationStatus;
+  notes: string;
+}
+
+export interface IntegrationBoundary {
+  title: string;
+  description: string;
+  principles: string[];
+}
+
+export interface IntegrationData {
+  title: string;
+  subtitle: string;
+  integrations: IntegrationItem[];
+  boundary: IntegrationBoundary;
+}
