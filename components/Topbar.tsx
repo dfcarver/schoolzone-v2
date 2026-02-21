@@ -1,6 +1,7 @@
 "use client";
 
 import { useDemoConfig, ScenarioId } from "@/lib/demoConfig";
+import { useAuth } from "@/lib/auth/AuthProvider";
 
 interface TopbarProps {
   snapshotId?: string;
@@ -25,6 +26,7 @@ function formatTime(iso: string): string {
 
 export default function Topbar({ snapshotId, timestamp, title = "Operations Console" }: TopbarProps) {
   const { config, updateConfig } = useDemoConfig();
+  const { session } = useAuth();
   const formattedTime = timestamp ? formatTime(timestamp) : "--:--:--";
 
   return (
@@ -74,6 +76,9 @@ export default function Topbar({ snapshotId, timestamp, title = "Operations Cons
           )}
         </button>
         <span className="text-xs font-mono text-gray-600">{formattedTime}</span>
+        {session && (
+          <span className="text-xs text-gray-500 border-l border-gray-200 pl-4 capitalize">{session.username}</span>
+        )}
       </div>
     </header>
   );

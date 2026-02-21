@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/lib/auth/AuthProvider";
 
 interface NavSection {
   title: string;
@@ -107,8 +108,16 @@ function NavIcon({ type }: { type: string }) {
   }
 }
 
+const ROLE_BADGES: Record<string, string> = {
+  executive: "bg-blue-100 text-blue-700",
+  operator: "bg-amber-100 text-amber-700",
+  governance: "bg-purple-100 text-purple-700",
+  admin: "bg-gray-100 text-gray-700",
+};
+
 export default function Sidebar() {
   const pathname = usePathname();
+  const { session, logout } = useAuth();
 
   function isActive(href: string): boolean {
     if (href === "/executive") {
@@ -157,7 +166,7 @@ export default function Sidebar() {
           </div>
         ))}
       </nav>
-      <div className="px-3 py-3 border-t border-gray-200">
+      <div className="px-3 py-3 border-t border-gray-200 space-y-2">
         <Link
           href="/settings"
           className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -172,7 +181,31 @@ export default function Sidebar() {
           </svg>
           Settings
         </Link>
-        <p className="px-3 mt-2 text-[10px] text-gray-400">Digital Twin v2.0</p>
+        {session && (
+          <div className="px-3 py-2 space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
+                <span className="text-[10px] font-bold text-gray-600 uppercase">{session.username[0]}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-gray-900 truncate">{session.username}</p>
+                <span className={`inline-block text-[9px] font-semibold px-1.5 py-0.5 rounded-full uppercase ${ROLE_BADGES[session.role] ?? "bg-gray-100 text-gray-600"}`}>
+                  {session.role}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={logout}
+              className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Sign Out
+            </button>
+          </div>
+        )}
+        <p className="px-3 text-[10px] text-gray-400">Digital Twin v2.0</p>
       </div>
     </aside>
   );
