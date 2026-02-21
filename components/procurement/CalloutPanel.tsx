@@ -17,8 +17,8 @@ const VARIANT_STYLES = {
 export default function CalloutPanel({ title, children, variant = "default" }: CalloutPanelProps) {
   return (
     <div className={`border rounded-lg p-5 ${VARIANT_STYLES[variant]}`}>
-      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">{title}</h4>
-      <div className="text-sm text-gray-700 leading-relaxed">{children}</div>
+      <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">{title}</h4>
+      <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{children}</div>
     </div>
   );
 }

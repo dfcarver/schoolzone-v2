@@ -34,17 +34,17 @@ export default function EvidenceLinksPanel({ additionalLinks }: EvidenceLinksPan
   const links = [...EVIDENCE_LINKS, ...(additionalLinks ?? [])];
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-5">
-      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Evidence & Governance Artifacts</h4>
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+      <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Evidence & Governance Artifacts</h4>
       <div className="space-y-3">
         {links.map((link) => (
           <Link
             key={link.href}
             href={link.href}
-            className="block border border-gray-100 rounded-lg p-3 hover:border-emerald-200 hover:bg-emerald-50/30 transition-colors"
+            className="block border border-gray-100 dark:border-gray-800 rounded-lg p-3 hover:border-emerald-200 dark:hover:border-emerald-800 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/30 transition-colors"
           >
-            <p className="text-sm font-medium text-gray-900">{link.label}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{link.description}</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{link.label}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{link.description}</p>
           </Link>
         ))}
       </div>
