@@ -76,13 +76,13 @@ export default function GovernanceIncidentDetailPage() {
         <div className="flex items-center gap-3">
           <Link href="/governance/incidents" className="text-sm text-gray-400 hover:text-gray-600">Incidents</Link>
           <span className="text-gray-300">/</span>
-          <span className="text-sm text-gray-900 font-medium">{incident.incident_id}</span>
+          <span className="text-sm text-gray-900 dark:text-gray-100 font-medium">{incident.incident_id}</span>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h1 className="text-lg font-semibold text-gray-900 mb-2">{incident.title}</h1>
+              <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{incident.title}</h1>
               <div className="flex items-center gap-3">
                 <span className="text-xs font-mono text-gray-400">{incident.incident_id}</span>
                 <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${SEVERITY_BADGE[incident.severity] || ""}`}>{incident.severity}</span>
@@ -92,15 +92,15 @@ export default function GovernanceIncidentDetailPage() {
             </div>
             <button
               onClick={() => exportIncidentJSON(incident)}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               Export JSON
             </button>
           </div>
-          <p className="text-sm text-gray-600 leading-relaxed">{incident.summary}</p>
-          <div className="mt-4 flex items-center gap-4 text-xs text-gray-400">
-            <span>Type: <span className="text-gray-600">{incident.type}</span></span>
-            <span>Reported: <span className="text-gray-600">{formatDateTime(incident.reported_at)}</span></span>
+          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{incident.summary}</p>
+          <div className="mt-4 flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500">
+            <span>Type: <span className="text-gray-600 dark:text-gray-400">{incident.type}</span></span>
+            <span>Reported: <span className="text-gray-600 dark:text-gray-400">{formatDateTime(incident.reported_at)}</span></span>
           </div>
         </div>
 

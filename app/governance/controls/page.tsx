@@ -35,7 +35,7 @@ export default function ControlsPage() {
     <div className="flex flex-col h-screen">
       <Topbar title="Governance — Controls" snapshotId={liveState.snapshot_id} timestamp={liveState.timestamp} />
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
-        <h1 className="text-xl font-semibold text-gray-900">Controls & Compliance</h1>
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Controls & Compliance</h1>
 
         {/* Status Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -59,10 +59,10 @@ export default function ControlsPage() {
               {lastValidation?.errors.length ?? 0} errors, {lastValidation?.warnings.length ?? 0} warnings
             </p>
           </div>
-          <div className="border border-gray-200 rounded-lg p-4 bg-white">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Pipeline Health</p>
-            <p className="text-2xl font-bold text-gray-900">{metrics.fetchErrorCount === 0 ? "OK" : `${metrics.fetchErrorCount} errors`}</p>
-            <p className="text-xs text-gray-500 mt-1">
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
+            <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Pipeline Health</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{metrics.fetchErrorCount === 0 ? "OK" : `${metrics.fetchErrorCount} errors`}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               {metrics.fetchCount} fetches, {metrics.snapshotRotations} rotations
             </p>
           </div>
@@ -98,8 +98,8 @@ export default function ControlsPage() {
         )}
 
         {/* Appendix A Contract Summary */}
-        <div className="bg-white border border-gray-200 rounded-lg p-5">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">Appendix A — Contract Compliance</h3>
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Appendix A — Contract Compliance</h3>
           <div className="space-y-2">
             {[
               { rule: "No backend / API routes", compliant: true },
@@ -112,28 +112,28 @@ export default function ControlsPage() {
             ].map((item) => (
               <div key={item.rule} className="flex items-center gap-2.5 py-1.5">
                 <span className={`w-2 h-2 rounded-full ${item.compliant ? "bg-green-500" : "bg-red-500"}`} />
-                <span className="text-sm text-gray-700">{item.rule}</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">{item.rule}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Audit Log */}
-        <div className="bg-white border border-gray-200 rounded-lg p-5">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">Audit Log (Recent)</h3>
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Audit Log (Recent)</h3>
           {recentLogs.length === 0 ? (
-            <p className="text-sm text-gray-400">No log entries</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">No log entries</p>
           ) : (
             <div className="space-y-1 max-h-64 overflow-y-auto">
               {recentLogs.map((entry, i) => (
-                <div key={i} className="flex items-start gap-3 py-1.5 text-xs border-b border-gray-50 last:border-0">
+                <div key={i} className="flex items-start gap-3 py-1.5 text-xs border-b border-gray-50 dark:border-gray-800 last:border-0">
                   <span className="font-mono text-gray-400 shrink-0 w-20 truncate">{entry.timestamp.slice(11, 19)}</span>
                   <span className={`font-semibold uppercase shrink-0 w-12 ${
                     entry.level === "error" ? "text-red-600" :
                     entry.level === "warn" ? "text-amber-600" :
                     entry.level === "info" ? "text-blue-600" : "text-gray-400"
                   }`}>{entry.level}</span>
-                  <span className="text-gray-700 truncate">{entry.message}</span>
+                  <span className="text-gray-700 dark:text-gray-300 truncate">{entry.message}</span>
                 </div>
               ))}
             </div>

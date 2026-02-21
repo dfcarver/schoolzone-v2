@@ -23,9 +23,9 @@ export default function ForecastChart({
 }: ForecastChartProps) {
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white border border-gray-200 rounded-lg p-5">
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">{title}</h3>
-        <p className="text-sm text-gray-400">No forecast data available</p>
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">{title}</h3>
+        <p className="text-sm text-gray-400 dark:text-gray-500">No forecast data available</p>
       </div>
     );
   }
@@ -37,8 +37,8 @@ export default function ForecastChart({
   }));
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-5">
-      <h3 className="text-sm font-semibold text-gray-900 mb-4">{title}</h3>
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">{title}</h3>
       <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={chartData}>
@@ -94,11 +94,11 @@ export default function ForecastChart({
       <div className="flex items-center gap-4 mt-3">
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-0.5 bg-red-500 rounded" />
-          <span className="text-xs text-gray-500">Risk</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">Risk</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-0.5 bg-blue-500 rounded border-dashed" />
-          <span className="text-xs text-gray-500">Confidence</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">Confidence</span>
         </div>
       </div>
     </div>

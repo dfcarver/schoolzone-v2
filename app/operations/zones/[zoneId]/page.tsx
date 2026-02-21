@@ -88,12 +88,12 @@ export default function OpsZoneDetailPage() {
         <div className="flex items-center gap-3">
           <Link href="/operations/dashboard" className="text-sm text-gray-400 hover:text-gray-600">Dashboard</Link>
           <span className="text-gray-300">/</span>
-          <span className="text-sm text-gray-900 font-medium">{zone.name}</span>
+          <span className="text-sm text-gray-900 dark:text-gray-100 font-medium">{zone.name}</span>
         </div>
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold text-gray-900">{zone.name}</h1>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{zone.name}</h1>
             <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${RISK_BADGE[zone.risk_level]}`}>
               {zone.risk_level} RISK
             </span>
@@ -101,7 +101,7 @@ export default function OpsZoneDetailPage() {
               <AnomalyBadge output={anomalyOutput} />
             )}
           </div>
-          <div className="flex items-center gap-4 text-sm text-gray-500">
+          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
             <span>Score: {(zone.risk_score * 100).toFixed(0)}%</span>
             <span>Speed: {zone.speed_avg_mph} mph</span>
             <span>Pedestrians: {zone.pedestrian_count}</span>
@@ -115,9 +115,9 @@ export default function OpsZoneDetailPage() {
         </div>
 
         <div>
-          <h2 className="text-sm font-semibold text-gray-900 mb-3">Recommendations</h2>
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Recommendations</h2>
           {zone.recommendations.length === 0 ? (
-            <p className="text-sm text-gray-400">No recommendations</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">No recommendations</p>
           ) : (
             <div className="space-y-3">
               {zone.recommendations.map((rec) => (
@@ -129,17 +129,17 @@ export default function OpsZoneDetailPage() {
 
         <InterventionsTable interventions={zone.interventions} />
 
-        <div className="bg-white border border-gray-200 rounded-lg p-5">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">Event Log</h3>
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Event Log</h3>
           {zone.events.length === 0 ? (
-            <p className="text-sm text-gray-400">No events</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">No events</p>
           ) : (
             <div className="space-y-2">
               {zone.events.map((evt, i) => (
-                <div key={`${evt.time}-${i}`} className="flex items-start gap-3 py-2 border-b border-gray-50 last:border-0">
-                  <span className="text-xs font-mono text-gray-400 shrink-0 pt-0.5">{evt.time}</span>
-                  <span className="text-xs font-medium text-gray-500 uppercase shrink-0 w-24 pt-0.5">{evt.type}</span>
-                  <span className="text-sm text-gray-700">{evt.detail}</span>
+                <div key={`${evt.time}-${i}`} className="flex items-start gap-3 py-2 border-b border-gray-50 dark:border-gray-800 last:border-0">
+                  <span className="text-xs font-mono text-gray-400 dark:text-gray-500 shrink-0 pt-0.5">{evt.time}</span>
+                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase shrink-0 w-24 pt-0.5">{evt.type}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{evt.detail}</span>
                 </div>
               ))}
             </div>

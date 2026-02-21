@@ -21,15 +21,15 @@ const STATUS_DOT: Record<string, string> = {
 export default function KPI({ label, value, status = "normal" }: KPIProps) {
   return (
     <div
-      className={`bg-white rounded-lg border ${STATUS_STYLES[status]} px-5 py-4 flex flex-col gap-1`}
+      className={`bg-white dark:bg-gray-900 rounded-lg border ${STATUS_STYLES[status]} px-5 py-4 flex flex-col gap-1`}
     >
       <div className="flex items-center gap-2">
         <span className={`w-2 h-2 rounded-full ${STATUS_DOT[status]}`} />
-        <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
           {label}
         </span>
       </div>
-      <span className="text-2xl font-semibold text-gray-900">{value}</span>
+      <span className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{value}</span>
     </div>
   );
 }

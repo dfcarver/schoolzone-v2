@@ -65,9 +65,9 @@ export default function OperationsDashboardPage() {
         </div>
 
         <div>
-          <h2 className="text-sm font-semibold text-gray-900 mb-3">Zone Overview</h2>
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Zone Overview</h2>
           {liveState.zones.length === 0 ? (
-            <p className="text-sm text-gray-400">No zones available</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">No zones available</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {liveState.zones.map((zone) => (

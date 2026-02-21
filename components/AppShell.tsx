@@ -3,7 +3,10 @@
 import { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { AuthProvider } from "@/lib/auth/AuthProvider";
+import { ThemeProvider } from "@/lib/ThemeProvider";
+import { NotificationsProvider } from "@/lib/notifications";
 import Sidebar from "@/components/Sidebar";
+import AlertEngine from "@/components/AlertEngine";
 
 interface MobileNavContextValue {
   isOpen: boolean;
@@ -35,31 +38,36 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, [pathname, close]);
 
   return (
-    <AuthProvider>
-      <MobileNavContext.Provider value={{ isOpen: sidebarOpen, toggle, close }}>
-        {isLoginPage ? (
-          <>{children}</>
-        ) : (
-          <div className="flex min-h-screen">
-            {/* Desktop sidebar — always visible */}
-            <div className="hidden lg:block">
-              <Sidebar />
-            </div>
-
-            {/* Mobile sidebar — overlay drawer */}
-            {sidebarOpen && (
-              <div className="fixed inset-0 z-40 lg:hidden">
-                <div className="absolute inset-0 bg-black/50" onClick={close} />
-                <div className="relative w-56 h-full animate-slide-in">
+    <ThemeProvider>
+      <AuthProvider>
+        <NotificationsProvider>
+          <MobileNavContext.Provider value={{ isOpen: sidebarOpen, toggle, close }}>
+            {isLoginPage ? (
+              <>{children}</>
+            ) : (
+              <div className="flex min-h-screen">
+                {/* Desktop sidebar — always visible */}
+                <div className="hidden lg:block">
                   <Sidebar />
                 </div>
+
+                {/* Mobile sidebar — overlay drawer */}
+                {sidebarOpen && (
+                  <div className="fixed inset-0 z-40 lg:hidden">
+                    <div className="absolute inset-0 bg-black/50" onClick={close} />
+                    <div className="relative w-56 h-full animate-slide-in">
+                      <Sidebar />
+                    </div>
+                  </div>
+                )}
+
+                <main className="flex-1 bg-gray-50 dark:bg-gray-950 min-w-0">{children}</main>
+                <AlertEngine />
               </div>
             )}
-
-            <main className="flex-1 bg-gray-50 min-w-0">{children}</main>
-          </div>
-        )}
-      </MobileNavContext.Provider>
-    </AuthProvider>
+          </MobileNavContext.Provider>
+        </NotificationsProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

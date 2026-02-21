@@ -68,12 +68,12 @@ export default function GovernanceIncidentsPage() {
       <Topbar title="Governance — Incidents" />
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-gray-900">Incidents</h1>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Incidents</h1>
           <div className="flex items-center gap-3">
             <select
               value={filterZone}
               onChange={(e) => setFilterZone(e.target.value)}
-              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 bg-white"
+              className="text-sm border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
             >
               <option value="">All Zones</option>
               {zones.map((z) => (
@@ -83,7 +83,7 @@ export default function GovernanceIncidentsPage() {
             <select
               value={filterSeverity}
               onChange={(e) => setFilterSeverity(e.target.value)}
-              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 bg-white"
+              className="text-sm border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
             >
               <option value="">All Severities</option>
               <option value="LOW">LOW</option>
@@ -93,40 +93,40 @@ export default function GovernanceIncidentsPage() {
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg overflow-x-auto">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg overflow-x-auto">
           <table className="w-full text-sm min-w-[600px]">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">ID</th>
-                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Title</th>
-                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Zone</th>
-                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Severity</th>
-                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Status</th>
-                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Reported</th>
+              <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800">
+                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">ID</th>
+                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Title</th>
+                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Zone</th>
+                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Severity</th>
+                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</th>
+                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Reported</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-gray-400">No incidents match the current filters</td>
+                  <td colSpan={6} className="py-8 text-center text-gray-400 dark:text-gray-500">No incidents match the current filters</td>
                 </tr>
               ) : (
                 filtered.map((inc) => (
                   <tr
                     key={inc.incident_id}
                     onClick={() => router.push(`/governance/incidents/${inc.incident_id}`)}
-                    className="border-b border-gray-50 last:border-0 hover:bg-gray-50 cursor-pointer transition-colors"
+                    className="border-b border-gray-50 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
                   >
-                    <td className="py-3 px-4 font-mono text-xs text-gray-500">{inc.incident_id}</td>
-                    <td className="py-3 px-4 text-gray-900 font-medium max-w-xs truncate">{inc.title}</td>
-                    <td className="py-3 px-4 text-gray-600">{inc.zone_name}</td>
+                    <td className="py-3 px-4 font-mono text-xs text-gray-500 dark:text-gray-400">{inc.incident_id}</td>
+                    <td className="py-3 px-4 text-gray-900 dark:text-gray-100 font-medium max-w-xs truncate">{inc.title}</td>
+                    <td className="py-3 px-4 text-gray-600 dark:text-gray-400">{inc.zone_name}</td>
                     <td className="py-3 px-4">
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${SEVERITY_BADGE[inc.severity] || ""}`}>{inc.severity}</span>
                     </td>
                     <td className="py-3 px-4">
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_BADGE[inc.status] || "bg-gray-100 text-gray-600"}`}>{inc.status}</span>
                     </td>
-                    <td className="py-3 px-4 text-xs text-gray-500">{formatReportedAt(inc.reported_at)}</td>
+                    <td className="py-3 px-4 text-xs text-gray-500 dark:text-gray-400">{formatReportedAt(inc.reported_at)}</td>
                   </tr>
                 ))
               )}

@@ -26,16 +26,16 @@ export default function ExecutiveKPI({
     : { border: "border-gray-200", dot: "bg-blue-500" };
 
   return (
-    <div className={`bg-white rounded-lg border ${styles.border} px-5 py-4 flex flex-col gap-1`}>
+    <div className={`bg-white dark:bg-gray-900 rounded-lg border ${styles.border} px-5 py-4 flex flex-col gap-1`}>
       <div className="flex items-center gap-2">
         <span className={`w-2 h-2 rounded-full ${styles.dot}`} />
-        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+        <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
           {label}
         </span>
       </div>
-      <span className="text-2xl font-bold text-gray-900">{value}</span>
+      <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">{value}</span>
       {subtitle && (
-        <span className="text-xs text-gray-500">{subtitle}</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">{subtitle}</span>
       )}
     </div>
   );

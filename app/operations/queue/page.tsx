@@ -56,38 +56,38 @@ export default function QueuePage() {
       <Topbar title="Work Queue" snapshotId={liveState.snapshot_id} timestamp={liveState.timestamp} />
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-gray-900">Recommendation Queue</h1>
-          <span className="text-sm text-gray-400">{queue.length} pending item{queue.length !== 1 ? "s" : ""}</span>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Recommendation Queue</h1>
+          <span className="text-sm text-gray-400 dark:text-gray-500">{queue.length} pending item{queue.length !== 1 ? "s" : ""}</span>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg overflow-x-auto">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg overflow-x-auto">
           <table className="w-full text-sm min-w-[600px]">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Priority</th>
-                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Zone</th>
-                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Action</th>
-                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Impact</th>
-                <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Confidence</th>
+              <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800">
+                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Priority</th>
+                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Zone</th>
+                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Action</th>
+                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Impact</th>
+                <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Confidence</th>
               </tr>
             </thead>
             <tbody>
               {queue.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-gray-400">No pending recommendations</td>
+                  <td colSpan={5} className="py-8 text-center text-gray-400 dark:text-gray-500">No pending recommendations</td>
                 </tr>
               ) : (
                 queue.map((item, i) => (
-                  <tr key={`${item.zone_id}-${i}`} className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
+                  <tr key={`${item.zone_id}-${i}`} className="border-b border-gray-50 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                     <td className="py-3 px-4">
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${PRIORITY_BADGE[item.priority] ?? "bg-gray-100 text-gray-600"}`}>
                         {item.priority}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-gray-600">{item.zoneName}</td>
-                    <td className="py-3 px-4 text-gray-900 font-medium max-w-xs truncate">{item.action}</td>
-                    <td className="py-3 px-4 text-gray-500 max-w-xs truncate">{item.impact}</td>
-                    <td className="py-3 px-4 text-right font-mono text-gray-600">{Math.round(item.confidence * 100)}%</td>
+                    <td className="py-3 px-4 text-gray-600 dark:text-gray-400">{item.zoneName}</td>
+                    <td className="py-3 px-4 text-gray-900 dark:text-gray-100 font-medium max-w-xs truncate">{item.action}</td>
+                    <td className="py-3 px-4 text-gray-500 dark:text-gray-400 max-w-xs truncate">{item.impact}</td>
+                    <td className="py-3 px-4 text-right font-mono text-gray-600 dark:text-gray-400">{Math.round(item.confidence * 100)}%</td>
                   </tr>
                 ))
               )}

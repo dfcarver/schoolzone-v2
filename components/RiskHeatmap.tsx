@@ -36,18 +36,18 @@ export default function RiskHeatmap({ entries, linkPrefix = "/executive/zones" }
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-5">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-gray-900">Portfolio Heatmap</h3>
-        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Portfolio Heatmap</h3>
+        <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
           {(["NOW", "+15", "+30"] as TimeHorizon[]).map((h) => (
             <button
               key={h}
               onClick={() => setHorizon(h)}
               className={`text-xs font-medium px-3 py-1 rounded-md transition-colors ${
                 horizon === h
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm"
+                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
               }`}
             >
               {h}
@@ -65,11 +65,11 @@ export default function RiskHeatmap({ entries, linkPrefix = "/executive/zones" }
               className={`text-left border rounded-lg p-3 hover:shadow-md transition-shadow cursor-pointer ${riskBg(risk)}`}
             >
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-sm font-medium text-gray-900 truncate">{entry.name}</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{entry.name}</span>
                 <span className={`w-3 h-3 rounded-full ${riskColor(risk)}`} />
               </div>
-              <div className="text-2xl font-bold text-gray-900">{risk}%</div>
-              <div className="text-[10px] text-gray-500 uppercase mt-1">
+              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{risk}%</div>
+              <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase mt-1">
                 Risk {horizon === "NOW" ? "Now" : `at ${horizon} min`}
               </div>
             </button>

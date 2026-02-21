@@ -122,17 +122,17 @@ export default function ExecutivePage() {
         {/* Two-column: Emerging Risks + Active Mitigations */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Emerging Risks */}
-          <div className="bg-white border border-gray-200 rounded-lg p-5">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Emerging Risks</h3>
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Emerging Risks</h3>
             {emergingRisks.length === 0 ? (
-              <p className="text-sm text-gray-400">No emerging risks detected</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500">No emerging risks detected</p>
             ) : (
               <div className="space-y-3">
                 {emergingRisks.map((r) => (
-                  <div key={r.zone_id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                  <div key={r.zone_id} className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800 last:border-0">
                     <div>
-                      <span className="text-sm font-medium text-gray-900">{r.zoneName}</span>
-                      <span className="text-xs text-gray-400 ml-2">peaks at {r.peakTime}</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{r.zoneName}</span>
+                      <span className="text-xs text-gray-400 dark:text-gray-500 ml-2">peaks at {r.peakTime}</span>
                     </div>
                     <span className={`text-sm font-bold ${r.peakRisk >= 0.7 ? "text-red-600" : r.peakRisk >= 0.4 ? "text-amber-600" : "text-green-600"}`}>
                       {Math.round(r.peakRisk * 100)}%
@@ -144,19 +144,19 @@ export default function ExecutivePage() {
           </div>
 
           {/* Active Mitigations */}
-          <div className="bg-white border border-gray-200 rounded-lg p-5">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Active Mitigations</h3>
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Active Mitigations</h3>
             {activeMitigations.length === 0 ? (
-              <p className="text-sm text-gray-400">No active mitigations</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500">No active mitigations</p>
             ) : (
               <div className="space-y-3">
                 {activeMitigations.map((m, i) => (
-                  <div key={`${m.zone_id}-${i}`} className="flex items-start justify-between py-2 border-b border-gray-50 last:border-0">
+                  <div key={`${m.zone_id}-${i}`} className="flex items-start justify-between py-2 border-b border-gray-50 dark:border-gray-800 last:border-0">
                     <div className="min-w-0">
-                      <span className="text-sm font-medium text-gray-900 block truncate">{m.action}</span>
-                      <span className="text-xs text-gray-400">{m.zoneName} — {m.appliedAt}</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100 block truncate">{m.action}</span>
+                      <span className="text-xs text-gray-400 dark:text-gray-500">{m.zoneName} — {m.appliedAt}</span>
                     </div>
-                    <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full shrink-0 ml-2">Active</span>
+                    <span className="text-xs bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded-full shrink-0 ml-2">Active</span>
                   </div>
                 ))}
               </div>
@@ -170,11 +170,11 @@ export default function ExecutivePage() {
         {/* AI Operational Brief */}
         <div>
           <div className="flex items-center gap-3 mb-3">
-            <h2 className="text-sm font-semibold text-gray-900">AI Operational Brief</h2>
+            <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">AI Operational Brief</h2>
             <select
               value={selectedZoneId}
               onChange={(e) => setSelectedZoneId(e.target.value)}
-              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 bg-white"
+              className="text-sm border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
             >
               <option value="">Select corridor…</option>
               {liveState.zones.map((z) => (
@@ -185,8 +185,8 @@ export default function ExecutivePage() {
           {aiBriefRequest ? (
             <AIBriefPanel request={aiBriefRequest} />
           ) : (
-            <div className="bg-white border border-gray-200 rounded-lg p-5">
-              <p className="text-sm text-gray-400">Select a corridor above to generate an AI operational brief.</p>
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+              <p className="text-sm text-gray-400 dark:text-gray-500">Select a corridor above to generate an AI operational brief.</p>
             </div>
           )}
           {selectedZone && escalationOutput && (
@@ -201,7 +201,7 @@ export default function ExecutivePage() {
         <div className="flex justify-end">
           <button
             onClick={() => exportExecutiveSummaryJSON(rollup)}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             Export Summary JSON
           </button>

@@ -48,19 +48,19 @@ export default function SystemHealthPanel({ liveState }: SystemHealthPanelProps)
   ];
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-5">
-      <h3 className="text-sm font-semibold text-gray-900 mb-4">System Health</h3>
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">System Health</h3>
       <div className="space-y-3">
         {items.map((item) => (
-          <div key={item.label} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+          <div key={item.label} className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800 last:border-0">
             <div className="flex items-center gap-2.5">
               <span className={`w-2 h-2 rounded-full ${item.ok ? "bg-green-500" : "bg-red-500"}`} />
               <div>
-                <span className="text-sm font-medium text-gray-900">{item.label}</span>
-                <span className="text-xs text-gray-400 ml-2">{item.detail}</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.label}</span>
+                <span className="text-xs text-gray-400 dark:text-gray-500 ml-2">{item.detail}</span>
               </div>
             </div>
-            <span className={`text-sm font-mono ${item.ok ? "text-gray-600" : "text-red-600 font-semibold"}`}>
+            <span className={`text-sm font-mono ${item.ok ? "text-gray-600 dark:text-gray-400" : "text-red-600 dark:text-red-400 font-semibold"}`}>
               {item.value}
             </span>
           </div>

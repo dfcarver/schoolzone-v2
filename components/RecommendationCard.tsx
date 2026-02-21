@@ -18,7 +18,7 @@ export default function RecommendationCard({
   onApply,
 }: RecommendationCardProps) {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
@@ -27,19 +27,19 @@ export default function RecommendationCard({
             >
               {recommendation.priority}
             </span>
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-gray-400 dark:text-gray-500">
               Confidence: {(recommendation.confidence * 100).toFixed(0)}%
             </span>
           </div>
-          <p className="text-sm font-medium text-gray-900 mb-1">
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
             {recommendation.action}
           </p>
-          <p className="text-xs text-gray-500">{recommendation.impact}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{recommendation.impact}</p>
         </div>
         {onApply && (
           <button
             onClick={() => onApply(recommendation.id)}
-            className="shrink-0 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors"
+            className="shrink-0 px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
           >
             Apply (Demo)
           </button>

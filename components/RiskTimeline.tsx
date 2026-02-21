@@ -40,8 +40,8 @@ export default function RiskTimeline({ zoneName }: RiskTimelineProps) {
   }));
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-5">
-      <h3 className="text-sm font-semibold text-gray-900 mb-4">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">
         Risk Timeline {zoneName ? `— ${zoneName}` : ""}
       </h3>
       <div className="h-48">
