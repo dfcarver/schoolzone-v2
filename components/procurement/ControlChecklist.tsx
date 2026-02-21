@@ -10,26 +10,26 @@ interface ControlChecklistProps {
 export default function ControlChecklist({ data }: ControlChecklistProps) {
   return (
     <div className="space-y-6">
-      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-100 bg-gray-50">
-              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 uppercase tracking-wider w-12">ID</th>
-              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 uppercase tracking-wider w-32">Domain</th>
-              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Control Statement</th>
-              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 uppercase tracking-wider w-48">Mechanism</th>
-              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 uppercase tracking-wider w-44">Evidence</th>
-              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 uppercase tracking-wider w-28">Status</th>
+            <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800">
+              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-12">ID</th>
+              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-32">Domain</th>
+              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Control Statement</th>
+              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-48">Mechanism</th>
+              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-44">Evidence</th>
+              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-28">Status</th>
             </tr>
           </thead>
           <tbody>
             {data.controls.map((ctrl) => (
-              <tr key={ctrl.id} className="border-b border-gray-50 last:border-0 align-top">
-                <td className="py-3 px-4 font-mono text-[10px] text-gray-400">{ctrl.id}</td>
-                <td className="py-3 px-4 text-xs font-medium text-gray-900">{ctrl.domain}</td>
-                <td className="py-3 px-4 text-xs text-gray-700 leading-relaxed">{ctrl.statement}</td>
-                <td className="py-3 px-4 text-xs text-gray-500 leading-relaxed">{ctrl.mechanism}</td>
-                <td className="py-3 px-4 text-xs text-gray-500 leading-relaxed">{ctrl.evidence}</td>
+              <tr key={ctrl.id} className="border-b border-gray-50 dark:border-gray-800 last:border-0 align-top">
+                <td className="py-3 px-4 font-mono text-[10px] text-gray-400 dark:text-gray-500">{ctrl.id}</td>
+                <td className="py-3 px-4 text-xs font-medium text-gray-900 dark:text-gray-100">{ctrl.domain}</td>
+                <td className="py-3 px-4 text-xs text-gray-700 dark:text-gray-300 leading-relaxed">{ctrl.statement}</td>
+                <td className="py-3 px-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{ctrl.mechanism}</td>
+                <td className="py-3 px-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{ctrl.evidence}</td>
                 <td className="py-3 px-4">
                   <PillBadge label={ctrl.status} />
                 </td>

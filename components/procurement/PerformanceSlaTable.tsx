@@ -9,27 +9,27 @@ interface PerformanceSlaTableProps {
 export default function PerformanceSlaTable({ data }: PerformanceSlaTableProps) {
   return (
     <div className="space-y-6">
-      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-100 bg-gray-50">
-              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 uppercase tracking-wider w-12">ID</th>
-              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Metric</th>
-              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 uppercase tracking-wider w-32">Target</th>
-              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 uppercase tracking-wider w-28">Current</th>
-              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 uppercase tracking-wider w-20">Unit</th>
-              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Notes</th>
+            <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800">
+              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-12">ID</th>
+              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Metric</th>
+              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-32">Target</th>
+              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-28">Current</th>
+              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-20">Unit</th>
+              <th className="text-left py-3 px-4 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Notes</th>
             </tr>
           </thead>
           <tbody>
             {data.metrics.map((m) => (
-              <tr key={m.id} className="border-b border-gray-50 last:border-0 align-top">
-                <td className="py-3 px-4 font-mono text-[10px] text-gray-400">{m.id}</td>
-                <td className="py-3 px-4 text-xs font-medium text-gray-900">{m.metric}</td>
-                <td className="py-3 px-4 text-xs font-mono text-gray-700">{m.target}</td>
+              <tr key={m.id} className="border-b border-gray-50 dark:border-gray-800 last:border-0 align-top">
+                <td className="py-3 px-4 font-mono text-[10px] text-gray-400 dark:text-gray-500">{m.id}</td>
+                <td className="py-3 px-4 text-xs font-medium text-gray-900 dark:text-gray-100">{m.metric}</td>
+                <td className="py-3 px-4 text-xs font-mono text-gray-700 dark:text-gray-300">{m.target}</td>
                 <td className="py-3 px-4 text-xs font-mono text-emerald-700 font-semibold">{m.current}</td>
                 <td className="py-3 px-4 text-[10px] text-gray-400">{m.unit}</td>
-                <td className="py-3 px-4 text-xs text-gray-500 leading-relaxed">{m.notes}</td>
+                <td className="py-3 px-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{m.notes}</td>
               </tr>
             ))}
           </tbody>
