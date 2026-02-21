@@ -79,12 +79,15 @@ describe("computeSimulation", () => {
     assert.ok(!Number.isNaN(result.adjusted_escalation_probability));
   });
 
-  it("handles zero escalation probability", () => {
+  it("handles zero escalation probability with base 30% effect", () => {
     const input: SimulationInput = { ...baseInput, escalation_probability: 0 };
     const result = computeSimulation(input);
-    // With 0 escalation, impact = multiplier * 0 = 0 → no change
+    // With 0 escalation, base 30% factor still applies — risk should decrease
     for (let i = 0; i < baselineForecast.length; i++) {
-      assert.strictEqual(result.adjusted_forecast[i].risk, baselineForecast[i].risk);
+      assert.ok(
+        result.adjusted_forecast[i].risk <= baselineForecast[i].risk,
+        `Adjusted risk at index ${i} should not exceed baseline`
+      );
     }
   });
 

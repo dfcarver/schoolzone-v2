@@ -18,11 +18,13 @@ export function computeSimulation(input: SimulationInput): SimulationOutput {
 
   const impact_coefficient = INTERVENTION_MULTIPLIERS[intervention_type];
 
-  // Adjust each forecast point — reduce predicted risk by impact * escalation
+  // Adjust each forecast point — reduce predicted risk proportional to current risk,
+  // modulated by escalation probability (base 30% effect + 70% scaled by escalation)
+  const escalation_factor = 0.3 + 0.7 * escalation_probability;
   const adjusted_forecast: ForecastPoint[] = baseline_forecast.map((point) => ({
     ...point,
     risk: clamp01(
-      point.risk - impact_coefficient * escalation_probability
+      point.risk - impact_coefficient * point.risk * escalation_factor
     ),
   }));
 
