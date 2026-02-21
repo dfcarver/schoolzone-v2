@@ -44,7 +44,7 @@ export default function IntegrationPage() {
             <div className="flex justify-end">
               <button
                 onClick={() => exportProcurementJSON(data, "integration")}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
                 Export JSON
               </button>
