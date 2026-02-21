@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useLiveState } from "@/lib/useLiveState";
 import Topbar from "@/components/Topbar";
 import ExecutiveKPI from "@/components/ExecutiveKPI";
 import RiskHeatmap from "@/components/RiskHeatmap";
 import ExecImpactPanel from "@/components/ExecImpactPanel";
+import AIBriefPanel from "@/components/ai/AIBriefPanel";
 import { PageSkeleton } from "@/components/Skeleton";
 import ErrorState from "@/components/ErrorState";
 import {
@@ -16,6 +17,7 @@ import {
   deriveDriftStatus,
 } from "@/lib/rollups";
 import { exportExecutiveSummaryJSON } from "@/lib/export";
+import { buildAIBriefRequest } from "@/lib/ai/buildRequest";
 
 export default function ExecutivePage() {
   const { liveState, loading, error, lastValidation } = useLiveState();
@@ -40,6 +42,20 @@ export default function ExecutivePage() {
     if (!liveState) return [];
     return computeActiveMitigations(liveState);
   }, [liveState]);
+
+  const [selectedZoneId, setSelectedZoneId] = useState<string>("");
+
+  const driftStatus = useMemo(() => {
+    if (!liveState) return "NORMAL" as const;
+    return deriveDriftStatus(liveState);
+  }, [liveState]);
+
+  const aiBriefRequest = useMemo(() => {
+    if (!liveState || !selectedZoneId) return null;
+    const zone = liveState.zones.find((z) => z.zone_id === selectedZoneId);
+    if (!zone) return null;
+    return buildAIBriefRequest(zone, driftStatus);
+  }, [liveState, selectedZoneId, driftStatus]);
 
   if (loading) return <PageSkeleton />;
   if (error || !liveState || !rollup) return <ErrorState message={error ?? "Demo Data Unavailable"} />;
@@ -137,6 +153,30 @@ export default function ExecutivePage() {
 
         {/* Impact Panel */}
         <ExecImpactPanel liveState={liveState} />
+
+        {/* AI Operational Brief */}
+        <div>
+          <div className="flex items-center gap-3 mb-3">
+            <h2 className="text-sm font-semibold text-gray-900">AI Operational Brief</h2>
+            <select
+              value={selectedZoneId}
+              onChange={(e) => setSelectedZoneId(e.target.value)}
+              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 bg-white"
+            >
+              <option value="">Select corridor…</option>
+              {liveState.zones.map((z) => (
+                <option key={z.zone_id} value={z.zone_id}>{z.name}</option>
+              ))}
+            </select>
+          </div>
+          {aiBriefRequest ? (
+            <AIBriefPanel request={aiBriefRequest} />
+          ) : (
+            <div className="bg-white border border-gray-200 rounded-lg p-5">
+              <p className="text-sm text-gray-400">Select a corridor above to generate an AI operational brief.</p>
+            </div>
+          )}
+        </div>
 
         {/* Export */}
         <div className="flex justify-end">

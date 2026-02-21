@@ -10,8 +10,11 @@ import ForecastChart from "@/components/ForecastChart";
 import RiskTimeline from "@/components/RiskTimeline";
 import RecommendationCard from "@/components/RecommendationCard";
 import InterventionsTable from "@/components/InterventionsTable";
+import AIBriefPanel from "@/components/ai/AIBriefPanel";
 import { PageSkeleton } from "@/components/Skeleton";
 import ErrorState from "@/components/ErrorState";
+import { deriveDriftStatus } from "@/lib/rollups";
+import { buildAIBriefRequest } from "@/lib/ai/buildRequest";
 
 const RISK_BADGE: Record<RiskLevel, string> = {
   [RiskLevel.LOW]: "bg-green-100 text-green-700",
@@ -28,6 +31,12 @@ export default function OpsZoneDetailPage() {
     () => liveState?.zones.find((z) => z.zone_id === zoneId) ?? null,
     [liveState, zoneId]
   );
+
+  const aiBriefRequest = useMemo(() => {
+    if (!liveState || !zone) return null;
+    const drift = deriveDriftStatus(liveState);
+    return buildAIBriefRequest(zone, drift);
+  }, [liveState, zone]);
 
   const handleApply = useCallback(
     (recId: string) => {
@@ -113,6 +122,8 @@ export default function OpsZoneDetailPage() {
             </div>
           )}
         </div>
+
+        {aiBriefRequest && <AIBriefPanel request={aiBriefRequest} />}
       </div>
     </div>
   );
