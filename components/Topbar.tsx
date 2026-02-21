@@ -26,7 +26,7 @@ function formatTime(iso: string): string {
 
 export default function Topbar({ snapshotId, timestamp, title = "Operations Console" }: TopbarProps) {
   const { config, updateConfig } = useDemoConfig();
-  const { session } = useAuth();
+  const { session, logout } = useAuth();
   const formattedTime = timestamp ? formatTime(timestamp) : "--:--:--";
 
   return (
@@ -77,7 +77,18 @@ export default function Topbar({ snapshotId, timestamp, title = "Operations Cons
         </button>
         <span className="text-xs font-mono text-gray-600">{formattedTime}</span>
         {session && (
-          <span className="text-xs text-gray-500 border-l border-gray-200 pl-4 capitalize">{session.username}</span>
+          <div className="flex items-center gap-3 border-l border-gray-200 pl-4">
+            <span className="text-xs text-gray-500 capitalize">{session.username}</span>
+            <button
+              onClick={logout}
+              className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md border border-gray-200 text-gray-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Sign Out
+            </button>
+          </div>
         )}
       </div>
     </header>
