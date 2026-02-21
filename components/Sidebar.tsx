@@ -3,21 +3,25 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { isAuthorizedForPath } from "@/lib/auth/types";
 
 interface NavSection {
   title: string;
+  routePrefix: string;
   items: { href: string; label: string; icon: string }[];
 }
 
 const NAV_SECTIONS: NavSection[] = [
   {
     title: "Executive",
+    routePrefix: "/executive",
     items: [
       { href: "/executive", label: "Command Brief", icon: "briefcase" },
     ],
   },
   {
     title: "Procurement Pack",
+    routePrefix: "/executive",
     items: [
       { href: "/executive/procurement/architecture", label: "Architecture", icon: "layers" },
       { href: "/executive/procurement/security", label: "Security & Compliance", icon: "shield" },
@@ -29,6 +33,7 @@ const NAV_SECTIONS: NavSection[] = [
   },
   {
     title: "Operations",
+    routePrefix: "/operations",
     items: [
       { href: "/operations/dashboard", label: "Dashboard", icon: "grid" },
       { href: "/operations/queue", label: "Work Queue", icon: "queue" },
@@ -36,6 +41,7 @@ const NAV_SECTIONS: NavSection[] = [
   },
   {
     title: "Governance",
+    routePrefix: "/governance",
     items: [
       { href: "/governance/incidents", label: "Incidents", icon: "alert" },
       { href: "/governance/controls", label: "Controls", icon: "shield" },
@@ -139,7 +145,7 @@ export default function Sidebar() {
         </Link>
       </div>
       <nav className="flex-1 px-3 py-3 space-y-4 overflow-y-auto">
-        {NAV_SECTIONS.map((section) => (
+        {NAV_SECTIONS.filter((section) => session ? isAuthorizedForPath(session.role, section.routePrefix) : false).map((section) => (
           <div key={section.title}>
             <p className="px-3 mb-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
               {section.title}
