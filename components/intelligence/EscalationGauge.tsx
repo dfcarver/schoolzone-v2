@@ -30,9 +30,9 @@ export default function EscalationGauge({ output, driftStatus }: EscalationGauge
   const badge = DRIFT_BADGE[driftStatus];
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-5">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-900">Escalation Probability</h3>
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Escalation Probability</h3>
         <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${badge.className}`}>
           {badge.label}
         </span>
@@ -42,11 +42,11 @@ export default function EscalationGauge({ output, driftStatus }: EscalationGauge
         <span className={`text-3xl font-bold tabular-nums ${gaugeColor(output.escalation_probability)}`}>
           {pct}%
         </span>
-        <span className="text-xs text-gray-400 pb-1">escalation likelihood</span>
+        <span className="text-xs text-gray-400 dark:text-gray-500 pb-1">escalation likelihood</span>
       </div>
 
       {/* Bar gauge */}
-      <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden mb-4">
+      <div className="w-full h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden mb-4">
         <div
           className={`h-full rounded-full transition-all duration-500 ${barColor(output.escalation_probability)}`}
           style={{ width: `${pct}%` }}
@@ -56,20 +56,20 @@ export default function EscalationGauge({ output, driftStatus }: EscalationGauge
       {/* Component breakdown */}
       <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[11px]">
         <div className="flex justify-between">
-          <span className="text-gray-500">Risk Trend</span>
-          <span className="font-mono text-gray-700">{output.components.risk_trend >= 0 ? "+" : ""}{output.components.risk_trend.toFixed(3)}</span>
+          <span className="text-gray-500 dark:text-gray-400">Risk Trend</span>
+          <span className="font-mono text-gray-700 dark:text-gray-300">{output.components.risk_trend >= 0 ? "+" : ""}{output.components.risk_trend.toFixed(3)}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-500">Congestion Trend</span>
-          <span className="font-mono text-gray-700">{output.components.congestion_trend >= 0 ? "+" : ""}{output.components.congestion_trend.toFixed(3)}</span>
+          <span className="text-gray-500 dark:text-gray-400">Congestion Trend</span>
+          <span className="font-mono text-gray-700 dark:text-gray-300">{output.components.congestion_trend >= 0 ? "+" : ""}{output.components.congestion_trend.toFixed(3)}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-500">Drift Weight</span>
-          <span className="font-mono text-gray-700">{output.components.drift_weight.toFixed(2)}</span>
+          <span className="text-gray-500 dark:text-gray-400">Drift Weight</span>
+          <span className="font-mono text-gray-700 dark:text-gray-300">{output.components.drift_weight.toFixed(2)}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-500">Confidence Factor</span>
-          <span className="font-mono text-gray-700">{output.components.confidence_factor.toFixed(3)}</span>
+          <span className="text-gray-500 dark:text-gray-400">Confidence Factor</span>
+          <span className="font-mono text-gray-700 dark:text-gray-300">{output.components.confidence_factor.toFixed(3)}</span>
         </div>
       </div>
     </div>

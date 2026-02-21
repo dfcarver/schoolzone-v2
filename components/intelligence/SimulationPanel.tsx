@@ -38,9 +38,9 @@ export default function SimulationPanel({ baselineForecast, escalationProbabilit
   }, [baselineForecast, result]);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-5">
-      <h3 className="text-sm font-semibold text-gray-900 mb-1">What-If Simulation</h3>
-      <p className="text-[11px] text-gray-400 mb-4">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">What-If Simulation</h3>
+      <p className="text-[11px] text-gray-400 dark:text-gray-500 mb-4">
         Simulate intervention impact on forecast. No canonical state is mutated.
       </p>
 
@@ -48,7 +48,7 @@ export default function SimulationPanel({ baselineForecast, escalationProbabilit
         <select
           value={selectedType}
           onChange={(e) => { setSelectedType(e.target.value as InterventionType); setResult(null); }}
-          className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 bg-white"
+          className="text-sm border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
         >
           {INTERVENTION_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -66,7 +66,7 @@ export default function SimulationPanel({ baselineForecast, escalationProbabilit
         <div className="space-y-5">
           {/* Before/After Chart */}
           <div>
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Forecast Comparison</p>
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Forecast Comparison</p>
             <div className="space-y-1.5">
               {baselineForecast.map((bp, i) => {
                 const ap = result.adjusted_forecast[i];
@@ -96,10 +96,10 @@ export default function SimulationPanel({ baselineForecast, escalationProbabilit
           </div>
 
           {/* Metrics */}
-          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100 dark:border-gray-800">
             <div>
-              <p className="text-[10px] text-gray-500 mb-0.5">Escalation Delta</p>
-              <p className="text-sm font-bold text-gray-900">
+              <p className="text-[10px] text-gray-500 dark:text-gray-400 mb-0.5">Escalation Delta</p>
+              <p className="text-sm font-bold text-gray-900 dark:text-gray-100">
                 {escalationProbability > 0 ? (
                   <span className="text-emerald-600">
                     {((result.adjusted_escalation_probability - escalationProbability) * 100).toFixed(1)}%
@@ -110,14 +110,14 @@ export default function SimulationPanel({ baselineForecast, escalationProbabilit
               </p>
             </div>
             <div>
-              <p className="text-[10px] text-gray-500 mb-0.5">Risk Delta (Avg)</p>
+              <p className="text-[10px] text-gray-500 dark:text-gray-400 mb-0.5">Risk Delta (Avg)</p>
               <p className="text-sm font-bold text-emerald-600">
                 {(result.risk_delta * 100).toFixed(1)}%
               </p>
             </div>
             <div>
-              <p className="text-[10px] text-gray-500 mb-0.5">New Escalation</p>
-              <p className="text-sm font-bold text-gray-900">
+              <p className="text-[10px] text-gray-500 dark:text-gray-400 mb-0.5">New Escalation</p>
+              <p className="text-sm font-bold text-gray-900 dark:text-gray-100">
                 {(result.adjusted_escalation_probability * 100).toFixed(1)}%
               </p>
             </div>
@@ -126,7 +126,7 @@ export default function SimulationPanel({ baselineForecast, escalationProbabilit
       )}
 
       {!result && baselineForecast.length === 0 && (
-        <p className="text-sm text-gray-400">No forecast data available for simulation.</p>
+        <p className="text-sm text-gray-400 dark:text-gray-500">No forecast data available for simulation.</p>
       )}
     </div>
   );

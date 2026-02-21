@@ -42,11 +42,11 @@ export default function AIBriefPanel({ request }: AIBriefPanelProps) {
   }, [request]);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-5">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-sm font-semibold text-gray-900">AI Operational Brief</h3>
-          <p className="text-[11px] text-gray-400 mt-0.5">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">AI Operational Brief</h3>
+          <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
             {request.corridor_name} — {request.drift_status} drift status
           </p>
         </div>
@@ -60,17 +60,17 @@ export default function AIBriefPanel({ request }: AIBriefPanelProps) {
       </div>
 
       {state.status === "idle" && (
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-gray-400 dark:text-gray-500">
           Select &ldquo;Generate Brief&rdquo; to produce an AI-powered operational assessment for this corridor.
         </p>
       )}
 
       {state.status === "loading" && (
         <div className="space-y-3 animate-pulse">
-          <div className="h-4 bg-gray-100 rounded w-full" />
-          <div className="h-4 bg-gray-100 rounded w-5/6" />
-          <div className="h-4 bg-gray-100 rounded w-4/6" />
-          <div className="h-3 bg-gray-50 rounded w-3/6 mt-4" />
+          <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-full" />
+          <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-5/6" />
+          <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-4/6" />
+          <div className="h-3 bg-gray-50 dark:bg-gray-800 rounded w-3/6 mt-4" />
         </div>
       )}
 
@@ -85,19 +85,19 @@ export default function AIBriefPanel({ request }: AIBriefPanelProps) {
         <div className="space-y-5">
           {/* Executive Summary */}
           <div>
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Executive Summary</p>
-            <p className="text-sm text-gray-700 leading-relaxed">{state.data.executive_summary}</p>
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Executive Summary</p>
+            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{state.data.executive_summary}</p>
           </div>
 
           {/* Drivers */}
           {state.data.drivers.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Key Drivers</p>
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Key Drivers</p>
               <div className="space-y-2">
                 {state.data.drivers.map((d, i) => (
-                  <div key={i} className="border border-gray-100 rounded-lg p-3">
-                    <p className="text-xs font-medium text-gray-900">{d.label}</p>
-                    <p className="text-[11px] text-gray-500 mt-0.5">{d.evidence}</p>
+                  <div key={i} className="border border-gray-100 dark:border-gray-800 rounded-lg p-3">
+                    <p className="text-xs font-medium text-gray-900 dark:text-gray-100">{d.label}</p>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{d.evidence}</p>
                   </div>
                 ))}
               </div>
@@ -106,21 +106,21 @@ export default function AIBriefPanel({ request }: AIBriefPanelProps) {
 
           {/* Recommendation */}
           <div className="border border-emerald-200 bg-emerald-50/50 rounded-lg p-4">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Recommendation</p>
-            <p className="text-sm font-medium text-gray-900">{state.data.recommendation.action}</p>
-            <p className="text-xs text-gray-600 mt-1">{state.data.recommendation.rationale}</p>
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Recommendation</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{state.data.recommendation.action}</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{state.data.recommendation.rationale}</p>
             <p className="text-xs text-emerald-700 mt-1.5">Expected impact: {state.data.recommendation.expected_impact}</p>
           </div>
 
           {/* Caveats */}
           {state.data.caveats.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Caveats</p>
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Caveats</p>
               <div className="space-y-1">
                 {state.data.caveats.map((c, i) => (
                   <div key={i} className="flex items-start gap-2">
                     <span className="text-amber-500 shrink-0 mt-0.5 text-xs">&bull;</span>
-                    <p className="text-xs text-gray-500">{c}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{c}</p>
                   </div>
                 ))}
               </div>
@@ -128,7 +128,7 @@ export default function AIBriefPanel({ request }: AIBriefPanelProps) {
           )}
 
           {/* Footer: Confidence + Correlation ID */}
-          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+          <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800">
             <span className="text-[10px] text-gray-400">
               Confidence: {(state.data.confidence * 100).toFixed(0)}%
             </span>
@@ -140,7 +140,7 @@ export default function AIBriefPanel({ request }: AIBriefPanelProps) {
           </div>
 
           {/* Explain Why */}
-          <div className="border-t border-gray-100 pt-3">
+          <div className="border-t border-gray-100 dark:border-gray-800 pt-3">
             <button
               onClick={() => setExplainOpen((prev) => !prev)}
               className="flex items-center gap-1.5 text-[11px] font-medium text-gray-400 hover:text-gray-600 transition-colors"
@@ -158,8 +158,8 @@ export default function AIBriefPanel({ request }: AIBriefPanelProps) {
             {explainOpen && (
               <div className="mt-3 space-y-3 text-[11px] text-gray-500">
                 <div>
-                  <p className="font-semibold text-gray-600 mb-1">Input Context</p>
-                  <div className="bg-gray-50 border border-gray-100 rounded-lg p-3 space-y-1 font-mono text-[10px]">
+                  <p className="font-semibold text-gray-600 dark:text-gray-400 mb-1">Input Context</p>
+                  <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg p-3 space-y-1 font-mono text-[10px]">
                     <p>Corridor: {request.corridor_name} ({request.corridor_id})</p>
                     <p>Risk Score: {request.risk_score.toFixed(3)}</p>
                     <p>Congestion Index: {request.congestion_index}</p>

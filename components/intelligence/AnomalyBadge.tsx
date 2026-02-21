@@ -32,9 +32,9 @@ export default function AnomalyBadge({ output, densityDeviation, speedVariance, 
       </span>
 
       {showTooltip && (
-        <div className="absolute bottom-full left-0 mb-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-50">
-          <p className="text-[11px] font-semibold text-gray-700 mb-2">Anomaly Factors</p>
-          <div className="space-y-1 text-[10px] text-gray-500">
+        <div className="absolute bottom-full left-0 mb-2 w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 z-50">
+          <p className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-2">Anomaly Factors</p>
+          <div className="space-y-1 text-[10px] text-gray-500 dark:text-gray-400">
             {densityDeviation != null && (
               <div className="flex justify-between">
                 <span>Density Deviation</span>
@@ -53,7 +53,7 @@ export default function AnomalyBadge({ output, densityDeviation, speedVariance, 
                 <span className="font-mono">{bandViolation ? "Yes" : "No"}</span>
               </div>
             )}
-            <div className="flex justify-between pt-1 border-t border-gray-100 font-medium text-gray-700">
+            <div className="flex justify-between pt-1 border-t border-gray-100 dark:border-gray-800 font-medium text-gray-700 dark:text-gray-300">
               <span>Anomaly Score</span>
               <span className="font-mono">{output.anomaly_score.toFixed(3)}</span>
             </div>
