@@ -80,7 +80,7 @@ export default function ExecutivePage() {
         snapshotId={liveState.snapshot_id}
         timestamp={liveState.timestamp}
       />
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
         {/* KPI Row */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <ExecutiveKPI

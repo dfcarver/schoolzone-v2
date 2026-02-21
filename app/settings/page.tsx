@@ -25,7 +25,7 @@ export default function SettingsPage() {
   return (
     <div className="flex flex-col h-screen">
       <Topbar title="Settings" />
-      <div className="flex-1 overflow-y-auto p-6 space-y-8 max-w-2xl">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-8 max-w-2xl">
         <h1 className="text-xl font-semibold text-gray-900">Demo Settings</h1>
 
         {/* Scenario */}

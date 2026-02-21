@@ -84,7 +84,7 @@ export default function OpsZoneDetailPage() {
   return (
     <div className="flex flex-col h-screen">
       <Topbar title="Zone Operations" snapshotId={liveState.snapshot_id} timestamp={liveState.timestamp} />
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
         <div className="flex items-center gap-3">
           <Link href="/operations/dashboard" className="text-sm text-gray-400 hover:text-gray-600">Dashboard</Link>
           <span className="text-gray-300">/</span>

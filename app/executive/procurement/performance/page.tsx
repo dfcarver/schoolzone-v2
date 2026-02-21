@@ -36,7 +36,7 @@ export default function PerformancePage() {
   return (
     <div className="flex flex-col h-screen">
       <Topbar title="Procurement — Performance & SLA" />
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6">
         <SectionHeader title={data.title} subtitle={data.subtitle} />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">

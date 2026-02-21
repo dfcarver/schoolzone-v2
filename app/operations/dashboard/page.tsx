@@ -35,7 +35,7 @@ export default function OperationsDashboardPage() {
         snapshotId={liveState.snapshot_id}
         timestamp={liveState.timestamp}
       />
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           <KPI
             label="District Risk"

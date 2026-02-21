@@ -34,7 +34,7 @@ export default function ControlsPage() {
   return (
     <div className="flex flex-col h-screen">
       <Topbar title="Governance — Controls" snapshotId={liveState.snapshot_id} timestamp={liveState.timestamp} />
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
         <h1 className="text-xl font-semibold text-gray-900">Controls & Compliance</h1>
 
         {/* Status Cards */}

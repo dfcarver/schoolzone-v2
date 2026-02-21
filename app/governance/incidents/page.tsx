@@ -66,7 +66,7 @@ export default function GovernanceIncidentsPage() {
   return (
     <div className="flex flex-col h-screen">
       <Topbar title="Governance — Incidents" />
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold text-gray-900">Incidents</h1>
           <div className="flex items-center gap-3">
@@ -93,8 +93,8 @@ export default function GovernanceIncidentsPage() {
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-white border border-gray-200 rounded-lg overflow-x-auto">
+          <table className="w-full text-sm min-w-[600px]">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
                 <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">ID</th>
