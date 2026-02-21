@@ -18,6 +18,7 @@ export interface AIBriefRequest {
     proposed_action?: string;
     predicted_risk_delta?: number;
   }>;
+  escalation_probability?: number;
 }
 
 export interface AIBriefResponseDriver {

@@ -11,10 +11,16 @@ import RiskTimeline from "@/components/RiskTimeline";
 import RecommendationCard from "@/components/RecommendationCard";
 import InterventionsTable from "@/components/InterventionsTable";
 import AIBriefPanel from "@/components/ai/AIBriefPanel";
+import EscalationGauge from "@/components/intelligence/EscalationGauge";
+import AnomalyBadge from "@/components/intelligence/AnomalyBadge";
+import SimulationPanel from "@/components/intelligence/SimulationPanel";
 import { PageSkeleton } from "@/components/Skeleton";
 import ErrorState from "@/components/ErrorState";
 import { deriveDriftStatus } from "@/lib/rollups";
 import { buildAIBriefRequest } from "@/lib/ai/buildRequest";
+import { computeEscalation } from "@/lib/engines/escalation";
+import { computeAnomaly } from "@/lib/engines/anomaly";
+import { buildEscalationInput, buildAnomalyInput } from "@/lib/engines/buildInputs";
 
 const RISK_BADGE: Record<RiskLevel, string> = {
   [RiskLevel.LOW]: "bg-green-100 text-green-700",
@@ -32,11 +38,25 @@ export default function OpsZoneDetailPage() {
     [liveState, zoneId]
   );
 
+  const driftStatus = useMemo(() => {
+    if (!liveState) return "NORMAL" as const;
+    return deriveDriftStatus(liveState);
+  }, [liveState]);
+
+  const escalationOutput = useMemo(() => {
+    if (!zone) return null;
+    return computeEscalation(buildEscalationInput(zone, driftStatus));
+  }, [zone, driftStatus]);
+
   const aiBriefRequest = useMemo(() => {
     if (!liveState || !zone) return null;
-    const drift = deriveDriftStatus(liveState);
-    return buildAIBriefRequest(zone, drift);
-  }, [liveState, zone]);
+    return buildAIBriefRequest(zone, driftStatus, escalationOutput?.escalation_probability);
+  }, [liveState, zone, driftStatus, escalationOutput]);
+
+  const anomalyOutput = useMemo(() => {
+    if (!zone) return null;
+    return computeAnomaly(buildAnomalyInput(zone));
+  }, [zone]);
 
   const handleApply = useCallback(
     (recId: string) => {
@@ -77,6 +97,9 @@ export default function OpsZoneDetailPage() {
             <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${RISK_BADGE[zone.risk_level]}`}>
               {zone.risk_level} RISK
             </span>
+            {anomalyOutput && anomalyOutput.anomaly_score >= 0.3 && (
+              <AnomalyBadge output={anomalyOutput} />
+            )}
           </div>
           <div className="flex items-center gap-4 text-sm text-gray-500">
             <span>Score: {(zone.risk_score * 100).toFixed(0)}%</span>
@@ -122,6 +145,13 @@ export default function OpsZoneDetailPage() {
             </div>
           )}
         </div>
+
+        {escalationOutput && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <EscalationGauge output={escalationOutput} driftStatus={driftStatus === "DRIFT" ? "CRITICAL" : driftStatus} />
+            <SimulationPanel baselineForecast={zone.forecast_30m} escalationProbability={escalationOutput.escalation_probability} />
+          </div>
+        )}
 
         {aiBriefRequest && <AIBriefPanel request={aiBriefRequest} />}
       </div>

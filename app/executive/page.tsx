@@ -18,6 +18,10 @@ import {
 } from "@/lib/rollups";
 import { exportExecutiveSummaryJSON } from "@/lib/export";
 import { buildAIBriefRequest } from "@/lib/ai/buildRequest";
+import { computeEscalation } from "@/lib/engines/escalation";
+import { buildEscalationInput } from "@/lib/engines/buildInputs";
+import EscalationGauge from "@/components/intelligence/EscalationGauge";
+import SimulationPanel from "@/components/intelligence/SimulationPanel";
 
 export default function ExecutivePage() {
   const { liveState, loading, error, lastValidation } = useLiveState();
@@ -50,12 +54,21 @@ export default function ExecutivePage() {
     return deriveDriftStatus(liveState);
   }, [liveState]);
 
-  const aiBriefRequest = useMemo(() => {
+  const selectedZone = useMemo(() => {
     if (!liveState || !selectedZoneId) return null;
-    const zone = liveState.zones.find((z) => z.zone_id === selectedZoneId);
-    if (!zone) return null;
-    return buildAIBriefRequest(zone, driftStatus);
-  }, [liveState, selectedZoneId, driftStatus]);
+    return liveState.zones.find((z) => z.zone_id === selectedZoneId) ?? null;
+  }, [liveState, selectedZoneId]);
+
+  const escalationOutput = useMemo(() => {
+    if (!selectedZone) return null;
+    const input = buildEscalationInput(selectedZone, driftStatus);
+    return computeEscalation(input);
+  }, [selectedZone, driftStatus]);
+
+  const aiBriefRequest = useMemo(() => {
+    if (!selectedZone) return null;
+    return buildAIBriefRequest(selectedZone, driftStatus, escalationOutput?.escalation_probability);
+  }, [selectedZone, driftStatus, escalationOutput]);
 
   if (loading) return <PageSkeleton />;
   if (error || !liveState || !rollup) return <ErrorState message={error ?? "Demo Data Unavailable"} />;
@@ -174,6 +187,12 @@ export default function ExecutivePage() {
           ) : (
             <div className="bg-white border border-gray-200 rounded-lg p-5">
               <p className="text-sm text-gray-400">Select a corridor above to generate an AI operational brief.</p>
+            </div>
+          )}
+          {selectedZone && escalationOutput && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+              <EscalationGauge output={escalationOutput} driftStatus={driftStatus === "DRIFT" ? "CRITICAL" : driftStatus} />
+              <SimulationPanel baselineForecast={selectedZone.forecast_30m} escalationProbability={escalationOutput.escalation_probability} />
             </div>
           )}
         </div>

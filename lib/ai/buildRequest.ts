@@ -20,7 +20,8 @@ function computeCongestionIndex(zone: ZoneLiveState): number {
 
 export function buildAIBriefRequest(
   zone: ZoneLiveState,
-  driftStatus: "NORMAL" | "WARNING" | "DRIFT"
+  driftStatus: "NORMAL" | "WARNING" | "DRIFT",
+  escalationProbability?: number
 ): AIBriefRequest {
   return {
     corridor_id: zone.zone_id,
@@ -39,5 +40,6 @@ export function buildAIBriefRequest(
       status: intv.status === "active" || intv.status === "completed" ? "APPROVED" as const : "PENDING" as const,
       proposed_action: intv.action,
     })),
+    escalation_probability: escalationProbability,
   };
 }

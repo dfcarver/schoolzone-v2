@@ -12,7 +12,7 @@ CONTEXT:
 - Corridor: ${request.corridor_name} (${request.corridor_id})
 - Current Drift Status: ${request.drift_status}
 - Current Risk Score: ${request.risk_score} (0.0–1.0 scale)
-- Current Congestion Index: ${request.congestion_index}
+- Current Congestion Index: ${request.congestion_index}${request.escalation_probability != null ? `\n- Escalation Probability: ${(request.escalation_probability * 100).toFixed(1)}% (deterministic computation)` : ""}
 
 FORECAST DATA (next 30 minutes):
 ${JSON.stringify(request.forecast, null, 2)}
