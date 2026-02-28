@@ -328,23 +328,27 @@ export default function CorridorMap() {
     pushNotification
   );
 
-  // Map navigation
+  // Map navigation lock — when true, school/polyline clicks won't pan or zoom the map
+  const [navLocked, setNavLocked] = useState(false);
+
   const navigateToSchool = useCallback((schoolId: string) => {
     setSelectedSchool(schoolId);
+    if (navLocked) return;
     const corridor = CORRIDORS.find((c) => c.id === schoolId);
     if (corridor && mapRef.current) {
       mapRef.current.panTo({ lat: corridor.school.lat, lng: corridor.school.lng });
       mapRef.current.setZoom(DEFAULT_ZOOM);
     }
-  }, []);
+  }, [navLocked]);
 
   const navigateToOverview = useCallback(() => {
     setSelectedSchool("");
+    if (navLocked) return;
     if (mapRef.current) {
       mapRef.current.panTo(OVERVIEW_CENTER);
       mapRef.current.setZoom(OVERVIEW_ZOOM);
     }
-  }, []);
+  }, [navLocked]);
 
   const onLoad = useCallback((map: google.maps.Map) => { mapRef.current = map; }, []);
   const onUnmount = useCallback(() => { mapRef.current = null; }, []);
@@ -540,17 +544,42 @@ export default function CorridorMap() {
             );
           })}
         </div>
-        <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-md p-0.5">
-          {MAP_VIEW_OPTIONS.map((opt) => (
-            <button key={opt.value}
-              onClick={() => setMapViewType(opt.value)}
-              className={`text-[10px] px-2.5 py-1 rounded transition-colors ${
-                mapViewType === opt.value
-                  ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-semibold shadow-sm"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-              }`}
-            >{opt.label}</button>
-          ))}
+        <div className="flex items-center gap-2">
+          {/* Map view toggle */}
+          <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-md p-0.5">
+            {MAP_VIEW_OPTIONS.map((opt) => (
+              <button key={opt.value}
+                onClick={() => setMapViewType(opt.value)}
+                className={`text-[10px] px-2.5 py-1 rounded transition-colors ${
+                  mapViewType === opt.value
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-semibold shadow-sm"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                }`}
+              >{opt.label}</button>
+            ))}
+          </div>
+
+          {/* Navigation lock */}
+          <button
+            onClick={() => setNavLocked((v) => !v)}
+            title={navLocked ? "Unlock map navigation — clicks will pan and zoom" : "Lock map position — clicks won't move the map"}
+            className={`flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-md border transition-colors ${
+              navLocked
+                ? "bg-amber-50 dark:bg-amber-950 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 font-semibold"
+                : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+            }`}
+          >
+            {navLocked ? (
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+              </svg>
+            ) : (
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 1C9.24 1 7 3.24 7 6v1H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2h-1V6c0-2.76-2.24-5-5-5zm0 2c1.66 0 3 1.34 3 3v1H9V6c0-1.66 1.34-3 3-3zm0 10c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z"/>
+              </svg>
+            )}
+            {navLocked ? "Locked" : "Lock"}
+          </button>
         </div>
       </div>
 
