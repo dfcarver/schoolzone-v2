@@ -36,15 +36,15 @@ export default function RiskHeatmap({ entries, linkPrefix = "/executive/zones" }
   }
 
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Portfolio Heatmap</h3>
-        <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-xs font-semibold text-gray-900 dark:text-gray-100">Portfolio Heatmap</h3>
+        <div className="flex items-center gap-0.5 bg-gray-100 dark:bg-gray-800 rounded-md p-0.5">
           {(["NOW", "+15", "+30"] as TimeHorizon[]).map((h) => (
             <button
               key={h}
               onClick={() => setHorizon(h)}
-              className={`text-xs font-medium px-3 py-1 rounded-md transition-colors ${
+              className={`text-[10px] font-medium px-2 py-0.5 rounded transition-colors ${
                 horizon === h
                   ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm"
                   : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
@@ -55,22 +55,22 @@ export default function RiskHeatmap({ entries, linkPrefix = "/executive/zones" }
           ))}
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1.5">
         {entries.map((entry) => {
           const risk = getRisk(entry);
           return (
             <button
               key={entry.zone_id}
               onClick={() => router.push(`${linkPrefix}/${entry.zone_id}`)}
-              className={`text-left border rounded-lg p-3 hover:shadow-md transition-shadow cursor-pointer ${riskBg(risk)}`}
+              className={`text-left border rounded-md p-1.5 hover:shadow-sm transition-shadow cursor-pointer ${riskBg(risk)}`}
             >
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{entry.name}</span>
-                <span className={`w-3 h-3 rounded-full ${riskColor(risk)}`} />
+              <div className="flex items-center justify-between mb-0.5">
+                <span className="text-[10px] font-medium text-gray-900 dark:text-gray-100 truncate leading-tight">{entry.name}</span>
+                <span className={`w-2 h-2 rounded-full shrink-0 ml-1 ${riskColor(risk)}`} />
               </div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{risk}%</div>
-              <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase mt-1">
-                Risk {horizon === "NOW" ? "Now" : `at ${horizon} min`}
+              <div className="text-base font-bold text-gray-900 dark:text-gray-100 leading-tight">{risk}%</div>
+              <div className="text-[9px] text-gray-500 dark:text-gray-400 uppercase mt-0.5">
+                {horizon === "NOW" ? "now" : `+${horizon.replace("+", "")}m`}
               </div>
             </button>
           );
