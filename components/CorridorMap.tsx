@@ -242,6 +242,15 @@ export default function CorridorMap() {
   const [mapViewType, setMapViewType] = useState<MapViewType>("hybrid");
   const [showMapPicker, setShowMapPicker] = useState(false);
 
+  // Derive a stable center object so the GoogleMap center prop only changes when the
+  // selected school actually changes. Without this, a new {lat,lng} object is created
+  // on every render and the library re-pans to the same hardcoded location every time.
+  const mapCenter = useMemo(() => {
+    if (!selectedSchool) return OVERVIEW_CENTER;
+    const c = CORRIDORS.find((x) => x.id === selectedSchool);
+    return c ? { lat: c.school.lat, lng: c.school.lng } : OVERVIEW_CENTER;
+  }, [selectedSchool]);
+
   // Feature flags
   const [features, setFeatures] = useState<MapFeatureFlags>({
     incidents: false, geofences: false, weather: false,
@@ -385,13 +394,6 @@ export default function CorridorMap() {
 
   const onLoad = useCallback((map: google.maps.Map) => { mapRef.current = map; }, []);
   const onUnmount = useCallback(() => { mapRef.current = null; }, []);
-
-  useEffect(() => {
-    if (!mapRef.current) return;
-    const first = CORRIDORS[0];
-    mapRef.current.panTo({ lat: first.school.lat, lng: first.school.lng });
-    mapRef.current.setZoom(DEFAULT_ZOOM);
-  }, [isLoaded]);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -704,7 +706,7 @@ export default function CorridorMap() {
       {/* Map */}
       <div className="h-[600px] rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700">
         <GoogleMap mapContainerStyle={MAP_CONTAINER_STYLE}
-          center={CORRIDORS[0] ? { lat: CORRIDORS[0].school.lat, lng: CORRIDORS[0].school.lng } : OVERVIEW_CENTER}
+          center={mapCenter}
           zoom={DEFAULT_ZOOM}
           onLoad={onLoad} onUnmount={onUnmount} options={getMapOptions(mapViewType)}>
 
