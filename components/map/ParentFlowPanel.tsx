@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
-import { computeParentFlow, ParentFlowSnapshot } from "@/lib/mapFeatures";
+import { useMemo, useState } from "react";
+import { computeParentFlow } from "@/lib/mapFeatures";
+import { formatTime } from "@/lib/hooks/useCongestionEngine";
 
 interface SchoolInfo {
   id: string;
@@ -13,7 +14,15 @@ interface SchoolInfo {
 interface ParentFlowPanelProps {
   schools: SchoolInfo[];
   timeMin: number;
+  dismissalOverrides: Record<string, number>;
+  onChangeDismissal: (schoolId: string, minuteOfDay: number) => void;
 }
+
+const DISMISSAL_DEFAULTS: Record<string, number> = {
+  elementary: 15 * 60,
+  middle: 15 * 60 + 15,
+  high: 15 * 60 + 30,
+};
 
 function queueColor(length: number, enrollment: number): string {
   const ratio = length / (enrollment * 0.65);
@@ -23,13 +32,26 @@ function queueColor(length: number, enrollment: number): string {
   return "#22c55e";
 }
 
-export default function ParentFlowPanel({ schools, timeMin }: ParentFlowPanelProps) {
+export default function ParentFlowPanel({
+  schools,
+  timeMin,
+  dismissalOverrides,
+  onChangeDismissal,
+}: ParentFlowPanelProps) {
+  const [editingDismissal, setEditingDismissal] = useState<string | null>(null);
+
   const flows = useMemo(() => {
     return schools.map((s) => ({
       school: s,
-      flow: computeParentFlow(s.enrollment, s.type, timeMin),
+      flow: computeParentFlow(
+        s.enrollment,
+        s.type,
+        timeMin,
+        dismissalOverrides[s.id]
+      ),
+      dismissalMin: dismissalOverrides[s.id] ?? DISMISSAL_DEFAULTS[s.type] ?? 15 * 60,
     }));
-  }, [schools, timeMin]);
+  }, [schools, timeMin, dismissalOverrides]);
 
   const anyActive = flows.some((f) => f.flow.queueLength > 0);
 
@@ -42,11 +64,12 @@ export default function ParentFlowPanel({ schools, timeMin }: ParentFlowPanelPro
         )}
       </h4>
 
-      <div className="space-y-2.5">
-        {flows.map(({ school, flow }) => {
+      <div className="space-y-3">
+        {flows.map(({ school, flow, dismissalMin }) => {
           const maxQueue = Math.round(school.enrollment * 0.65 * 0.4);
           const pct = maxQueue > 0 ? Math.min(1, flow.queueLength / maxQueue) : 0;
           const color = queueColor(flow.queueLength, school.enrollment);
+          const isEditing = editingDismissal === school.id;
 
           return (
             <div key={school.id} className="space-y-1">
@@ -86,6 +109,43 @@ export default function ParentFlowPanel({ schools, timeMin }: ParentFlowPanelPro
                   <span className="capitalize">{school.type} · {school.enrollment} students</span>
                 </div>
               )}
+
+              {/* Dismissal time editor */}
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-[9px] text-gray-400 dark:text-gray-500 shrink-0">Dismissal:</span>
+                {isEditing ? (
+                  <div className="flex items-center gap-2 flex-1">
+                    <input
+                      type="range"
+                      min={12 * 60}
+                      max={17 * 60}
+                      step={5}
+                      value={dismissalMin}
+                      onChange={(e) => onChangeDismissal(school.id, Number(e.target.value))}
+                      className="flex-1 h-1.5 accent-blue-500 cursor-pointer"
+                    />
+                    <span className="text-[9px] font-mono text-blue-600 dark:text-blue-400 w-16 shrink-0">
+                      {formatTime(dismissalMin)}
+                    </span>
+                    <button
+                      onClick={() => setEditingDismissal(null)}
+                      className="text-[9px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    >
+                      Done
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setEditingDismissal(school.id)}
+                    className="text-[9px] text-blue-500 dark:text-blue-400 hover:underline"
+                  >
+                    {formatTime(dismissalMin)}
+                    {dismissalOverrides[school.id] !== undefined && (
+                      <span className="ml-1 text-amber-500">(custom)</span>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
           );
         })}

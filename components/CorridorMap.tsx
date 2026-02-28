@@ -23,8 +23,16 @@ import {
   WhatIfScenarioId,
   WHAT_IF_SCENARIOS,
 } from "@/lib/mapFeatures";
-import { Incident, RiskLevel } from "@/lib/types";
+import { Incident } from "@/lib/types";
 import { useNotifications } from "@/lib/notifications";
+import {
+  useCongestionEngine,
+  congestionLabel,
+  congestionColor,
+  formatTime,
+  CorridorDef,
+} from "@/lib/hooks/useCongestionEngine";
+import { useGeofenceAlerts } from "@/lib/hooks/useGeofenceAlerts";
 import MapToolbar, { MapFeatureFlags } from "./map/MapToolbar";
 import IncidentOverlay from "./map/IncidentOverlay";
 import GeofenceLayer from "./map/GeofenceLayer";
@@ -32,82 +40,7 @@ import WeatherPanel from "./map/WeatherPanel";
 import WhatIfPanel from "./map/WhatIfPanel";
 import ParentFlowPanel from "./map/ParentFlowPanel";
 import InterventionDispatch from "./map/InterventionDispatch";
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-interface CongestionPeak {
-  centerMin: number;
-  spread: number;
-  intensity: number;
-}
-
-interface CorridorDef {
-  id: string;
-  name: string;
-  path: google.maps.LatLngLiteral[];
-  school: {
-    zone_id: string;
-    name: string;
-    lat: number;
-    lng: number;
-    type: string;
-    enrollment: number;
-  };
-  peaks: CongestionPeak[];
-  baselineCongestion: number;
-}
-
-// ---------------------------------------------------------------------------
-// Congestion engine
-// ---------------------------------------------------------------------------
-
-function gaussianBell(x: number, center: number, spread: number): number {
-  const d = (x - center) / spread;
-  return Math.exp(-0.5 * d * d);
-}
-
-function getCongestionForCorridor(corridor: CorridorDef, minuteOfDay: number, weatherMultiplier: number, scenario: WhatIfScenarioId | null): number {
-  const scenarioConfig = scenario ? WHAT_IF_SCENARIOS.find((s) => s.id === scenario) : null;
-
-  let level = corridor.baselineCongestion;
-  for (const peak of corridor.peaks) {
-    const adjustedCenter = peak.centerMin + (scenarioConfig?.dismissalShiftMin ?? 0);
-    const adjustedSpread = peak.spread + (scenarioConfig?.peakSpreadIncrease ?? 0);
-    level += peak.intensity * gaussianBell(minuteOfDay, adjustedCenter, adjustedSpread);
-  }
-
-  level = level * weatherMultiplier;
-
-  if (scenarioConfig) {
-    level = level * (1 - scenarioConfig.congestionReduction);
-  }
-
-  return Math.min(level, 1);
-}
-
-function congestionLabel(value: number): string {
-  if (value >= 0.75) return "Severe";
-  if (value >= 0.5) return "Heavy";
-  if (value >= 0.3) return "Moderate";
-  return "Light";
-}
-
-function congestionColor(value: number): string {
-  if (value >= 0.75) return "#dc2626";
-  if (value >= 0.5) return "#f59e0b";
-  if (value >= 0.3) return "#facc15";
-  return "#22c55e";
-}
-
-function formatTime(minuteOfDay: number): string {
-  const h = Math.floor(minuteOfDay / 60);
-  const m = minuteOfDay % 60;
-  const period = h >= 12 ? "PM" : "AM";
-  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
-  return `${h12}:${m.toString().padStart(2, "0")} ${period}`;
-}
+import CorridorMapFallback from "./map/CorridorMapFallback";
 
 // ---------------------------------------------------------------------------
 // Corridor definitions
@@ -218,7 +151,6 @@ const DEFAULT_ZOOM = 19;
 const OVERVIEW_ZOOM = 15;
 const OVERVIEW_CENTER = { lat: 39.7860, lng: -89.6480 };
 
-// 3 × 3 mile bounding box (1.5 mi ≈ 0.0217° lat, ≈ 0.0283° lng at this latitude)
 const BOUNDS_RESTRICTION: google.maps.LatLngBoundsLiteral = {
   north: OVERVIEW_CENTER.lat + 0.0217,
   south: OVERVIEW_CENTER.lat - 0.0217,
@@ -244,74 +176,25 @@ function getMapOptions(mapType: MapViewType): google.maps.MapOptions {
     tilt: mapType !== "roadmap" ? 45 : 0,
     minZoom: 14,
     maxZoom: 21,
-    restriction: {
-      latLngBounds: BOUNDS_RESTRICTION,
-      strictBounds: true,
-    },
+    restriction: { latLngBounds: BOUNDS_RESTRICTION, strictBounds: true },
   };
 }
 
-// Mock incidents (loaded once)
-const MOCK_INCIDENTS: Incident[] = [
-  {
-    incident_id: "INC-2025-0041", zone_id: "zone-003", zone_name: "Jefferson High School",
-    severity: RiskLevel.HIGH, type: "near_miss",
-    title: "Near-Miss: Pedestrian-Vehicle Conflict at Elm & 34th",
-    summary: "Vehicle traveling 35mph failed to yield to pedestrians in crosswalk during dismissal.",
-    reported_at: "2025-02-18T14:30:00Z", status: "investigating" as const,
-    events: [
-      { event_id: "evt-001", timestamp: "2025-02-18T14:20:00Z", type: "detection", description: "Pedestrian surge — 45 students at crosswalk", payload: { pedestrian_count: 45 } },
-      { event_id: "evt-003", timestamp: "2025-02-18T14:28:00Z", type: "alert", description: "Speed violation — vehicle at 35mph in 20mph zone", payload: { speed_mph: 35 } },
-      { event_id: "evt-004", timestamp: "2025-02-18T14:30:00Z", type: "incident", description: "Near-miss — vehicle failed to yield at crosswalk", payload: { distance_ft: 4.2 } },
-      { event_id: "evt-005", timestamp: "2025-02-18T14:31:00Z", type: "response", description: "Traffic officer dispatched to Elm & 34th", payload: { eta_min: 4 } },
-    ],
-    model_metadata: { model_name: "SchoolZone-Risk-v3.2", model_version: "3.2.1", prediction_confidence: 0.87, features_used: ["speed_avg", "pedestrian_count"], training_data_range: "2023–2025", inference_latency_ms: 23 },
-  },
-  {
-    incident_id: "INC-2025-0040", zone_id: "zone-002", zone_name: "Washington Middle School",
-    severity: RiskLevel.MED, type: "speed_violation",
-    title: "Repeated Speed Violations on Maple Dr",
-    summary: "Multiple vehicles exceeded 20mph school zone limit on Maple Dr.",
-    reported_at: "2025-02-18T14:15:00Z", status: "monitoring" as const,
-    events: [
-      { event_id: "evt-010", timestamp: "2025-02-18T14:00:00Z", type: "detection", description: "Speed monitoring initiated for dismissal window", payload: { zone_speed_limit: 20 } },
-      { event_id: "evt-011", timestamp: "2025-02-18T14:10:00Z", type: "alert", description: "5 vehicles above 25mph in 10-min window", payload: { violation_count: 5 } },
-      { event_id: "evt-012", timestamp: "2025-02-18T14:12:00Z", type: "intervention", description: "Dynamic speed sign activated", payload: { device_id: "SIGN-201" } },
-    ],
-    model_metadata: { model_name: "SchoolZone-Risk-v3.2", model_version: "3.2.1", prediction_confidence: 0.82, features_used: ["speed_avg", "vehicle_count"], training_data_range: "2023–2025", inference_latency_ms: 19 },
-  },
-  {
-    incident_id: "INC-2025-0039", zone_id: "zone-003", zone_name: "Jefferson High School",
-    severity: RiskLevel.HIGH, type: "congestion",
-    title: "Critical Congestion During Dismissal at Jefferson HS",
-    summary: "Severe gridlock on Elm St northbound during afternoon dismissal.",
-    reported_at: "2025-02-17T15:05:00Z", status: "resolved" as const,
-    events: [
-      { event_id: "evt-020", timestamp: "2025-02-17T14:50:00Z", type: "detection", description: "Traffic flow dropped below 5mph on Elm St", payload: { avg_speed_mph: 4.2 } },
-      { event_id: "evt-022", timestamp: "2025-02-17T15:00:00Z", type: "intervention", description: "Officer redirected traffic to alternate route", payload: { alternate_route: "Pine Blvd" } },
-      { event_id: "evt-023", timestamp: "2025-02-17T15:15:00Z", type: "resolution", description: "Traffic flow restored to normal", payload: { avg_speed_mph: 18.5 } },
-    ],
-    model_metadata: { model_name: "SchoolZone-Risk-v3.2", model_version: "3.2.0", prediction_confidence: 0.79, features_used: ["traffic_flow", "vehicle_count"], training_data_range: "2023–2025", inference_latency_ms: 21 },
-  },
-  {
-    incident_id: "INC-2025-0038", zone_id: "zone-005", zone_name: "Adams Preparatory",
-    severity: RiskLevel.LOW, type: "equipment_failure",
-    title: "Camera CAM-506 Intermittent Connection",
-    summary: "Camera CAM-506 on Cedar Ln experienced intermittent connectivity.",
-    reported_at: "2025-02-18T13:45:00Z", status: "monitoring" as const,
-    events: [
-      { event_id: "evt-030", timestamp: "2025-02-18T13:30:00Z", type: "detection", description: "Camera CAM-506 heartbeat missed", payload: { camera_id: "CAM-506" } },
-      { event_id: "evt-031", timestamp: "2025-02-18T13:35:00Z", type: "alert", description: "Camera offline — switching to backup", payload: { coverage_pct: 65 } },
-    ],
-    model_metadata: { model_name: "SchoolZone-Risk-v3.2", model_version: "3.2.1", prediction_confidence: 0.91, features_used: ["camera_health"], training_data_range: "2023–2025", inference_latency_ms: 12 },
-  },
-];
+// Parse ISO timestamp → minute-of-day (hours*60+minutes)
+function toMinuteOfDay(iso: string): number {
+  try {
+    const d = new Date(iso);
+    return d.getUTCHours() * 60 + d.getUTCMinutes();
+  } catch {
+    return -1;
+  }
+}
+
+let dispatchCounter = 0;
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
-
-let dispatchCounter = 0;
 
 export default function CorridorMap() {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
@@ -320,30 +203,8 @@ export default function CorridorMap() {
 
   const mapRef = useRef<google.maps.Map | null>(null);
   const [activeInfo, setActiveInfo] = useState<string | null>(null);
-  const [timeMin, setTimeMin] = useState(7 * 60 + 45);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const playRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  // School-level navigation
   const [selectedSchool, setSelectedSchool] = useState<string>(CORRIDORS[0].id);
   const [mapViewType, setMapViewType] = useState<MapViewType>("hybrid");
-
-  const navigateToSchool = useCallback((schoolId: string) => {
-    setSelectedSchool(schoolId);
-    const corridor = CORRIDORS.find((c) => c.id === schoolId);
-    if (corridor && mapRef.current) {
-      mapRef.current.panTo({ lat: corridor.school.lat, lng: corridor.school.lng });
-      mapRef.current.setZoom(DEFAULT_ZOOM);
-    }
-  }, []);
-
-  const navigateToOverview = useCallback(() => {
-    setSelectedSchool("");
-    if (mapRef.current) {
-      mapRef.current.panTo(OVERVIEW_CENTER);
-      mapRef.current.setZoom(OVERVIEW_ZOOM);
-    }
-  }, []);
 
   // Feature flags
   const [features, setFeatures] = useState<MapFeatureFlags>({
@@ -365,6 +226,12 @@ export default function CorridorMap() {
   const [geofences, setGeofences] = useState<GeofenceConfig[]>(DEFAULT_GEOFENCES);
   const updateGeofence = useCallback((zoneId: string, updates: Partial<GeofenceConfig>) => {
     setGeofences((prev) => prev.map((g) => (g.zoneId === zoneId ? { ...g, ...updates } : g)));
+  }, []);
+
+  // Dismissal time overrides per school
+  const [dismissalOverrides, setDismissalOverrides] = useState<Record<string, number>>({});
+  const handleChangeDismissal = useCallback((schoolId: string, min: number) => {
+    setDismissalOverrides((prev) => ({ ...prev, [schoolId]: min }));
   }, []);
 
   // Interventions
@@ -390,27 +257,95 @@ export default function CorridorMap() {
     setDispatched((prev) => prev.map((d) => (d.id === id ? { ...d, status } : d)));
   }, []);
 
-  // Incidents
-  const mappedIncidents = useMemo<MappedIncident[]>(() => mapIncidentsToCoords(MOCK_INCIDENTS), []);
+  // Incidents — fetched from API instead of hardcoded
+  const [incidents, setIncidents] = useState<Incident[]>([]);
+  useEffect(() => {
+    fetch("/api/incidents")
+      .then((r) => r.json())
+      .then((data: Incident[]) => setIncidents(data))
+      .catch(() => {/* leave empty on error */});
+  }, []);
 
-  // Congestion computation with weather + scenario
-  const getCongestion = useCallback((corridorId: string, time: number) => {
-    const corridor = CORRIDORS.find((c) => c.id === corridorId);
-    if (!corridor) return 0;
-    return getCongestionForCorridor(corridor, time, weatherMultiplier, activeScenario);
-  }, [weatherMultiplier, activeScenario]);
+  const mappedIncidents = useMemo<MappedIncident[]>(
+    () => mapIncidentsToCoords(incidents),
+    [incidents]
+  );
 
-  const congestionData = useMemo(() => {
-    return CORRIDORS.map((c) => ({
-      ...c,
-      congestion: getCongestionForCorridor(c, timeMin, weatherMultiplier, activeScenario),
-    }));
-  }, [timeMin, weatherMultiplier, activeScenario]);
+  // Historical playback mode
+  const [historicalMode, setHistoricalMode] = useState(false);
+
+  const toggleHistoricalMode = useCallback(() => {
+    setHistoricalMode((v) => {
+      const next = !v;
+      // Auto-enable incidents feature when turning on historical mode
+      if (next) setFeatures((prev) => ({ ...prev, incidents: true }));
+      return next;
+    });
+  }, []);
+
+  // Track newly appearing incidents for highlight effect
+  const prevVisibleIncidentIds = useRef<Set<string>>(new Set());
+  const [newlyVisibleIds, setNewlyVisibleIds] = useState<Set<string>>(new Set());
+
+  // Congestion engine (replaces inline state + effects)
+  const engine = useCongestionEngine({
+    corridors: CORRIDORS,
+    weatherMultiplier,
+    activeScenario,
+  });
+  const { timeMin, setTimeMin, isPlaying, setIsPlaying, congestionData, getCongestion } = engine;
+
+  // Filter incidents in historical mode
+  const visibleIncidents = useMemo(() => {
+    if (!historicalMode) return mappedIncidents;
+    return mappedIncidents.filter((inc) => toMinuteOfDay(inc.reported_at) <= timeMin);
+  }, [historicalMode, mappedIncidents, timeMin]);
+
+  // Detect newly appearing incidents for highlight animation
+  useEffect(() => {
+    if (!historicalMode) return;
+    const currentIds = new Set(visibleIncidents.map((i) => i.incident_id));
+    const appeared = new Set<string>();
+    currentIds.forEach((id) => {
+      if (!prevVisibleIncidentIds.current.has(id)) appeared.add(id);
+    });
+    prevVisibleIncidentIds.current = currentIds;
+    if (appeared.size > 0) {
+      setNewlyVisibleIds(appeared);
+      const timer = setTimeout(() => setNewlyVisibleIds(new Set()), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [historicalMode, visibleIncidents]);
+
+  // Geofence alerts (extracted hook with module-level deduplication)
+  useGeofenceAlerts(
+    congestionData.map((c) => ({ id: c.id, school: { name: c.school.name }, congestion: c.congestion })),
+    geofences,
+    features.geofences,
+    pushNotification
+  );
+
+  // Map navigation
+  const navigateToSchool = useCallback((schoolId: string) => {
+    setSelectedSchool(schoolId);
+    const corridor = CORRIDORS.find((c) => c.id === schoolId);
+    if (corridor && mapRef.current) {
+      mapRef.current.panTo({ lat: corridor.school.lat, lng: corridor.school.lng });
+      mapRef.current.setZoom(DEFAULT_ZOOM);
+    }
+  }, []);
+
+  const navigateToOverview = useCallback(() => {
+    setSelectedSchool("");
+    if (mapRef.current) {
+      mapRef.current.panTo(OVERVIEW_CENTER);
+      mapRef.current.setZoom(OVERVIEW_ZOOM);
+    }
+  }, []);
 
   const onLoad = useCallback((map: google.maps.Map) => { mapRef.current = map; }, []);
   const onUnmount = useCallback(() => { mapRef.current = null; }, []);
 
-  // Initial zoom to first school
   useEffect(() => {
     if (!mapRef.current) return;
     const first = CORRIDORS[0];
@@ -418,50 +353,12 @@ export default function CorridorMap() {
     mapRef.current.setZoom(DEFAULT_ZOOM);
   }, [isLoaded]);
 
-  // Update map type when changed
   useEffect(() => {
     if (!mapRef.current) return;
     mapRef.current.setMapTypeId(mapViewType);
     mapRef.current.setTilt(mapViewType !== "roadmap" ? 45 : 0);
   }, [mapViewType]);
 
-  // Playback
-  useEffect(() => {
-    if (isPlaying) {
-      playRef.current = setInterval(() => {
-        setTimeMin((prev) => (prev >= 20 * 60 ? 6 * 60 : prev + 5));
-      }, 150);
-    } else if (playRef.current) {
-      clearInterval(playRef.current);
-      playRef.current = null;
-    }
-    return () => { if (playRef.current) clearInterval(playRef.current); };
-  }, [isPlaying]);
-
-  // Geofence alerts
-  const prevBreaches = useRef<Set<string>>(new Set());
-  useEffect(() => {
-    if (!features.geofences) return;
-    const currentBreaches = new Set<string>();
-    congestionData.forEach((c) => {
-      const gf = geofences.find((g) => g.zoneId === c.id && g.enabled);
-      if (gf && c.congestion > gf.congestionThreshold) {
-        currentBreaches.add(c.id);
-        if (!prevBreaches.current.has(c.id)) {
-          pushNotification({
-            title: `Geofence Alert: ${c.school.name}`,
-            body: `Congestion (${Math.round(c.congestion * 100)}%) exceeded ${Math.round(gf.congestionThreshold * 100)}% threshold`,
-            severity: "critical",
-            zone: c.id,
-            source: "geofence",
-          });
-        }
-      }
-    });
-    prevBreaches.current = currentBreaches;
-  }, [congestionData, geofences, features.geofences, pushNotification]);
-
-  // Corridor for dispatch
   const dispatchCorridor = useMemo(() => {
     if (!dispatchTarget) return null;
     const c = congestionData.find((cd) => cd.id === dispatchTarget);
@@ -469,31 +366,39 @@ export default function CorridorMap() {
     return { id: c.id, name: c.name, congestion: c.congestion };
   }, [dispatchTarget, congestionData]);
 
-  // ---------- Fallback states ----------
+  // Handler for loading a saved scenario (updates time + weather too)
+  const handleLoadSaved = useCallback((
+    scenarioId: WhatIfScenarioId,
+    savedTime: number,
+    savedWeather: WeatherCondition
+  ) => {
+    setActiveScenario(scenarioId);
+    setTimeMin(savedTime);
+    setWeather(savedWeather);
+  }, [setTimeMin]);
+
+  // ---------------------------------------------------------------------------
+  // Fallback states
+  // ---------------------------------------------------------------------------
+
+  const fallbackProps = {
+    corridors: CORRIDORS,
+    engine,
+    weather,
+    setWeather,
+    activeScenario,
+    features,
+    onToggleFeature: toggleFeature,
+    selectedSchool,
+    onSelectSchool: navigateToSchool,
+    onOverview: navigateToOverview,
+  };
 
   if (!apiKey) {
-    return (
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Corridor Traffic Map</h3>
-        <div className="flex items-center justify-center h-64 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <p className="text-sm text-gray-400 dark:text-gray-500 text-center max-w-md">
-            Google Maps API key required. Add{" "}
-            <code className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code>{" "}
-            to your <code className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs">.env.local</code> file.
-          </p>
-        </div>
-      </div>
-    );
+    return <CorridorMapFallback {...fallbackProps} reason="no-api-key" />;
   }
   if (loadError) {
-    return (
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Corridor Traffic Map</h3>
-        <div className="flex items-center justify-center h-64 bg-red-50 dark:bg-red-950 rounded-lg">
-          <p className="text-sm text-red-600 dark:text-red-400">Failed to load Google Maps. Check your API key.</p>
-        </div>
-      </div>
-    );
+    return <CorridorMapFallback {...fallbackProps} reason="load-error" />;
   }
   if (!isLoaded) {
     return (
@@ -506,7 +411,9 @@ export default function CorridorMap() {
     );
   }
 
-  // ---------- Main render ----------
+  // ---------------------------------------------------------------------------
+  // Main render
+  // ---------------------------------------------------------------------------
 
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5 space-y-4">
@@ -586,7 +493,24 @@ export default function CorridorMap() {
             onChange={(e) => { setTimeMin(Number(e.target.value)); setIsPlaying(false); }}
             className="flex-1 h-2 accent-emerald-600 cursor-pointer"
           />
+          {/* Historical mode toggle */}
+          <button
+            onClick={toggleHistoricalMode}
+            title="Historical mode — incidents appear at their reported time during playback"
+            className={`text-[10px] px-2.5 py-1.5 rounded-md border transition-colors shrink-0 ${
+              historicalMode
+                ? "bg-purple-50 dark:bg-purple-950 border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-300 font-semibold"
+                : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+            }`}
+          >
+            Historical
+          </button>
         </div>
+        {historicalMode && (
+          <p className="text-[10px] text-purple-500 dark:text-purple-400">
+            Historical mode — incidents appear at their reported time
+          </p>
+        )}
         <div className="flex flex-wrap gap-1.5">
           {TIME_PRESETS.map((p) => (
             <button key={p.label}
@@ -625,7 +549,7 @@ export default function CorridorMap() {
             />
           ))}
 
-          {/* Corridor polylines */}
+          {/* Corridor polylines — click opens InfoWindow (#6) */}
           {congestionData.map((c) => (
             <Polyline key={c.id} path={c.path}
               options={{
@@ -634,7 +558,11 @@ export default function CorridorMap() {
                 strokeWeight: 4 + c.congestion * 8,
                 clickable: true,
               }}
-              onClick={() => { navigateToSchool(c.id); if (features.interventions) setDispatchTarget(c.id); }}
+              onClick={() => {
+                navigateToSchool(c.id);
+                setActiveInfo(c.id);
+                if (features.interventions) setDispatchTarget(c.id);
+              }}
             />
           ))}
 
@@ -681,8 +609,8 @@ export default function CorridorMap() {
             )
           )}
 
-          {/* Incident overlay */}
-          <IncidentOverlay incidents={mappedIncidents} visible={features.incidents} />
+          {/* Incident overlay — filtered in historical mode */}
+          <IncidentOverlay incidents={visibleIncidents} visible={features.incidents} />
 
           {/* Geofence layer */}
           <GeofenceLayer
@@ -721,7 +649,7 @@ export default function CorridorMap() {
                 selectedSchool === c.id
                   ? "border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-950/50"
                   : "border-gray-100 dark:border-gray-700"
-              }`}
+              } ${newlyVisibleIds.has(c.id) ? "ring-2 ring-purple-400 ring-offset-1" : ""}`}
             >
               <span className="inline-block w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: congestionColor(c.congestion) }} />
               <div className="min-w-0">
@@ -746,8 +674,10 @@ export default function CorridorMap() {
             corridors={congestionData.map((c) => ({ id: c.id, schoolName: c.school.name, baseCongestion: c.congestion }))}
             getCongestion={getCongestion}
             currentTimeMin={timeMin}
+            weather={weather}
             onApplyScenario={setActiveScenario}
             activeScenario={activeScenario}
+            onLoadSaved={handleLoadSaved}
           />
         )}
 
@@ -755,6 +685,8 @@ export default function CorridorMap() {
           <ParentFlowPanel
             schools={CORRIDORS.map((c) => ({ id: c.id, name: c.school.name, type: c.school.type, enrollment: c.school.enrollment }))}
             timeMin={timeMin}
+            dismissalOverrides={dismissalOverrides}
+            onChangeDismissal={handleChangeDismissal}
           />
         )}
 

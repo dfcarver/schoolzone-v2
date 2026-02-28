@@ -1,7 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { WHAT_IF_SCENARIOS, WhatIfScenarioId } from "@/lib/mapFeatures";
+import { useMemo, useState, useCallback, useEffect } from "react";
+import {
+  WHAT_IF_SCENARIOS,
+  WhatIfScenarioId,
+  WeatherCondition,
+  SavedScenario,
+  loadSavedScenarios,
+  persistSavedScenarios,
+} from "@/lib/mapFeatures";
+import { formatTime } from "@/lib/hooks/useCongestionEngine";
 
 interface CongestionEntry {
   id: string;
@@ -13,8 +21,10 @@ interface WhatIfPanelProps {
   corridors: CongestionEntry[];
   getCongestion: (corridorId: string, timeMin: number) => number;
   currentTimeMin: number;
+  weather: WeatherCondition;
   onApplyScenario: (scenario: WhatIfScenarioId | null) => void;
   activeScenario: WhatIfScenarioId | null;
+  onLoadSaved?: (scenarioId: WhatIfScenarioId, timeMin: number, weather: WeatherCondition) => void;
 }
 
 function congestionColor(v: number): string {
@@ -35,39 +45,87 @@ export default function WhatIfPanel({
   corridors,
   getCongestion,
   currentTimeMin,
+  weather,
   onApplyScenario,
   activeScenario,
+  onLoadSaved,
 }: WhatIfPanelProps) {
   const [expanded, setExpanded] = useState(false);
+  const [savedOpen, setSavedOpen] = useState(false);
+  const [savedScenarios, setSavedScenarios] = useState<SavedScenario[]>([]);
+  const [saveName, setSaveName] = useState("");
+  const [showSaveInput, setShowSaveInput] = useState(false);
+
+  useEffect(() => {
+    setSavedScenarios(loadSavedScenarios());
+  }, []);
+
   const activeConfig = WHAT_IF_SCENARIOS.find((s) => s.id === activeScenario);
 
   const comparison = useMemo(() => {
     if (!activeConfig) return null;
-
     return corridors.map((c) => {
       const baseline = c.baseCongestion;
-
-      // Apply scenario effects
       let adjusted = baseline;
       adjusted = adjusted * (1 - activeConfig.congestionReduction);
-
-      // Dismissal shift: recalculate at shifted time
       if (activeConfig.dismissalShiftMin !== 0) {
         const shiftedTime = currentTimeMin - activeConfig.dismissalShiftMin;
         const shiftedCongestion = getCongestion(c.id, shiftedTime);
         adjusted = shiftedCongestion * (1 - activeConfig.congestionReduction);
       }
-
       const delta = adjusted - baseline;
-
-      return {
-        ...c,
-        baseline,
-        adjusted: Math.max(0, Math.min(1, adjusted)),
-        delta,
-      };
+      return { ...c, baseline, adjusted: Math.max(0, Math.min(1, adjusted)), delta };
     });
   }, [corridors, activeConfig, currentTimeMin, getCongestion]);
+
+  const handleSave = useCallback(() => {
+    if (!activeScenario || !saveName.trim()) return;
+    const entry: SavedScenario = {
+      id: `saved-${Date.now()}`,
+      name: saveName.trim(),
+      savedAt: Date.now(),
+      scenarioId: activeScenario,
+      timeMin: currentTimeMin,
+      weather,
+    };
+    const next = [entry, ...savedScenarios];
+    setSavedScenarios(next);
+    persistSavedScenarios(next);
+    setSaveName("");
+    setShowSaveInput(false);
+  }, [activeScenario, saveName, savedScenarios, currentTimeMin, weather]);
+
+  const handleDelete = useCallback((id: string) => {
+    const next = savedScenarios.filter((s) => s.id !== id);
+    setSavedScenarios(next);
+    persistSavedScenarios(next);
+  }, [savedScenarios]);
+
+  const handleLoad = useCallback((s: SavedScenario) => {
+    onApplyScenario(s.scenarioId);
+    onLoadSaved?.(s.scenarioId, s.timeMin, s.weather);
+  }, [onApplyScenario, onLoadSaved]);
+
+  const handleExport = useCallback((s: SavedScenario) => {
+    const blob = new Blob([JSON.stringify(s, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `scenario-${s.name.replace(/\s+/g, "-").toLowerCase()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, []);
+
+  const handleExportAll = useCallback(() => {
+    if (savedScenarios.length === 0) return;
+    const blob = new Blob([JSON.stringify(savedScenarios, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "schoolzone-scenarios.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [savedScenarios]);
 
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
@@ -155,13 +213,117 @@ export default function WhatIfPanel({
             </div>
           )}
 
-          {activeScenario && (
-            <button
-              onClick={() => onApplyScenario(null)}
-              className="text-[10px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-            >
-              Clear scenario
-            </button>
+          {/* Actions row */}
+          <div className="flex items-center gap-3 flex-wrap">
+            {activeScenario && (
+              <button
+                onClick={() => onApplyScenario(null)}
+                className="text-[10px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              >
+                Clear scenario
+              </button>
+            )}
+
+            {activeScenario && (
+              <>
+                {showSaveInput ? (
+                  <div className="flex items-center gap-1.5 flex-1">
+                    <input
+                      type="text"
+                      value={saveName}
+                      onChange={(e) => setSaveName(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") setShowSaveInput(false); }}
+                      placeholder="Name this scenario…"
+                      autoFocus
+                      className="flex-1 text-[10px] px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 outline-none focus:border-emerald-400"
+                    />
+                    <button
+                      onClick={handleSave}
+                      disabled={!saveName.trim()}
+                      className="text-[10px] px-2.5 py-1 rounded bg-emerald-600 text-white disabled:opacity-40 hover:bg-emerald-700 transition-colors"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => { setShowSaveInput(false); setSaveName(""); }}
+                      className="text-[10px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowSaveInput(true)}
+                    className="text-[10px] text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors ml-auto"
+                  >
+                    + Save scenario
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Saved scenarios */}
+          {savedScenarios.length > 0 && (
+            <div className="border-t border-gray-100 dark:border-gray-700 pt-3">
+              <button
+                onClick={() => setSavedOpen((v) => !v)}
+                className="flex items-center justify-between w-full mb-2"
+              >
+                <span className="text-[11px] font-medium text-gray-700 dark:text-gray-300">
+                  Saved Scenarios ({savedScenarios.length})
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleExportAll(); }}
+                    className="text-[10px] text-blue-500 dark:text-blue-400 hover:underline"
+                  >
+                    Export all
+                  </button>
+                  <svg
+                    className={`w-3.5 h-3.5 text-gray-400 transition-transform ${savedOpen ? "rotate-180" : ""}`}
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </button>
+
+              {savedOpen && (
+                <div className="space-y-1.5">
+                  {savedScenarios.map((s) => (
+                    <div key={s.id} className="flex items-center justify-between gap-2 py-1.5 px-2.5 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-medium text-gray-900 dark:text-gray-100 truncate">{s.name}</p>
+                        <p className="text-[9px] text-gray-400">
+                          {WHAT_IF_SCENARIOS.find((sc) => sc.id === s.scenarioId)?.label} · {formatTime(s.timeMin)} · {s.weather}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => handleLoad(s)}
+                          className="text-[10px] text-emerald-600 dark:text-emerald-400 hover:underline"
+                        >
+                          Load
+                        </button>
+                        <button
+                          onClick={() => handleExport(s)}
+                          className="text-[10px] text-blue-500 dark:text-blue-400 hover:underline"
+                        >
+                          Export
+                        </button>
+                        <button
+                          onClick={() => handleDelete(s.id)}
+                          className="text-[10px] text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
         </div>
       )}

@@ -85,7 +85,8 @@ export interface ParentFlowSnapshot {
 export function computeParentFlow(
   enrollment: number,
   schoolType: string,
-  minuteOfDay: number
+  minuteOfDay: number,
+  dismissalOverrideMin?: number
 ): ParentFlowSnapshot {
   // Dismissal times by school type (minutes from midnight)
   const dismissalMin: Record<string, number> = {
@@ -94,7 +95,7 @@ export function computeParentFlow(
     high: 15 * 60 + 30,       // 3:30 PM
   };
 
-  const dismissal = dismissalMin[schoolType] ?? 15 * 60;
+  const dismissal = dismissalOverrideMin ?? dismissalMin[schoolType] ?? 15 * 60;
 
   // Parents start arriving ~20 min before dismissal, peak at dismissal
   const parentPct = 0.65; // ~65% of students picked up by car
@@ -214,6 +215,40 @@ export const WHAT_IF_SCENARIOS: WhatIfScenario[] = [
     peakSpreadIncrease: 15,
   },
 ];
+
+// ---------------------------------------------------------------------------
+// Saved Scenario (localStorage persistence for what-if analysis)
+// ---------------------------------------------------------------------------
+
+export interface SavedScenario {
+  id: string;
+  name: string;
+  savedAt: number;
+  scenarioId: WhatIfScenarioId;
+  timeMin: number;
+  weather: WeatherCondition;
+}
+
+const SAVED_SCENARIOS_KEY = "schoolzone-saved-scenarios";
+
+export function loadSavedScenarios(): SavedScenario[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(SAVED_SCENARIOS_KEY);
+    return raw ? (JSON.parse(raw) as SavedScenario[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function persistSavedScenarios(scenarios: SavedScenario[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(SAVED_SCENARIOS_KEY, JSON.stringify(scenarios));
+  } catch {
+    // localStorage unavailable
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Dispatched Intervention
