@@ -379,7 +379,6 @@ export default function CorridorMap() {
     const corridor = CORRIDORS.find((c) => c.id === schoolId);
     if (corridor && mapRef.current) {
       mapRef.current.panTo({ lat: corridor.school.lat, lng: corridor.school.lng });
-      mapRef.current.setZoom(DEFAULT_ZOOM);
     }
   }, [navLocked]);
 
