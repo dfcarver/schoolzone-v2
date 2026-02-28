@@ -237,6 +237,7 @@ export default function CorridorMap() {
   const { push: pushNotification } = useNotifications();
 
   const mapRef = useRef<google.maps.Map | null>(null);
+  const schoolZoom = useRef<number>(DEFAULT_ZOOM); // captured from Lincoln's actual initial zoom
   const [activeInfo, setActiveInfo] = useState<string | null>(null);
   const [selectedSchool, setSelectedSchool] = useState<string>(CORRIDORS[0].id);
   const [mapViewType, setMapViewType] = useState<MapViewType>("hybrid");
@@ -379,6 +380,7 @@ export default function CorridorMap() {
     const corridor = CORRIDORS.find((c) => c.id === schoolId);
     if (corridor && mapRef.current) {
       mapRef.current.panTo({ lat: corridor.school.lat, lng: corridor.school.lng });
+      mapRef.current.setZoom(schoolZoom.current);
     }
   }, [navLocked]);
 
@@ -391,7 +393,14 @@ export default function CorridorMap() {
     }
   }, [navLocked]);
 
-  const onLoad = useCallback((map: google.maps.Map) => { mapRef.current = map; }, []);
+  const onLoad = useCallback((map: google.maps.Map) => {
+    mapRef.current = map;
+    // Capture the zoom Google Maps actually settles on for Lincoln so we can
+    // replay the exact same zoom when the user picks any other school.
+    google.maps.event.addListenerOnce(map, "idle", () => {
+      schoolZoom.current = map.getZoom() ?? DEFAULT_ZOOM;
+    });
+  }, []);
   const onUnmount = useCallback(() => { mapRef.current = null; }, []);
 
   useEffect(() => {
