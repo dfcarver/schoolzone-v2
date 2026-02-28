@@ -22,6 +22,7 @@ import { computeEscalation } from "@/lib/engines/escalation";
 import { buildEscalationInput } from "@/lib/engines/buildInputs";
 import EscalationGauge from "@/components/intelligence/EscalationGauge";
 import SimulationPanel from "@/components/intelligence/SimulationPanel";
+import CorridorMap from "@/components/CorridorMap";
 
 export default function ExecutivePage() {
   const { liveState, loading, error, lastValidation } = useLiveState();
@@ -118,6 +119,9 @@ export default function ExecutivePage() {
 
         {/* Heatmap */}
         <RiskHeatmap entries={heatmap} />
+
+        {/* Corridor Traffic Map */}
+        <CorridorMap />
 
         {/* Two-column: Emerging Risks + Active Mitigations */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
