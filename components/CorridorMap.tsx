@@ -54,11 +54,9 @@ const CORRIDORS: CorridorDef[] = [
     id: "zone-001",
     name: "Oak Avenue Corridor",
     path: [
-      { lat: 39.7808, lng: -89.6501 },
-      { lat: 39.7812, lng: -89.6501 },
-      { lat: 39.7817, lng: -89.6500 },
-      { lat: 39.7822, lng: -89.6501 },
-      { lat: 39.7826, lng: -89.6502 },
+      { lat: 39.7845, lng: -89.6501 }, // north — runs south along Oak Ave
+      { lat: 39.7817, lng: -89.6501 }, // corner at school
+      { lat: 39.7817, lng: -89.6461 }, // turns east along school frontage
     ],
     school: { zone_id: "zone-001", name: "Lincoln Elementary", lat: 39.7817, lng: -89.6501, type: "elementary", enrollment: 485 },
     baselineCongestion: 0.08,
@@ -71,11 +69,9 @@ const CORRIDORS: CorridorDef[] = [
     id: "zone-002",
     name: "Maple Drive Corridor",
     path: [
-      { lat: 39.7900, lng: -89.6460 },
-      { lat: 39.7900, lng: -89.6452 },
-      { lat: 39.7899, lng: -89.6443 },
-      { lat: 39.7900, lng: -89.6435 },
-      { lat: 39.7901, lng: -89.6425 },
+      { lat: 39.7900, lng: -89.6492 }, // west — runs east along Maple Dr
+      { lat: 39.7900, lng: -89.6440 }, // corner at school
+      { lat: 39.7870, lng: -89.6440 }, // turns south along side street
     ],
     school: { zone_id: "zone-002", name: "Washington Middle School", lat: 39.7900, lng: -89.6440, type: "middle", enrollment: 720 },
     baselineCongestion: 0.10,
@@ -89,11 +85,9 @@ const CORRIDORS: CorridorDef[] = [
     id: "zone-003",
     name: "Elm Street Corridor",
     path: [
-      { lat: 39.7755, lng: -89.6598 },
-      { lat: 39.7755, lng: -89.6592 },
-      { lat: 39.7756, lng: -89.6584 },
-      { lat: 39.7755, lng: -89.6576 },
-      { lat: 39.7754, lng: -89.6567 },
+      { lat: 39.7755, lng: -89.6635 }, // west — runs east along Elm St
+      { lat: 39.7755, lng: -89.6580 }, // school
+      { lat: 39.7755, lng: -89.6535 }, // continues east
     ],
     school: { zone_id: "zone-003", name: "Jefferson High School", lat: 39.7755, lng: -89.6580, type: "high", enrollment: 1100 },
     baselineCongestion: 0.12,
@@ -107,11 +101,9 @@ const CORRIDORS: CorridorDef[] = [
     id: "zone-004",
     name: "Pine Boulevard Corridor",
     path: [
-      { lat: 39.7842, lng: -89.6390 },
-      { lat: 39.7838, lng: -89.6390 },
-      { lat: 39.7834, lng: -89.6391 },
-      { lat: 39.7829, lng: -89.6390 },
-      { lat: 39.7824, lng: -89.6389 },
+      { lat: 39.7864, lng: -89.6390 }, // north — runs south along Pine Blvd
+      { lat: 39.7832, lng: -89.6390 }, // corner at school
+      { lat: 39.7832, lng: -89.6348 }, // turns east along cross street
     ],
     school: { zone_id: "zone-004", name: "Roosevelt Academy", lat: 39.7832, lng: -89.6390, type: "elementary", enrollment: 320 },
     baselineCongestion: 0.06,
@@ -124,11 +116,9 @@ const CORRIDORS: CorridorDef[] = [
     id: "zone-005",
     name: "Cedar Lane Corridor",
     path: [
-      { lat: 39.7958, lng: -89.6521 },
-      { lat: 39.7955, lng: -89.6521 },
-      { lat: 39.7951, lng: -89.6519 },
-      { lat: 39.7947, lng: -89.6520 },
-      { lat: 39.7943, lng: -89.6521 },
+      { lat: 39.7950, lng: -89.6572 }, // west — runs east along Cedar Ln
+      { lat: 39.7950, lng: -89.6520 }, // corner at school
+      { lat: 39.7918, lng: -89.6520 }, // turns south along side street
     ],
     school: { zone_id: "zone-005", name: "Adams Preparatory", lat: 39.7950, lng: -89.6520, type: "middle", enrollment: 610 },
     baselineCongestion: 0.09,
@@ -161,12 +151,53 @@ const BOUNDS_RESTRICTION: google.maps.LatLngBoundsLiteral = {
   west: OVERVIEW_CENTER.lng - 0.0283,
 };
 
-type MapViewType = "roadmap" | "satellite" | "hybrid";
-const MAP_VIEW_OPTIONS: { label: string; value: MapViewType }[] = [
-  { label: "Map", value: "roadmap" },
-  { label: "Satellite", value: "satellite" },
-  { label: "Hybrid", value: "hybrid" },
+type MapViewType = "roadmap" | "satellite" | "hybrid" | "terrain" | "dark" | "minimal";
+
+interface MapViewOption { label: string; value: MapViewType; icon: string; description: string }
+const MAP_VIEW_OPTIONS: MapViewOption[] = [
+  { label: "Map",       value: "roadmap",   icon: "🗺️",  description: "Standard road map"       },
+  { label: "Satellite", value: "satellite", icon: "🛰️",  description: "Aerial imagery"           },
+  { label: "Hybrid",    value: "hybrid",    icon: "📍",  description: "Satellite + road labels"  },
+  { label: "Terrain",   value: "terrain",   icon: "⛰️",  description: "Topographic view"         },
+  { label: "Dark",      value: "dark",      icon: "🌙",  description: "Night monitoring mode"    },
+  { label: "Minimal",   value: "minimal",   icon: "⬜",  description: "Clean, no clutter"        },
 ];
+
+const DARK_MAP_STYLES: google.maps.MapTypeStyle[] = [
+  { elementType: "geometry",                                                  stylers: [{ color: "#242f3e" }] },
+  { elementType: "labels.text.stroke",                                        stylers: [{ color: "#242f3e" }] },
+  { elementType: "labels.text.fill",                                          stylers: [{ color: "#746855" }] },
+  { featureType: "administrative.locality", elementType: "labels.text.fill",  stylers: [{ color: "#d59563" }] },
+  { featureType: "road",                    elementType: "geometry",           stylers: [{ color: "#38414e" }] },
+  { featureType: "road",                    elementType: "geometry.stroke",    stylers: [{ color: "#212a37" }] },
+  { featureType: "road",                    elementType: "labels.text.fill",   stylers: [{ color: "#9ca5b3" }] },
+  { featureType: "road.highway",            elementType: "geometry",           stylers: [{ color: "#746855" }] },
+  { featureType: "road.highway",            elementType: "geometry.stroke",    stylers: [{ color: "#1f2835" }] },
+  { featureType: "road.highway",            elementType: "labels.text.fill",   stylers: [{ color: "#f3d19c" }] },
+  { featureType: "water",                   elementType: "geometry",           stylers: [{ color: "#17263c" }] },
+  { featureType: "water",                   elementType: "labels.text.fill",   stylers: [{ color: "#515c6d" }] },
+  { featureType: "water",                   elementType: "labels.text.stroke", stylers: [{ color: "#17263c" }] },
+];
+
+const MINIMAL_MAP_STYLES: google.maps.MapTypeStyle[] = [
+  { featureType: "poi",                      stylers: [{ visibility: "off" }]         },
+  { featureType: "transit",                  stylers: [{ visibility: "off" }]         },
+  { elementType: "labels.icon",              stylers: [{ visibility: "off" }]         },
+  { featureType: "landscape",  elementType: "geometry", stylers: [{ color: "#f5f5f5" }] },
+  { featureType: "road",       elementType: "geometry", stylers: [{ color: "#ffffff" }] },
+  { featureType: "road",       elementType: "geometry.stroke", stylers: [{ color: "#e8e8e8" }] },
+  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#dadada" }] },
+  { featureType: "water",      elementType: "geometry", stylers: [{ color: "#c9d6df" }] },
+];
+
+const MAP_TYPE_STYLES: Partial<Record<MapViewType, google.maps.MapTypeStyle[]>> = {
+  dark: DARK_MAP_STYLES,
+  minimal: MINIMAL_MAP_STYLES,
+};
+
+function getBaseTypeId(mapType: MapViewType): string {
+  return mapType === "dark" || mapType === "minimal" ? "roadmap" : mapType;
+}
 
 function getMapOptions(mapType: MapViewType): google.maps.MapOptions {
   return {
@@ -175,8 +206,9 @@ function getMapOptions(mapType: MapViewType): google.maps.MapOptions {
     mapTypeControl: false,
     streetViewControl: true,
     fullscreenControl: true,
-    mapTypeId: mapType,
-    tilt: mapType !== "roadmap" ? 45 : 0,
+    mapTypeId: getBaseTypeId(mapType),
+    tilt: mapType === "satellite" || mapType === "hybrid" ? 45 : 0,
+    styles: MAP_TYPE_STYLES[mapType] ?? [],
     minZoom: 14,
     maxZoom: 21,
     restriction: { latLngBounds: BOUNDS_RESTRICTION, strictBounds: true },
@@ -208,6 +240,7 @@ export default function CorridorMap() {
   const [activeInfo, setActiveInfo] = useState<string | null>(null);
   const [selectedSchool, setSelectedSchool] = useState<string>(CORRIDORS[0].id);
   const [mapViewType, setMapViewType] = useState<MapViewType>("hybrid");
+  const [showMapPicker, setShowMapPicker] = useState(false);
 
   // Feature flags
   const [features, setFeatures] = useState<MapFeatureFlags>({
@@ -362,8 +395,9 @@ export default function CorridorMap() {
 
   useEffect(() => {
     if (!mapRef.current) return;
-    mapRef.current.setMapTypeId(mapViewType);
-    mapRef.current.setTilt(mapViewType !== "roadmap" ? 45 : 0);
+    mapRef.current.setMapTypeId(getBaseTypeId(mapViewType));
+    mapRef.current.setTilt(mapViewType === "satellite" || mapViewType === "hybrid" ? 45 : 0);
+    mapRef.current.setOptions({ styles: MAP_TYPE_STYLES[mapViewType] ?? [] });
   }, [mapViewType]);
 
   const dispatchCorridor = useMemo(() => {
@@ -545,18 +579,51 @@ export default function CorridorMap() {
           })}
         </div>
         <div className="flex items-center gap-2">
-          {/* Map view toggle */}
-          <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-md p-0.5">
-            {MAP_VIEW_OPTIONS.map((opt) => (
-              <button key={opt.value}
-                onClick={() => setMapViewType(opt.value)}
-                className={`text-[10px] px-2.5 py-1 rounded transition-colors ${
-                  mapViewType === opt.value
-                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-semibold shadow-sm"
-                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                }`}
-              >{opt.label}</button>
-            ))}
+          {/* Map style picker */}
+          <div className="relative">
+            <button
+              onClick={() => setShowMapPicker((v) => !v)}
+              className={`flex items-center gap-1.5 text-[10px] px-2.5 py-1.5 rounded-md border transition-colors ${
+                showMapPicker
+                  ? "bg-blue-50 dark:bg-blue-950 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300"
+                  : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+              }`}
+            >
+              <span>{MAP_VIEW_OPTIONS.find((o) => o.value === mapViewType)?.icon}</span>
+              <span className="font-medium">{MAP_VIEW_OPTIONS.find((o) => o.value === mapViewType)?.label}</span>
+              <svg className={`w-3 h-3 transition-transform ${showMapPicker ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {showMapPicker && (
+              <>
+                {/* backdrop */}
+                <div className="fixed inset-0 z-40" onClick={() => setShowMapPicker(false)} />
+                <div className="absolute right-0 top-full mt-1 z-50 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-2 w-56">
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500 mb-2 px-1">Map Style</p>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {MAP_VIEW_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => { setMapViewType(opt.value); setShowMapPicker(false); }}
+                        className={`flex flex-col items-center gap-0.5 p-2 rounded-lg border text-center transition-colors ${
+                          mapViewType === opt.value
+                            ? "bg-blue-50 dark:bg-blue-950 border-blue-300 dark:border-blue-700"
+                            : "bg-gray-50 dark:bg-gray-800 border-gray-100 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        }`}
+                      >
+                        <span className="text-base">{opt.icon}</span>
+                        <span className={`text-[10px] font-medium leading-tight ${mapViewType === opt.value ? "text-blue-700 dark:text-blue-300" : "text-gray-700 dark:text-gray-300"}`}>
+                          {opt.label}
+                        </span>
+                        <span className="text-[8px] text-gray-400 dark:text-gray-500 leading-tight">{opt.description}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Navigation lock */}
