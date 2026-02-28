@@ -10,6 +10,7 @@ import {
   persistSavedScenarios,
 } from "@/lib/mapFeatures";
 import { formatTime } from "@/lib/hooks/useCongestionEngine";
+import FeatureHint from "./FeatureHint";
 
 interface CongestionEntry {
   id: string;
@@ -151,6 +152,9 @@ export default function WhatIfPanel({
 
       {expanded && (
         <div className="mt-3 space-y-3">
+          <FeatureHint>
+            Pick a scenario to see the comparison table below. Dismissal shifts move the congestion peak window — watch corridor colors update in real time on the map. Save a named scenario to reload it later.
+          </FeatureHint>
           {/* Scenario grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {WHAT_IF_SCENARIOS.map((s) => (

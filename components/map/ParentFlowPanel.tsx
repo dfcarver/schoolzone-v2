@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { computeParentFlow } from "@/lib/mapFeatures";
 import { formatTime } from "@/lib/hooks/useCongestionEngine";
+import FeatureHint from "./FeatureHint";
 
 interface SchoolInfo {
   id: string;
@@ -63,6 +64,9 @@ export default function ParentFlowPanel({
           <span className="ml-2 text-[10px] font-normal text-gray-400">No active queues at this time</span>
         )}
       </h4>
+      <FeatureHint>
+        Queue bars peak around dismissal time — most active 2:45–3:45 PM. Click the dismissal time for any school to slide it earlier or later and watch the queue shift. Color indicates fullness: green → yellow → orange → red.
+      </FeatureHint>
 
       <div className="space-y-3">
         {flows.map(({ school, flow, dismissalMin }) => {

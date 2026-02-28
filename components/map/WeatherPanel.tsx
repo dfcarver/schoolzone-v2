@@ -1,6 +1,7 @@
 "use client";
 
 import { WeatherCondition, WEATHER_PROFILES } from "@/lib/mapFeatures";
+import FeatureHint from "./FeatureHint";
 
 interface WeatherPanelProps {
   weather: WeatherCondition;
@@ -15,6 +16,9 @@ export default function WeatherPanel({ weather, onChangeWeather }: WeatherPanelP
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
       <h4 className="text-xs font-semibold text-gray-900 dark:text-gray-100 mb-3">Weather Impact</h4>
+      <FeatureHint>
+        The congestion multiplier applies to all corridors instantly — watch polylines thicken and shift color. Try the Dismissal time preset with Snow active to see worst-case conditions.
+      </FeatureHint>
 
       <div className="flex gap-1.5 mb-3">
         {CONDITIONS.map((c) => {

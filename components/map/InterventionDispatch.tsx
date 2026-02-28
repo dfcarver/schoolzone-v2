@@ -6,6 +6,7 @@ import {
   DispatchStatus,
   INTERVENTION_OPTIONS,
 } from "@/lib/mapFeatures";
+import FeatureHint from "./FeatureHint";
 
 interface InterventionDispatchProps {
   interventions: DispatchedIntervention[];
@@ -59,6 +60,10 @@ export default function InterventionDispatch({
           </span>
         )}
       </h4>
+
+      <FeatureHint>
+        Click any corridor line or school card on the map to select it, then hit Deploy to choose an intervention. Track progress through Dispatched → En Route → On Scene → Completed using the advance button.
+      </FeatureHint>
 
       {/* Dispatch trigger for selected corridor */}
       {selectedCorridor && (

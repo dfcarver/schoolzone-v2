@@ -41,6 +41,9 @@ import WhatIfPanel from "./map/WhatIfPanel";
 import ParentFlowPanel from "./map/ParentFlowPanel";
 import InterventionDispatch from "./map/InterventionDispatch";
 import CorridorMapFallback from "./map/CorridorMapFallback";
+import QuickstartStrip, { QuickstartPreset } from "./map/QuickstartStrip";
+import CorridorLabels from "./map/CorridorLabels";
+import FeatureHint from "./map/FeatureHint";
 
 // ---------------------------------------------------------------------------
 // Corridor definitions
@@ -377,6 +380,55 @@ export default function CorridorMap() {
     setWeather(savedWeather);
   }, [setTimeMin]);
 
+  // Quickstart presets
+  const [activePreset, setActivePreset] = useState<string | null>(null);
+  const handleQuickstart = useCallback((preset: QuickstartPreset) => {
+    setTimeMin(preset.timeMin);
+    setWeather(preset.weather);
+    setIsPlaying(false);
+    setFeatures((prev) => ({ ...prev, ...preset.features }));
+    if (preset.scenario) setActiveScenario(preset.scenario);
+    setActivePreset((prev) => (prev === preset.label ? null : preset.label));
+  }, [setTimeMin, setIsPlaying]);
+
+  // Active feature summary badges
+  const summaryBadges = useMemo(() => {
+    const badges: { label: string; color: string; onDismiss?: () => void }[] = [];
+    if (weather !== "clear") {
+      const p = WEATHER_PROFILES[weather];
+      badges.push({
+        label: `${p.icon} ${p.label} (+${Math.round((p.congestionMultiplier - 1) * 100)}%)`,
+        color: "amber",
+        onDismiss: () => setWeather("clear"),
+      });
+    }
+    if (activeScenario) {
+      const s = WHAT_IF_SCENARIOS.find((sc) => sc.id === activeScenario);
+      if (s) badges.push({
+        label: `Scenario: ${s.label}`,
+        color: "emerald",
+        onDismiss: () => setActiveScenario(null),
+      });
+    }
+    if (features.incidents) {
+      badges.push({
+        label: `${visibleIncidents.length} incident${visibleIncidents.length !== 1 ? "s" : ""}`,
+        color: visibleIncidents.length > 0 ? "red" : "gray",
+        onDismiss: () => toggleFeature("incidents"),
+      });
+    }
+    if (features.geofences) {
+      badges.push({ label: "Geofences active", color: "blue", onDismiss: () => toggleFeature("geofences") });
+    }
+    if (historicalMode) {
+      badges.push({ label: "Historical mode", color: "purple", onDismiss: toggleHistoricalMode });
+    }
+    if (features.parentFlow) {
+      badges.push({ label: "Parent queues", color: "cyan", onDismiss: () => toggleFeature("parentFlow") });
+    }
+    return badges;
+  }, [weather, activeScenario, features, visibleIncidents, historicalMode, toggleFeature, toggleHistoricalMode]);
+
   // ---------------------------------------------------------------------------
   // Fallback states
   // ---------------------------------------------------------------------------
@@ -431,6 +483,34 @@ export default function CorridorMap() {
         </div>
         <MapToolbar features={features} onToggle={toggleFeature} />
       </div>
+
+      {/* Quickstart strip */}
+      <QuickstartStrip onApply={handleQuickstart} activePreset={activePreset} />
+
+      {/* Active feature summary bar */}
+      {summaryBadges.length > 0 && (
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {summaryBadges.map((b) => {
+            const colorMap: Record<string, string> = {
+              amber: "bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300",
+              emerald: "bg-emerald-50 dark:bg-emerald-950 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300",
+              red: "bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300",
+              blue: "bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300",
+              purple: "bg-purple-50 dark:bg-purple-950 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300",
+              cyan: "bg-cyan-50 dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800 text-cyan-700 dark:text-cyan-300",
+              gray: "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400",
+            };
+            return (
+              <span key={b.label} className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border font-medium ${colorMap[b.color] ?? colorMap.gray}`}>
+                {b.label}
+                {b.onDismiss && (
+                  <button onClick={b.onDismiss} className="ml-0.5 opacity-60 hover:opacity-100 leading-none">×</button>
+                )}
+              </span>
+            );
+          })}
+        </div>
+      )}
 
       {/* School selector + Map view toggle */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -622,6 +702,9 @@ export default function CorridorMap() {
             onUpdateGeofence={updateGeofence}
             visible={features.geofences}
           />
+
+          {/* Corridor name + congestion % labels */}
+          <CorridorLabels corridors={congestionData} visible={selectedSchool !== ""} />
         </GoogleMap>
       </div>
 
@@ -665,6 +748,51 @@ export default function CorridorMap() {
 
       {/* Feature panels */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Inline hints for map-only features (no panel below) */}
+        {features.incidents && (
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            <h4 className="text-xs font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              Incidents
+              <span className="ml-2 text-[10px] font-normal text-gray-400">{visibleIncidents.length} visible</span>
+            </h4>
+            <FeatureHint>
+              Colored pins appear on the map above — red = HIGH severity, orange = MED, blue = LOW. Click any pin to open its event timeline and AI model confidence score.
+            </FeatureHint>
+            {historicalMode && (
+              <p className="text-[10px] text-purple-500 dark:text-purple-400">
+                Historical mode is on — incidents appear progressively as the time slider advances past their reported time.
+              </p>
+            )}
+            {visibleIncidents.length === 0 && !historicalMode && (
+              <p className="text-[10px] text-gray-400 dark:text-gray-500">No incidents loaded yet.</p>
+            )}
+          </div>
+        )}
+
+        {features.geofences && (
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            <h4 className="text-xs font-semibold text-gray-900 dark:text-gray-100 mb-3">Geofences</h4>
+            <FeatureHint>
+              Blue circles appear around each school on the map. They turn red when congestion exceeds the alert threshold. Click any circle directly on the map to edit its radius, threshold, and speed limit.
+            </FeatureHint>
+            <div className="space-y-1.5 text-[10px]">
+              {congestionData.map((c) => {
+                const gf = geofences.find((g) => g.zoneId === c.id && g.enabled);
+                if (!gf) return null;
+                const breached = c.congestion > gf.congestionThreshold;
+                return (
+                  <div key={c.id} className="flex items-center justify-between">
+                    <span className="text-gray-600 dark:text-gray-300 truncate">{c.school.name}</span>
+                    <span className={`font-medium shrink-0 ml-2 ${breached ? "text-red-600" : "text-gray-400"}`}>
+                      {breached ? "⚠ Breached" : `${Math.round(c.congestion * 100)}% / ${Math.round(gf.congestionThreshold * 100)}%`}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {features.weather && (
           <WeatherPanel weather={weather} onChangeWeather={setWeather} />
         )}
