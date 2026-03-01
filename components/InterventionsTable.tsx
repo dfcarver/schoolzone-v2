@@ -51,13 +51,13 @@ export default function InterventionsTable({
             </tr>
           </thead>
           <tbody>
-            {interventions.map((intervention) => (
+            {interventions.map((intervention, i) => (
               <tr
                 key={intervention.id}
                 className="border-b border-gray-50 dark:border-gray-800 last:border-0"
               >
                 <td className="py-2.5 pr-4 font-mono text-xs text-gray-500">
-                  {intervention.id}
+                  {intervention.id.startsWith("demo-int-") ? `#${i + 1}` : intervention.id}
                 </td>
                 <td className="py-2.5 pr-4 text-gray-900 dark:text-gray-100">
                   {intervention.action}

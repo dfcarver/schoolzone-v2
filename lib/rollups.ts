@@ -20,6 +20,7 @@ export interface ZoneHeatmapEntry {
   risk15: number;
   risk30: number;
   risk_level: RiskLevel;
+  hasActiveIntervention: boolean;
 }
 
 export interface EmergingRisk {
@@ -34,6 +35,7 @@ export interface ActiveMitigation {
   zoneName: string;
   action: string;
   appliedAt: string;
+  isOperatorDispatched: boolean;
 }
 
 export function computeDistrictRollup(
@@ -136,6 +138,7 @@ export function computeHeatmap(liveState: LiveState): ZoneHeatmapEntry[] {
       risk15: fc.length >= 4 ? Math.round(fc[3].risk * 100) : Math.round(zone.risk_score * 100),
       risk30: fc.length >= 7 ? Math.round(fc[6].risk * 100) : Math.round(zone.risk_score * 100),
       risk_level: zone.risk_level,
+      hasActiveIntervention: zone.interventions.some((i) => i.id.startsWith("demo-int-")),
     };
   });
 }
@@ -170,10 +173,13 @@ export function computeActiveMitigations(liveState: LiveState): ActiveMitigation
         zoneName: zone.name,
         action: intervention.action,
         appliedAt: intervention.applied_at,
+        isOperatorDispatched: intervention.id.startsWith("demo-int-"),
       });
     }
   }
-  return mitigations.slice(0, 3);
+  // Operator-dispatched first, then by time
+  mitigations.sort((a, b) => Number(b.isOperatorDispatched) - Number(a.isOperatorDispatched));
+  return mitigations.slice(0, 6);
 }
 
 export function deriveDriftStatus(

@@ -157,10 +157,19 @@ export default function ExecutivePage() {
                 {activeMitigations.map((m, i) => (
                   <div key={`${m.zone_id}-${i}`} className="flex items-start justify-between py-2 border-b border-gray-50 dark:border-gray-800 last:border-0">
                     <div className="min-w-0">
-                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100 block truncate">{m.action}</span>
-                      <span className="text-xs text-gray-400 dark:text-gray-500">{m.zoneName} — {m.appliedAt}</span>
+                      <div className="flex items-center gap-1.5">
+                        {m.isOperatorDispatched && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                        )}
+                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{m.action}</span>
+                      </div>
+                      <span className="text-xs text-gray-400 dark:text-gray-500">{m.zoneName} — {m.isOperatorDispatched ? "Just now" : m.appliedAt}</span>
                     </div>
-                    <span className="text-xs bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded-full shrink-0 ml-2">Active</span>
+                    {m.isOperatorDispatched ? (
+                      <span className="text-xs bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-full shrink-0 ml-2">Dispatched</span>
+                    ) : (
+                      <span className="text-xs bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded-full shrink-0 ml-2">Active</span>
+                    )}
                   </div>
                 ))}
               </div>

@@ -69,8 +69,15 @@ export default function RiskHeatmap({ entries, linkPrefix = "/executive/zones" }
                 <span className={`w-2 h-2 rounded-full shrink-0 ml-1 ${riskColor(risk)}`} />
               </div>
               <div className="text-base font-bold text-gray-900 dark:text-gray-100 leading-tight">{risk}%</div>
-              <div className="text-[9px] text-gray-500 dark:text-gray-400 uppercase mt-0.5">
-                {horizon === "NOW" ? "now" : `+${horizon.replace("+", "")}m`}
+              <div className="flex items-center justify-between mt-0.5">
+                <span className="text-[9px] text-gray-500 dark:text-gray-400 uppercase">
+                  {horizon === "NOW" ? "now" : `+${horizon.replace("+", "")}m`}
+                </span>
+                {entry.hasActiveIntervention && (
+                  <span className="text-[8px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/50 px-1 py-0.5 rounded leading-none">
+                    ✓ Active
+                  </span>
+                )}
               </div>
             </button>
           );
