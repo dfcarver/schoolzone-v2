@@ -8,6 +8,31 @@ All notable changes to SchoolZone Digital Twin (MRDT) are documented here. For f
 
 ---
 
+## 2026-03-01 (continued)
+
+### Added
+- **AWS real-time data pipeline** (`infra/`) — CDK stack that generates live school zone traffic time series data and serves it to the Next.js app
+  - **Generator Lambda** (`schoolzone-generator`) — runs the Gaussian dismissal-peak traffic model server-side for all 11 zones across 3 cities; triggered every 60 seconds by EventBridge
+  - **Kinesis Data Stream** (`schoolzone-traffic`) — real-time transport for zone telemetry events
+  - **Kinesis Firehose → S3** (`schoolzone-to-datalake`) — buffers stream records and delivers to the data lake every 60s/5MB, partitioned by `year/month/day/hour`, GZIP compressed; queryable via Athena
+  - **S3 Data Lake** (`schoolzone-datalake-*`) — long-term cold storage with lifecycle rules (IA at 30d, Glacier at 90d)
+  - **DynamoDB Zone State Table** (`schoolzone-zone-state`) — hot store for latest telemetry per zone; TTL of 10 minutes auto-purges stale records
+  - **Processor Lambda** (`schoolzone-processor`) — reads Kinesis batches and writes latest zone state to DynamoDB via `PutItem`
+  - **Snapshot API Lambda** (`schoolzone-snapshot-api`) — queries DynamoDB and returns a `LiveState` JSON in the exact shape the Next.js app expects; falls back to model-generated data if DynamoDB has no records yet
+  - **Lambda Function URL** — CORS-enabled public HTTPS endpoint for the snapshot API; no API Gateway required
+- **`lib/data.ts` AWS integration** — `loadLiveState()` now checks for `NEXT_PUBLIC_AWS_SNAPSHOT_API_URL`; if set, fetches live data from the pipeline with automatic fallback to mock data on failure
+- **`infra/README.md`** — setup guide covering prerequisites, deploy steps, Athena query examples, and weather condition configuration
+
+### Infrastructure
+- AWS CDK v2 (TypeScript) bootstrapped and deployed to `us-east-1` (account `304240833047`)
+- Stack deployed successfully with all 11 zones writing to DynamoDB every minute
+- Snapshot API live at Lambda Function URL; wired into app via `.env.local`
+
+### Fixed
+- Replaced Amazon Timestream with DynamoDB after Timestream returned `AccessDeniedException` (requires special account enablement for new accounts)
+
+---
+
 ## 2026-03-01
 
 ### Added
