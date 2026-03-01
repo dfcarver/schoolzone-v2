@@ -16,6 +16,7 @@ import {
   SnapshotPhase,
 } from "./types";
 import type { StoredIntervention } from "./interventionStore";
+import { supabase } from "./supabase";
 import { loadLiveState } from "./data";
 import {
   nextSnapshotPhase,
@@ -28,7 +29,7 @@ import { validateLiveState, ValidationResult } from "./validate";
 import { recordRotation } from "./metrics";
 import * as logger from "./logger";
 
-export type SseStatus = "connecting" | "live" | "disconnected";
+export type SyncStatus = "connecting" | "live" | "disconnected";
 
 interface LiveStateContextValue {
   liveState: LiveState | null;
@@ -36,7 +37,7 @@ interface LiveStateContextValue {
   error: string | null;
   lastValidation: ValidationResult | null;
   applyDemo: (zoneId: string, recommendation: Recommendation) => void;
-  sseStatus: SseStatus;
+  syncStatus: SyncStatus;
   appliedHistory: StoredIntervention[];
 }
 
@@ -46,12 +47,27 @@ const LiveStateContext = createContext<LiveStateContextValue>({
   error: null,
   lastValidation: null,
   applyDemo: () => {},
-  sseStatus: "connecting",
+  syncStatus: "connecting",
   appliedHistory: [],
 });
 
 export function useLiveStateContext(): LiveStateContextValue {
   return useContext(LiveStateContext);
+}
+
+interface SupabaseRow {
+  id: string;
+  zone_id: string;
+  recommendation: Recommendation;
+  applied_at: string;
+}
+
+function rowToStored(row: SupabaseRow): StoredIntervention {
+  return {
+    zoneId: row.zone_id,
+    recommendation: row.recommendation,
+    appliedAt: new Date(row.applied_at).getTime(),
+  };
 }
 
 function replayInterventions(
@@ -71,7 +87,7 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastValidation, setLastValidation] = useState<ValidationResult | null>(null);
-  const [sseStatus, setSseStatus] = useState<SseStatus>("connecting");
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>("connecting");
   const [appliedHistory, setAppliedHistory] = useState<StoredIntervention[]>([]);
   const phaseRef = useRef<SnapshotPhase>(SnapshotPhase.INITIAL);
   const abortRef = useRef<AbortController | null>(null);
@@ -92,9 +108,7 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
         if (validate) {
           const result = validateLiveState(data);
           setLastValidation(result);
-          if (!result.valid) {
-            logger.warn("Snapshot validation failed", result.errors);
-          }
+          if (!result.valid) logger.warn("Snapshot validation failed", result.errors);
         }
         setBaseState(data);
         setError(null);
@@ -103,9 +117,7 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
         setError("Demo Data Unavailable");
       }
     } catch (err) {
-      if ((err as Error).name !== "AbortError") {
-        setError("Demo Data Unavailable");
-      }
+      if ((err as Error).name !== "AbortError") setError("Demo Data Unavailable");
     } finally {
       setLoading(false);
     }
@@ -130,7 +142,7 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
     };
   }, [fetchSnapshot, config.scenario, config.timeMode, config.snapshotIntervalMs, config.runtimeValidationEnabled]);
 
-  // Mirror baseState into ref and flush any interventions that arrived before base loaded
+  // Mirror baseState into ref and flush pending interventions
   useEffect(() => {
     baseStateRef.current = baseState;
     if (baseState && pendingSnapshotRef.current.length > 0) {
@@ -140,40 +152,50 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
     }
   }, [baseState]);
 
-  // SSE connection — runs once per mount when demo mutations are enabled
+  // Supabase Realtime subscription
   useEffect(() => {
     if (!config.demoMutationEnabled) return;
 
-    setSseStatus("connecting");
-    const es = new EventSource("/api/interventions");
+    setSyncStatus("connecting");
 
-    es.onopen = () => setSseStatus("live");
-    es.onerror = () => setSseStatus("disconnected");
+    // Fetch existing interventions as initial snapshot
+    supabase
+      .from("interventions")
+      .select("*")
+      .order("applied_at", { ascending: true })
+      .then(({ data }) => {
+        if (!data) return;
+        const stored = (data as SupabaseRow[]).map(rowToStored);
+        setAppliedHistory(stored);
+        setDemoState((prev) => {
+          const base = baseStateRef.current;
+          if (!base) { pendingSnapshotRef.current = stored; return prev; }
+          return replayInterventions(base, prev, stored);
+        });
+      });
 
-    es.addEventListener("snapshot", (ev) => {
-      const stored: StoredIntervention[] = JSON.parse(ev.data);
-      setAppliedHistory(stored);
-      setDemoState((prev) => {
-        const base = baseStateRef.current;
-        if (!base) {
-          pendingSnapshotRef.current = stored;
-          return prev;
+    // Subscribe to new inserts via Realtime
+    const channel = supabase
+      .channel("interventions-changes")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "interventions" },
+        (payload) => {
+          const item = rowToStored(payload.new as SupabaseRow);
+          setAppliedHistory((prev) => [...prev, item]);
+          setDemoState((prev) => {
+            const base = baseStateRef.current;
+            if (!base) return prev;
+            return applyDemoIntervention(prev ?? base, item.zoneId, item.recommendation);
+          });
         }
-        return replayInterventions(base, prev, stored);
+      )
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") setSyncStatus("live");
+        else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") setSyncStatus("disconnected");
       });
-    });
 
-    es.addEventListener("apply", (ev) => {
-      const stored: StoredIntervention = JSON.parse(ev.data);
-      setAppliedHistory((prev) => [...prev, stored]);
-      setDemoState((prev) => {
-        const base = baseStateRef.current;
-        if (!base) return prev;
-        return applyDemoIntervention(prev ?? base, stored.zoneId, stored.recommendation);
-      });
-    });
-
-    return () => es.close();
+    return () => { supabase.removeChannel(channel); };
   }, [config.demoMutationEnabled]);
 
   const applyDemo = useCallback(
@@ -187,7 +209,6 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ zoneId, recommendation }),
       });
-      // SSE "apply" event handles state update for all clients including sender
     },
     [config.demoMutationEnabled]
   );
@@ -198,8 +219,8 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
   );
 
   const contextValue = useMemo(
-    () => ({ liveState: mergedState, loading, error, lastValidation, applyDemo, sseStatus, appliedHistory }),
-    [mergedState, loading, error, lastValidation, applyDemo, sseStatus, appliedHistory]
+    () => ({ liveState: mergedState, loading, error, lastValidation, applyDemo, syncStatus, appliedHistory }),
+    [mergedState, loading, error, lastValidation, applyDemo, syncStatus, appliedHistory]
   );
 
   return (
