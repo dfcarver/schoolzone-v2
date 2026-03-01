@@ -8,6 +8,18 @@ All notable changes to SchoolZone Digital Twin (MRDT) are documented here. For f
 
 ---
 
+## 2026-03-01 (continued +1)
+
+### Added
+- **Live/Demo data source toggle** in Topbar — segmented `AWS Live / Demo` control that appears only when `NEXT_PUBLIC_AWS_SNAPSHOT_API_URL` is configured; switches the app between the real-time AWS pipeline and static mock scenario files at runtime
+  - **AWS Live mode** — fetches from the Snapshot API Lambda every polling interval; scenario selector hidden (not applicable to live data)
+  - **Demo mode** — loads static mock JSON from `/mock/scenarios/<scenario>/`; scenario selector visible as before
+  - Selection persists to `localStorage` via `DemoConfig`; defaults to `"live"` when the AWS URL env var is present, `"demo"` otherwise
+- **`DataMode` type** (`"live" | "demo"`) exported from `lib/demoConfig.tsx` and added to the `DemoConfig` interface
+- **`dataMode` param** added to `loadLiveState()` in `lib/data.ts` — AWS fetch is skipped when `dataMode === "demo"` even if the env var is set, enabling clean in-app switching without restarting the dev server
+
+---
+
 ## 2026-03-01 (continued)
 
 ### Added
