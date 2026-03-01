@@ -36,9 +36,35 @@ export async function loadSchools(
 export async function loadLiveState(
   snapshot: string,
   scenario: ScenarioId = "normal",
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  city?: string,
+  weather?: string
 ): Promise<LiveState | null> {
   const start = performance.now();
+
+  // If an AWS Snapshot API URL is configured, use live data from the pipeline.
+  // Falls back to static mock data automatically if the env var is not set.
+  const awsApiUrl = process.env.NEXT_PUBLIC_AWS_SNAPSHOT_API_URL;
+  if (awsApiUrl) {
+    try {
+      const params = new URLSearchParams();
+      if (city)    params.set("city",    city);
+      if (weather) params.set("weather", weather);
+      const url = params.size > 0 ? `${awsApiUrl}?${params}` : awsApiUrl;
+      const res = await fetch(url, { signal, cache: "no-store" });
+      if (!res.ok) throw new Error(`AWS snapshot API returned ${res.status}`);
+      const data = (await res.json()) as LiveState;
+      recordFetch(performance.now() - start, true);
+      logger.info(`Loaded live snapshot from AWS API (city=${city ?? "default"})`);
+      return data;
+    } catch (err) {
+      if ((err as Error).name === "AbortError") return null;
+      logger.warn("AWS snapshot API failed, falling back to mock data:", err);
+      // Fall through to mock data below
+    }
+  }
+
+  // Default: load from static mock JSON files (demo mode)
   try {
     const res = await fetch(`${scenarioBasePath(scenario)}/${snapshot}`, { signal });
     if (!res.ok) throw new Error(`Failed to load live state: ${res.status}`);
