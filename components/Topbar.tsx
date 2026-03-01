@@ -57,15 +57,18 @@ export default function Topbar({ snapshotId, timestamp, title = "Operations Cons
         )}
       </div>
       <div className="flex items-center gap-2 sm:gap-4">
-        <select
-          value={config.scenario}
-          onChange={(e) => updateConfig({ scenario: e.target.value as ScenarioId })}
-          className="text-xs border border-gray-200 dark:border-gray-600 rounded-md px-2 py-1 text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800"
-        >
-          {(Object.keys(SCENARIO_LABELS) as ScenarioId[]).map((s) => (
-            <option key={s} value={s}>{SCENARIO_LABELS[s]}</option>
-          ))}
-        </select>
+        <div className="flex items-center gap-1.5">
+          <span className="hidden sm:inline text-[10px] text-gray-400 dark:text-gray-500 font-medium">Demo</span>
+          <select
+            value={config.scenario}
+            onChange={(e) => updateConfig({ scenario: e.target.value as ScenarioId })}
+            className="text-xs border border-gray-200 dark:border-gray-600 rounded-md px-2 py-1 text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800"
+          >
+            {(Object.keys(SCENARIO_LABELS) as ScenarioId[]).map((s) => (
+              <option key={s} value={s}>{SCENARIO_LABELS[s]}</option>
+            ))}
+          </select>
+        </div>
         <button
           onClick={() => updateConfig({ timeMode: config.timeMode === "live" ? "paused" : "live" })}
           className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border ${
