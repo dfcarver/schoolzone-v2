@@ -25,9 +25,9 @@ export async function DELETE(req: NextRequest) {
   if (supabaseAdmin) {
     await supabaseAdmin.from("push_subscriptions").delete().eq("endpoint", endpoint);
   } else {
-    for (const s of subscriptionCache) {
+    Array.from(subscriptionCache).forEach((s) => {
       if (JSON.parse(s).endpoint === endpoint) subscriptionCache.delete(s);
-    }
+    });
   }
   return NextResponse.json({ ok: true });
 }
