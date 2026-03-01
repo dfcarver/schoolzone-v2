@@ -28,12 +28,16 @@ import { validateLiveState, ValidationResult } from "./validate";
 import { recordRotation } from "./metrics";
 import * as logger from "./logger";
 
+export type SseStatus = "connecting" | "live" | "disconnected";
+
 interface LiveStateContextValue {
   liveState: LiveState | null;
   loading: boolean;
   error: string | null;
   lastValidation: ValidationResult | null;
   applyDemo: (zoneId: string, recommendation: Recommendation) => void;
+  sseStatus: SseStatus;
+  appliedHistory: StoredIntervention[];
 }
 
 const LiveStateContext = createContext<LiveStateContextValue>({
@@ -42,6 +46,8 @@ const LiveStateContext = createContext<LiveStateContextValue>({
   error: null,
   lastValidation: null,
   applyDemo: () => {},
+  sseStatus: "connecting",
+  appliedHistory: [],
 });
 
 export function useLiveStateContext(): LiveStateContextValue {
@@ -65,6 +71,8 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastValidation, setLastValidation] = useState<ValidationResult | null>(null);
+  const [sseStatus, setSseStatus] = useState<SseStatus>("connecting");
+  const [appliedHistory, setAppliedHistory] = useState<StoredIntervention[]>([]);
   const phaseRef = useRef<SnapshotPhase>(SnapshotPhase.INITIAL);
   const abortRef = useRef<AbortController | null>(null);
   const baseStateRef = useRef<LiveState | null>(null);
@@ -135,10 +143,16 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
   // SSE connection — runs once per mount when demo mutations are enabled
   useEffect(() => {
     if (!config.demoMutationEnabled) return;
+
+    setSseStatus("connecting");
     const es = new EventSource("/api/interventions");
+
+    es.onopen = () => setSseStatus("live");
+    es.onerror = () => setSseStatus("disconnected");
 
     es.addEventListener("snapshot", (ev) => {
       const stored: StoredIntervention[] = JSON.parse(ev.data);
+      setAppliedHistory(stored);
       setDemoState((prev) => {
         const base = baseStateRef.current;
         if (!base) {
@@ -151,6 +165,7 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
 
     es.addEventListener("apply", (ev) => {
       const stored: StoredIntervention = JSON.parse(ev.data);
+      setAppliedHistory((prev) => [...prev, stored]);
       setDemoState((prev) => {
         const base = baseStateRef.current;
         if (!base) return prev;
@@ -183,8 +198,8 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
   );
 
   const contextValue = useMemo(
-    () => ({ liveState: mergedState, loading, error, lastValidation, applyDemo }),
-    [mergedState, loading, error, lastValidation, applyDemo]
+    () => ({ liveState: mergedState, loading, error, lastValidation, applyDemo, sseStatus, appliedHistory }),
+    [mergedState, loading, error, lastValidation, applyDemo, sseStatus, appliedHistory]
   );
 
   return (
