@@ -11,6 +11,8 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "SchoolZone Digital Twin",
   description: "School Zone Digital Twin Operations Console",
+  manifest: "/manifest.json",
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "SchoolZone" },
 };
 
 export default function RootLayout({

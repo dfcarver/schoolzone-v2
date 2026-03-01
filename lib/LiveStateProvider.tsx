@@ -143,6 +143,7 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
   }, [fetchSnapshot, config.scenario, config.timeMode, config.snapshotIntervalMs, config.runtimeValidationEnabled, config.dataMode]);
 
   // Mirror baseState into ref and flush pending interventions
+  const prevHighZones = useRef<Set<string>>(new Set());
   useEffect(() => {
     baseStateRef.current = baseState;
     if (baseState && pendingSnapshotRef.current.length > 0) {
@@ -150,7 +151,29 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
       pendingSnapshotRef.current = [];
       setDemoState((prev) => replayInterventions(baseState, prev, pending));
     }
-  }, [baseState]);
+
+    // Send push notification for newly HIGH-risk zones (transitions only)
+    if (baseState && config.dataMode === "live") {
+      const currentHigh = new Set(baseState.zones.filter((z) => z.risk_level === "HIGH").map((z) => z.zone_id));
+      for (const zoneId of currentHigh) {
+        if (!prevHighZones.current.has(zoneId)) {
+          const zone = baseState.zones.find((z) => z.zone_id === zoneId);
+          fetch("/api/push/notify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: "HIGH Risk Zone Alert",
+              body: `${zone?.name ?? zoneId} has reached HIGH risk — immediate attention required.`,
+              severity: "critical",
+              zoneId,
+              url: "/operations/dashboard",
+            }),
+          }).catch(() => {/* non-critical */});
+        }
+      }
+      prevHighZones.current = currentHigh;
+    }
+  }, [baseState, config.dataMode]);
 
   // Supabase Realtime subscription
   useEffect(() => {
