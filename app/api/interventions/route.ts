@@ -1,61 +1,5 @@
-import { getAll, add, addListener, removeListener, StoredIntervention } from "../../../lib/interventionStore";
+import { supabase } from "../../../lib/supabase";
 import { Recommendation } from "../../../lib/types";
-
-const SSE_HEADERS = {
-  "Content-Type": "text/event-stream",
-  "Cache-Control": "no-cache",
-  "X-Accel-Buffering": "no",
-  Connection: "keep-alive",
-};
-
-function sseEvent(event: string, data: unknown): string {
-  return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
-}
-
-export async function GET(): Promise<Response> {
-  const encoder = new TextEncoder();
-  let closed = false;
-  let keepAlive: ReturnType<typeof setInterval> | undefined;
-  let listener: ((item: StoredIntervention) => void) | undefined;
-
-  const stream = new ReadableStream({
-    start(controller) {
-      // Send current snapshot immediately
-      controller.enqueue(encoder.encode(sseEvent("snapshot", getAll())));
-
-      listener = (item: StoredIntervention) => {
-        if (closed) return;
-        try {
-          controller.enqueue(encoder.encode(sseEvent("apply", item)));
-        } catch {
-          // stream already closed
-        }
-      };
-
-      addListener(listener);
-
-      // Keep-alive ping every 25 seconds
-      keepAlive = setInterval(() => {
-        if (closed) {
-          clearInterval(keepAlive);
-          return;
-        }
-        try {
-          controller.enqueue(encoder.encode(": keep-alive\n\n"));
-        } catch {
-          clearInterval(keepAlive);
-        }
-      }, 25_000);
-    },
-    cancel() {
-      closed = true;
-      clearInterval(keepAlive);
-      if (listener) removeListener(listener);
-    },
-  });
-
-  return new Response(stream, { headers: SSE_HEADERS });
-}
 
 export async function POST(req: Request): Promise<Response> {
   let body: { zoneId?: unknown; recommendation?: unknown };
@@ -75,7 +19,15 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ error: "recommendation required" }, { status: 400 });
   }
 
-  add(zoneId, recommendation);
+  const { error } = await supabase.from("interventions").insert({
+    zone_id: zoneId,
+    recommendation,
+  });
+
+  if (error) {
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+
   return Response.json({ ok: true });
 }
 
