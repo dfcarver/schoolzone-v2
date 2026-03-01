@@ -2,7 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as kinesis from "aws-cdk-lib/aws-kinesis";
 import * as s3 from "aws-cdk-lib/aws-s3";
-import * as timestream from "aws-cdk-lib/aws-timestream";
+import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as kinesisfirehose from "aws-cdk-lib/aws-kinesisfirehose";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as lambdaNodejs from "aws-cdk-lib/aws-lambda-nodejs";
@@ -51,24 +51,18 @@ export class SchoolzoneStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
 
-    // ── Timestream ────────────────────────────────────────────────────────────
-    // Hot store: last 24 hours in memory, 1 year in magnetic storage
-    const timestreamDb = new timestream.CfnDatabase(this, "TimestreamDB", {
-      databaseName: "schoolzone-db",
+    // ── DynamoDB — Zone State Table ───────────────────────────────────────────
+    // Stores the latest telemetry reading per zone (overwritten each minute).
+    // TTL of 10 minutes automatically purges stale records.
+    // PK: city_id  SK: zone_id  → single-table current state per city
+    const zoneStateTable = new dynamodb.Table(this, "ZoneStateTable", {
+      tableName: "schoolzone-zone-state",
+      partitionKey: { name: "city_id", type: dynamodb.AttributeType.STRING },
+      sortKey:      { name: "zone_id", type: dynamodb.AttributeType.STRING },
+      billingMode:  dynamodb.BillingMode.PAY_PER_REQUEST,
+      timeToLiveAttribute: "ttl",
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
-
-    const timestreamTable = new timestream.CfnTable(this, "TimestreamTable", {
-      databaseName: "schoolzone-db",
-      tableName: "telemetry",
-      retentionProperties: {
-        memoryStoreRetentionPeriodInHours: "24",
-        magneticStoreRetentionPeriodInDays: "365",
-      },
-      magneticStoreWriteProperties: {
-        enableMagneticStoreWrites: true,
-      },
-    });
-    timestreamTable.addDependency(timestreamDb);
 
     // ── Firehose IAM Role ─────────────────────────────────────────────────────
     const firehoseRole = new iam.Role(this, "FirehoseRole", {
@@ -152,8 +146,8 @@ export class SchoolzoneStack extends cdk.Stack {
       targets: [new targets.LambdaFunction(generatorFn)],
     });
 
-    // ── Processor Lambda (Kinesis → Timestream) ───────────────────────────────
-    // Reads batches from Kinesis and writes time-series records to Timestream
+    // ── Processor Lambda (Kinesis → DynamoDB) ────────────────────────────────
+    // Reads batches from Kinesis and writes the latest zone state to DynamoDB
     const processorFn = new lambdaNodejs.NodejsFunction(this, "Processor", {
       ...lambdaDefaults,
       functionName: "schoolzone-processor",
@@ -161,8 +155,7 @@ export class SchoolzoneStack extends cdk.Stack {
       handler: "handler",
       timeout: cdk.Duration.seconds(30),
       environment: {
-        TIMESTREAM_DATABASE: "schoolzone-db",
-        TIMESTREAM_TABLE: "telemetry",
+        DYNAMODB_TABLE: zoneStateTable.tableName,
       },
     });
 
@@ -176,16 +169,10 @@ export class SchoolzoneStack extends cdk.Stack {
       })
     );
 
-    // Timestream write permissions
-    processorFn.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: ["timestream:WriteRecords", "timestream:DescribeEndpoints"],
-        resources: ["*"],
-      })
-    );
+    zoneStateTable.grantWriteData(processorFn);
 
     // ── Snapshot API Lambda ────────────────────────────────────────────────────
-    // Queries Timestream for latest zone telemetry and returns a LiveState JSON
+    // Queries DynamoDB for latest zone telemetry and returns a LiveState JSON
     // that matches the exact shape the Next.js app already expects
     const snapshotApiFn = new lambdaNodejs.NodejsFunction(this, "SnapshotApi", {
       ...lambdaDefaults,
@@ -194,18 +181,11 @@ export class SchoolzoneStack extends cdk.Stack {
       handler: "handler",
       timeout: cdk.Duration.seconds(15),
       environment: {
-        TIMESTREAM_DATABASE: "schoolzone-db",
-        TIMESTREAM_TABLE: "telemetry",
+        DYNAMODB_TABLE: zoneStateTable.tableName,
       },
     });
 
-    // Timestream query permissions
-    snapshotApiFn.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: ["timestream:Select", "timestream:DescribeEndpoints"],
-        resources: ["*"],
-      })
-    );
+    zoneStateTable.grantReadData(snapshotApiFn);
 
     // Lambda Function URL — simpler and cheaper than API Gateway for this use case
     const snapshotUrl = snapshotApiFn.addFunctionUrl({
@@ -225,9 +205,9 @@ export class SchoolzoneStack extends cdk.Stack {
       exportName: "SchoolzoneDataLakeBucket",
     });
 
-    new cdk.CfnOutput(this, "TimestreamDatabaseName", {
-      value: "schoolzone-db",
-      description: "Timestream database name",
+    new cdk.CfnOutput(this, "DynamoDBTableName", {
+      value: zoneStateTable.tableName,
+      description: "DynamoDB zone state table",
     });
 
     new cdk.CfnOutput(this, "KinesisStreamName", {
