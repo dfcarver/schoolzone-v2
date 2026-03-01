@@ -197,13 +197,13 @@ const KHALIFA_CORRIDORS: CorridorDef[] = [
 const MBZ_CORRIDORS: CorridorDef[] = [
   {
     id: "zone-mbz-001",
-    name: "MBZ City Academy Corridor",
+    name: "Aldar Academies MBZ Corridor",
     path: [
       { lat: 24.371, lng: 54.553 },
       { lat: 24.371, lng: 54.564 },
       { lat: 24.364, lng: 54.564 },
     ],
-    school: { zone_id: "zone-mbz-001", name: "MBZ City Academy", lat: 24.370560, lng: 54.563863, type: "high", enrollment: 1100 },
+    school: { zone_id: "zone-mbz-001", name: "Aldar Academies MBZ", lat: 24.370560, lng: 54.563863, type: "high", enrollment: 1100 },
     baselineCongestion: 0.10,
     peaks: [
       { centerMin: 7 * 60 + 20, spread: 24, intensity: 0.83 },
