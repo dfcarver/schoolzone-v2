@@ -49,7 +49,7 @@ import FeatureHint from "./map/FeatureHint";
 // Corridor definitions
 // ---------------------------------------------------------------------------
 
-const CORRIDORS: CorridorDef[] = [
+const SPRINGFIELD_CORRIDORS: CorridorDef[] = [
   {
     id: "zone-001",
     name: "Oak Avenue Corridor",
@@ -130,6 +130,148 @@ const CORRIDORS: CorridorDef[] = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// City definitions
+// ---------------------------------------------------------------------------
+
+type CityId = "springfield_il" | "khalifa_city_auh" | "mbz_city_auh";
+
+interface CityConfig {
+  id: CityId;
+  label: string;
+  corridors: CorridorDef[];
+  overviewCenter: { lat: number; lng: number };
+  overviewZoom: number;
+  defaultZoom: number;
+  bounds: google.maps.LatLngBoundsLiteral;
+}
+
+const KHALIFA_CORRIDORS: CorridorDef[] = [
+  {
+    id: "zone-kc-001",
+    name: "Yasmina Academy Corridor",
+    path: [
+      { lat: 24.424, lng: 54.547 },
+      { lat: 24.416, lng: 54.547 },
+      { lat: 24.416, lng: 54.554 },
+    ],
+    school: { zone_id: "zone-kc-001", name: "Yasmina British Academy", lat: 24.4158592, lng: 54.5471628, type: "high", enrollment: 1200 },
+    baselineCongestion: 0.09,
+    peaks: [
+      { centerMin: 7 * 60 + 15, spread: 25, intensity: 0.82 },
+      { centerMin: 14 * 60 + 30, spread: 25, intensity: 0.87 },
+    ],
+  },
+  {
+    id: "zone-kc-002",
+    name: "ADNOC Schools Corridor",
+    path: [
+      { lat: 24.411, lng: 54.530 },
+      { lat: 24.411, lng: 54.542 },
+      { lat: 24.404, lng: 54.542 },
+    ],
+    school: { zone_id: "zone-kc-002", name: "ADNOC Schools Khalifa", lat: 24.4110, lng: 54.5420, type: "elementary", enrollment: 650 },
+    baselineCongestion: 0.07,
+    peaks: [
+      { centerMin: 7 * 60 + 30, spread: 22, intensity: 0.74 },
+      { centerMin: 14 * 60 + 15, spread: 22, intensity: 0.79 },
+    ],
+  },
+  {
+    id: "zone-kc-003",
+    name: "Khalifa International Corridor",
+    path: [
+      { lat: 24.428, lng: 54.557 },
+      { lat: 24.420, lng: 54.557 },
+      { lat: 24.420, lng: 54.566 },
+    ],
+    school: { zone_id: "zone-kc-003", name: "Khalifa International Academy", lat: 24.4195, lng: 54.5575, type: "middle", enrollment: 820 },
+    baselineCongestion: 0.08,
+    peaks: [
+      { centerMin: 7 * 60 + 45, spread: 20, intensity: 0.71 },
+      { centerMin: 14 * 60 + 45, spread: 20, intensity: 0.81 },
+    ],
+  },
+];
+
+const MBZ_CORRIDORS: CorridorDef[] = [
+  {
+    id: "zone-mbz-001",
+    name: "MBZ City Academy Corridor",
+    path: [
+      { lat: 24.371, lng: 54.553 },
+      { lat: 24.371, lng: 54.564 },
+      { lat: 24.364, lng: 54.564 },
+    ],
+    school: { zone_id: "zone-mbz-001", name: "MBZ City Academy", lat: 24.370560, lng: 54.563863, type: "high", enrollment: 1100 },
+    baselineCongestion: 0.10,
+    peaks: [
+      { centerMin: 7 * 60 + 20, spread: 24, intensity: 0.83 },
+      { centerMin: 14 * 60 + 30, spread: 25, intensity: 0.88 },
+    ],
+  },
+  {
+    id: "zone-mbz-002",
+    name: "Al Bateen Academy Corridor",
+    path: [
+      { lat: 24.372, lng: 54.556 },
+      { lat: 24.364, lng: 54.556 },
+      { lat: 24.364, lng: 54.563 },
+    ],
+    school: { zone_id: "zone-mbz-002", name: "Al Bateen Academy", lat: 24.3640, lng: 54.5590, type: "elementary", enrollment: 540 },
+    baselineCongestion: 0.08,
+    peaks: [
+      { centerMin: 7 * 60 + 40, spread: 18, intensity: 0.70 },
+      { centerMin: 14 * 60 + 20, spread: 20, intensity: 0.75 },
+    ],
+  },
+  {
+    id: "zone-mbz-003",
+    name: "Emirates National School Corridor",
+    path: [
+      { lat: 24.378, lng: 54.562 },
+      { lat: 24.378, lng: 54.570 },
+      { lat: 24.371, lng: 54.570 },
+    ],
+    school: { zone_id: "zone-mbz-003", name: "Emirates National School", lat: 24.3780, lng: 54.5660, type: "middle", enrollment: 780 },
+    baselineCongestion: 0.09,
+    peaks: [
+      { centerMin: 7 * 60 + 30, spread: 22, intensity: 0.77 },
+      { centerMin: 14 * 60 + 45, spread: 22, intensity: 0.84 },
+    ],
+  },
+];
+
+const CITIES: CityConfig[] = [
+  {
+    id: "springfield_il",
+    label: "Springfield, IL",
+    corridors: SPRINGFIELD_CORRIDORS,
+    overviewCenter: { lat: 39.7860, lng: -89.6480 },
+    overviewZoom: 15,
+    defaultZoom: 19,
+    bounds: { north: 39.8077, south: 39.7643, east: -89.6197, west: -89.6763 },
+  },
+  {
+    id: "khalifa_city_auh",
+    label: "Khalifa City, AUH",
+    corridors: KHALIFA_CORRIDORS,
+    overviewCenter: { lat: 24.415, lng: 54.548 },
+    overviewZoom: 14,
+    defaultZoom: 17,
+    bounds: { north: 24.445, south: 24.390, east: 54.590, west: 54.515 },
+  },
+  {
+    id: "mbz_city_auh",
+    label: "MBZ City, AUH",
+    corridors: MBZ_CORRIDORS,
+    overviewCenter: { lat: 24.371, lng: 54.562 },
+    overviewZoom: 14,
+    defaultZoom: 17,
+    bounds: { north: 24.400, south: 24.340, east: 54.600, west: 54.530 },
+  },
+];
+
 const TIME_PRESETS = [
   { label: "Early AM", min: 6 * 60 },
   { label: "Drop-off", min: 7 * 60 + 45 },
@@ -140,16 +282,6 @@ const TIME_PRESETS = [
 ];
 
 const MAP_CONTAINER_STYLE: React.CSSProperties = { width: "100%", height: "100%", borderRadius: "0.5rem" };
-const DEFAULT_ZOOM = 19;
-const OVERVIEW_ZOOM = 15;
-const OVERVIEW_CENTER = { lat: 39.7860, lng: -89.6480 };
-
-const BOUNDS_RESTRICTION: google.maps.LatLngBoundsLiteral = {
-  north: OVERVIEW_CENTER.lat + 0.0217,
-  south: OVERVIEW_CENTER.lat - 0.0217,
-  east: OVERVIEW_CENTER.lng + 0.0283,
-  west: OVERVIEW_CENTER.lng - 0.0283,
-};
 
 type MapViewType = "roadmap" | "satellite" | "hybrid" | "terrain" | "dark" | "minimal";
 
@@ -199,7 +331,7 @@ function getBaseTypeId(mapType: MapViewType): string {
   return mapType === "dark" || mapType === "minimal" ? "roadmap" : mapType;
 }
 
-function getMapOptions(mapType: MapViewType): google.maps.MapOptions {
+function getMapOptions(mapType: MapViewType, bounds: google.maps.LatLngBoundsLiteral): google.maps.MapOptions {
   return {
     disableDefaultUI: false,
     zoomControl: true,
@@ -209,9 +341,9 @@ function getMapOptions(mapType: MapViewType): google.maps.MapOptions {
     mapTypeId: getBaseTypeId(mapType),
     tilt: mapType === "satellite" || mapType === "hybrid" ? 45 : 0,
     styles: MAP_TYPE_STYLES[mapType] ?? [],
-    minZoom: 14,
+    minZoom: 12,
     maxZoom: 21,
-    restriction: { latLngBounds: BOUNDS_RESTRICTION, strictBounds: true },
+    restriction: { latLngBounds: bounds, strictBounds: true },
   };
 }
 
@@ -237,9 +369,15 @@ export default function CorridorMap() {
   const { push: pushNotification } = useNotifications();
 
   const mapRef = useRef<google.maps.Map | null>(null);
-  const schoolZoom = useRef<number>(DEFAULT_ZOOM); // captured from Lincoln's actual initial zoom
+  const schoolZoom = useRef<number>(19); // set from actual map idle event; reset on city change
+
+  // City selection
+  const [selectedCity, setSelectedCity] = useState<CityId>("springfield_il");
+  const cityConfig = useMemo(() => CITIES.find(c => c.id === selectedCity)!, [selectedCity]);
+  const corridors = cityConfig.corridors;
+
   const [activeInfo, setActiveInfo] = useState<string | null>(null);
-  const [selectedSchool, setSelectedSchool] = useState<string>(CORRIDORS[0].id);
+  const [selectedSchool, setSelectedSchool] = useState<string>(SPRINGFIELD_CORRIDORS[0].id);
   const [mapViewType, setMapViewType] = useState<MapViewType>("hybrid");
   const [showMapPicker, setShowMapPicker] = useState(false);
 
@@ -247,10 +385,10 @@ export default function CorridorMap() {
   // selected school actually changes. Without this, a new {lat,lng} object is created
   // on every render and the library re-pans to the same hardcoded location every time.
   const mapCenter = useMemo(() => {
-    if (!selectedSchool) return OVERVIEW_CENTER;
-    const c = CORRIDORS.find((x) => x.id === selectedSchool);
-    return c ? { lat: c.school.lat, lng: c.school.lng } : OVERVIEW_CENTER;
-  }, [selectedSchool]);
+    if (!selectedSchool) return cityConfig.overviewCenter;
+    const c = corridors.find((x) => x.id === selectedSchool);
+    return c ? { lat: c.school.lat, lng: c.school.lng } : cityConfig.overviewCenter;
+  }, [selectedSchool, corridors, cityConfig]);
 
   // Feature flags
   const [features, setFeatures] = useState<MapFeatureFlags>({
@@ -335,14 +473,14 @@ export default function CorridorMap() {
 
   // Congestion engine (replaces inline state + effects)
   const engine = useCongestionEngine({
-    corridors: CORRIDORS,
+    corridors,
     weatherMultiplier,
     activeScenario,
   });
   const { timeMin, setTimeMin, isPlaying, setIsPlaying, congestionData, getCongestion } = engine;
 
   // Fix 3: memoize map options so GoogleMap doesn't get a new object every render
-  const mapOptions = useMemo(() => getMapOptions(mapViewType), [mapViewType]);
+  const mapOptions = useMemo(() => getMapOptions(mapViewType, cityConfig.bounds), [mapViewType, cityConfig]);
 
   // Fix 2: memoize mapped arrays passed to child components / hooks
   const geofenceAlertsData = useMemo(
@@ -421,31 +559,42 @@ export default function CorridorMap() {
   const navigateToSchool = useCallback((schoolId: string) => {
     setSelectedSchool(schoolId);
     if (navLocked) return;
-    const corridor = CORRIDORS.find((c) => c.id === schoolId);
+    const corridor = corridors.find((c) => c.id === schoolId);
     if (corridor && mapRef.current) {
       mapRef.current.panTo({ lat: corridor.school.lat, lng: corridor.school.lng });
       mapRef.current.setZoom(schoolZoom.current);
     }
-  }, [navLocked]);
+  }, [navLocked, corridors]);
 
   const navigateToOverview = useCallback(() => {
     setSelectedSchool("");
     if (navLocked) return;
     if (mapRef.current) {
-      mapRef.current.panTo(OVERVIEW_CENTER);
-      mapRef.current.setZoom(OVERVIEW_ZOOM);
+      mapRef.current.panTo(cityConfig.overviewCenter);
+      mapRef.current.setZoom(cityConfig.overviewZoom);
     }
-  }, [navLocked]);
+  }, [navLocked, cityConfig]);
 
   const onLoad = useCallback((map: google.maps.Map) => {
     mapRef.current = map;
-    // Capture the zoom Google Maps actually settles on for Lincoln so we can
+    // Capture the zoom Google Maps actually settles on for the initial school so we can
     // replay the exact same zoom when the user picks any other school.
     google.maps.event.addListenerOnce(map, "idle", () => {
-      schoolZoom.current = map.getZoom() ?? DEFAULT_ZOOM;
+      schoolZoom.current = map.getZoom() ?? cityConfig.defaultZoom;
     });
-  }, []);
+  }, [cityConfig.defaultZoom]);
   const onUnmount = useCallback(() => { mapRef.current = null; }, []);
+
+  // Reset map position + school selection when city changes
+  useEffect(() => {
+    const cfg = CITIES.find(c => c.id === selectedCity)!;
+    setSelectedSchool("");
+    schoolZoom.current = cfg.defaultZoom;
+    if (mapRef.current) {
+      mapRef.current.panTo(cfg.overviewCenter);
+      mapRef.current.setZoom(cfg.overviewZoom);
+    }
+  }, [selectedCity]);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -526,7 +675,7 @@ export default function CorridorMap() {
   // ---------------------------------------------------------------------------
 
   const fallbackProps = {
-    corridors: CORRIDORS,
+    corridors,
     engine,
     weather,
     setWeather,
