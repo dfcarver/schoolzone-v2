@@ -5,6 +5,8 @@
 **Owner:** Abu Dhabi Department of Transport
 **Classification:** Proprietary
 
+> For a full history of changes, see [CHANGELOG.md](../CHANGELOG.md).
+
 ---
 
 ## Table of Contents
