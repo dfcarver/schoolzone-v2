@@ -38,14 +38,14 @@ export async function loadLiveState(
   scenario: ScenarioId = "normal",
   signal?: AbortSignal,
   city?: string,
-  weather?: string
+  weather?: string,
+  dataMode?: "live" | "demo"
 ): Promise<LiveState | null> {
   const start = performance.now();
 
-  // If an AWS Snapshot API URL is configured, use live data from the pipeline.
-  // Falls back to static mock data automatically if the env var is not set.
+  // If an AWS Snapshot API URL is configured and we're not in demo mode, use live data.
   const awsApiUrl = process.env.NEXT_PUBLIC_AWS_SNAPSHOT_API_URL;
-  if (awsApiUrl) {
+  if (awsApiUrl && dataMode !== "demo") {
     try {
       const params = new URLSearchParams();
       if (city)    params.set("city",    city);

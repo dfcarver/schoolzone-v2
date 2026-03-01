@@ -24,7 +24,7 @@ import {
   applyDemoIntervention,
   mergeSnapshotWithOverrides,
 } from "./stateMachine";
-import { useDemoConfig, ScenarioId } from "./demoConfig";
+import { useDemoConfig, ScenarioId, DataMode } from "./demoConfig";
 import { validateLiveState, ValidationResult } from "./validate";
 import { recordRotation } from "./metrics";
 import * as logger from "./logger";
@@ -94,14 +94,14 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
   const baseStateRef = useRef<LiveState | null>(null);
   const pendingSnapshotRef = useRef<StoredIntervention[]>([]);
 
-  const fetchSnapshot = useCallback(async (phase: SnapshotPhase, scenario: ScenarioId, validate: boolean) => {
+  const fetchSnapshot = useCallback(async (phase: SnapshotPhase, scenario: ScenarioId, validate: boolean, dataMode: DataMode) => {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
 
     try {
       const file = snapshotFile(phase);
-      const data = await loadLiveState(file, scenario, controller.signal);
+      const data = await loadLiveState(file, scenario, controller.signal, undefined, undefined, dataMode);
       if (controller.signal.aborted) return;
 
       if (data) {
@@ -126,21 +126,21 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const initialPhase = nextSnapshotPhase(phaseRef.current);
     phaseRef.current = initialPhase;
-    fetchSnapshot(initialPhase, config.scenario, config.runtimeValidationEnabled);
+    fetchSnapshot(initialPhase, config.scenario, config.runtimeValidationEnabled, config.dataMode);
 
     if (config.timeMode === "paused") return;
 
     const interval = setInterval(() => {
       const next = nextSnapshotPhase(phaseRef.current);
       phaseRef.current = next;
-      fetchSnapshot(next, config.scenario, config.runtimeValidationEnabled);
+      fetchSnapshot(next, config.scenario, config.runtimeValidationEnabled, config.dataMode);
     }, config.snapshotIntervalMs);
 
     return () => {
       clearInterval(interval);
       abortRef.current?.abort();
     };
-  }, [fetchSnapshot, config.scenario, config.timeMode, config.snapshotIntervalMs, config.runtimeValidationEnabled]);
+  }, [fetchSnapshot, config.scenario, config.timeMode, config.snapshotIntervalMs, config.runtimeValidationEnabled, config.dataMode]);
 
   // Mirror baseState into ref and flush pending interventions
   useEffect(() => {

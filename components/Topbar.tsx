@@ -57,18 +57,46 @@ export default function Topbar({ snapshotId, timestamp, title = "Operations Cons
         )}
       </div>
       <div className="flex items-center gap-2 sm:gap-4">
-        <div className="flex items-center gap-1.5">
-          <span className="hidden sm:inline text-[10px] text-gray-400 dark:text-gray-500 font-medium">Demo</span>
-          <select
-            value={config.scenario}
-            onChange={(e) => updateConfig({ scenario: e.target.value as ScenarioId })}
-            className="text-xs border border-gray-200 dark:border-gray-600 rounded-md px-2 py-1 text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800"
-          >
-            {(Object.keys(SCENARIO_LABELS) as ScenarioId[]).map((s) => (
-              <option key={s} value={s}>{SCENARIO_LABELS[s]}</option>
-            ))}
-          </select>
-        </div>
+        {/* Data source toggle — only shown when AWS pipeline is configured */}
+        {process.env.NEXT_PUBLIC_AWS_SNAPSHOT_API_URL && (
+          <div className="flex items-center rounded-md border border-gray-200 dark:border-gray-600 overflow-hidden text-xs">
+            <button
+              onClick={() => updateConfig({ dataMode: "live" })}
+              className={`px-2.5 py-1 transition-colors ${
+                config.dataMode === "live"
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+              }`}
+            >
+              AWS Live
+            </button>
+            <button
+              onClick={() => updateConfig({ dataMode: "demo" })}
+              className={`px-2.5 py-1 transition-colors border-l border-gray-200 dark:border-gray-600 ${
+                config.dataMode === "demo"
+                  ? "bg-violet-600 text-white"
+                  : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+              }`}
+            >
+              Demo
+            </button>
+          </div>
+        )}
+        {/* Scenario selector — only relevant in demo mode */}
+        {config.dataMode === "demo" && (
+          <div className="flex items-center gap-1.5">
+            <span className="hidden sm:inline text-[10px] text-gray-400 dark:text-gray-500 font-medium">Demo</span>
+            <select
+              value={config.scenario}
+              onChange={(e) => updateConfig({ scenario: e.target.value as ScenarioId })}
+              className="text-xs border border-gray-200 dark:border-gray-600 rounded-md px-2 py-1 text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800"
+            >
+              {(Object.keys(SCENARIO_LABELS) as ScenarioId[]).map((s) => (
+                <option key={s} value={s}>{SCENARIO_LABELS[s]}</option>
+              ))}
+            </select>
+          </div>
+        )}
         <button
           onClick={() => updateConfig({ timeMode: config.timeMode === "live" ? "paused" : "live" })}
           className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border ${

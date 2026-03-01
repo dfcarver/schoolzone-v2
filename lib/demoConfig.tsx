@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, useCallback, ReactNode 
 
 export type ScenarioId = "normal" | "surge" | "weather" | "dismissal";
 export type TimeMode = "live" | "paused";
+export type DataMode = "live" | "demo";
 
 export interface DemoConfig {
   scenario: ScenarioId;
@@ -11,6 +12,7 @@ export interface DemoConfig {
   timeMode: TimeMode;
   demoMutationEnabled: boolean;
   runtimeValidationEnabled: boolean;
+  dataMode: DataMode;
 }
 
 const DEFAULT_CONFIG: DemoConfig = {
@@ -19,6 +21,7 @@ const DEFAULT_CONFIG: DemoConfig = {
   timeMode: "live",
   demoMutationEnabled: true,
   runtimeValidationEnabled: true,
+  dataMode: process.env.NEXT_PUBLIC_AWS_SNAPSHOT_API_URL ? "live" : "demo",
 };
 
 const STORAGE_KEY = "schoolzone-demo-config";
