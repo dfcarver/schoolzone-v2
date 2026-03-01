@@ -8,7 +8,7 @@ interface WeatherPanelProps {
   onChangeWeather: (w: WeatherCondition) => void;
 }
 
-const CONDITIONS: WeatherCondition[] = ["clear", "rain", "snow", "fog"];
+const CONDITIONS: WeatherCondition[] = ["clear", "rain", "fog"];
 
 export default function WeatherPanel({ weather, onChangeWeather }: WeatherPanelProps) {
   const profile = WEATHER_PROFILES[weather];

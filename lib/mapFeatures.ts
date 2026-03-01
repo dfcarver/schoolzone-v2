@@ -4,7 +4,7 @@ import { Incident } from "./types";
 // Weather
 // ---------------------------------------------------------------------------
 
-export type WeatherCondition = "clear" | "rain" | "snow" | "fog";
+export type WeatherCondition = "clear" | "rain" | "fog";
 
 export interface WeatherProfile {
   label: string;
@@ -28,13 +28,6 @@ export const WEATHER_PROFILES: Record<WeatherCondition, WeatherProfile> = {
     congestionMultiplier: 1.35,
     speedReduction: 5,
     visibilityNote: "Reduced visibility — wet roads increase stopping distance",
-  },
-  snow: {
-    label: "Snow",
-    icon: "❄️",
-    congestionMultiplier: 1.6,
-    speedReduction: 10,
-    visibilityNote: "Poor visibility — icy conditions, expect delays",
   },
   fog: {
     label: "Fog",
