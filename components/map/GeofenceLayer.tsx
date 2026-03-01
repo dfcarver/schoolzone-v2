@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import { Circle, InfoWindow } from "@react-google-maps/api";
 import { GeofenceConfig } from "@/lib/mapFeatures";
 
@@ -24,7 +24,7 @@ function isBreached(corridor: CorridorInfo, gf: GeofenceConfig): boolean {
   return corridor.congestion > gf.congestionThreshold;
 }
 
-export default function GeofenceLayer({ corridors, geofences, onUpdateGeofence, visible }: GeofenceLayerProps) {
+export default memo(function GeofenceLayer({ corridors, geofences, onUpdateGeofence, visible }: GeofenceLayerProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
 
   if (!visible) return null;
@@ -146,4 +146,4 @@ export default function GeofenceLayer({ corridors, geofences, onUpdateGeofence, 
       })()}
     </>
   );
-}
+});

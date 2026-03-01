@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { OverlayViewF } from "@react-google-maps/api";
 import { CongestionEntry, congestionColor } from "@/lib/hooks/useCongestionEngine";
 
@@ -14,7 +15,7 @@ function pathMidpoint(path: { lat: number; lng: number }[]): { lat: number; lng:
   return path[mid];
 }
 
-export default function CorridorLabels({ corridors, visible }: CorridorLabelsProps) {
+export default memo(function CorridorLabels({ corridors, visible }: CorridorLabelsProps) {
   if (!visible) return null;
 
   return (
@@ -51,4 +52,4 @@ export default function CorridorLabels({ corridors, visible }: CorridorLabelsPro
       })}
     </>
   );
-}
+});

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import { Marker, InfoWindow } from "@react-google-maps/api";
 import { MappedIncident } from "@/lib/mapFeatures";
 import { RiskLevel } from "@/lib/types";
@@ -28,7 +28,7 @@ function eventTypeIcon(type: string): string {
   }
 }
 
-export default function IncidentOverlay({ incidents, visible }: IncidentOverlayProps) {
+export default memo(function IncidentOverlay({ incidents, visible }: IncidentOverlayProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   if (!visible || incidents.length === 0) return null;
@@ -125,4 +125,4 @@ export default function IncidentOverlay({ incidents, visible }: IncidentOverlayP
       )}
     </>
   );
-}
+});

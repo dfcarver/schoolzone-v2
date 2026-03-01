@@ -341,6 +341,50 @@ export default function CorridorMap() {
   });
   const { timeMin, setTimeMin, isPlaying, setIsPlaying, congestionData, getCongestion } = engine;
 
+  // Fix 3: memoize map options so GoogleMap doesn't get a new object every render
+  const mapOptions = useMemo(() => getMapOptions(mapViewType), [mapViewType]);
+
+  // Fix 2: memoize mapped arrays passed to child components / hooks
+  const geofenceAlertsData = useMemo(
+    () => congestionData.map((c) => ({ id: c.id, school: { name: c.school.name }, congestion: c.congestion })),
+    [congestionData]
+  );
+  const geofenceLayerCorridors = useMemo(
+    () => congestionData.map((c) => ({
+      id: c.id, schoolName: c.school.name, lat: c.school.lat, lng: c.school.lng,
+      congestion: c.congestion, speedAvg: 20 - c.congestion * 15,
+    })),
+    [congestionData]
+  );
+
+  // Fix 4: memoize Circle / Polyline / Marker options to avoid new objects every render
+  const circleOptions = useMemo(
+    () => congestionData.map((c) => ({
+      fillColor: congestionColor(c.congestion),
+      fillOpacity: 0.15 + c.congestion * 0.2,
+      strokeColor: congestionColor(c.congestion),
+      strokeOpacity: 0.4, strokeWeight: 1,
+    })),
+    [congestionData]
+  );
+  const polylineOptions = useMemo(
+    () => congestionData.map((c) => ({
+      strokeColor: congestionColor(c.congestion),
+      strokeOpacity: 0.9,
+      strokeWeight: 4 + c.congestion * 8,
+      clickable: true,
+    })),
+    [congestionData]
+  );
+  const markerIcons = useMemo(
+    () => isLoaded ? congestionData.map((c) => ({
+      path: google.maps.SymbolPath.CIRCLE, scale: 10,
+      fillColor: congestionColor(c.congestion), fillOpacity: 1,
+      strokeColor: "#ffffff", strokeWeight: 2,
+    })) : [],
+    [congestionData, isLoaded]
+  );
+
   // Filter incidents in historical mode
   const visibleIncidents = useMemo(() => {
     if (!historicalMode) return mappedIncidents;
@@ -365,7 +409,7 @@ export default function CorridorMap() {
 
   // Geofence alerts (extracted hook with module-level deduplication)
   useGeofenceAlerts(
-    congestionData.map((c) => ({ id: c.id, school: { name: c.school.name }, congestion: c.congestion })),
+    geofenceAlertsData,
     geofences,
     features.geofences,
     pushNotification
@@ -716,34 +760,24 @@ export default function CorridorMap() {
         <GoogleMap mapContainerStyle={MAP_CONTAINER_STYLE}
           center={mapCenter}
           zoom={DEFAULT_ZOOM}
-          onLoad={onLoad} onUnmount={onUnmount} options={getMapOptions(mapViewType)}>
+          onLoad={onLoad} onUnmount={onUnmount} options={mapOptions}>
 
           {features.traffic && <TrafficLayer />}
           <TransitLayer />
 
           {/* Congestion radius circles */}
-          {congestionData.map((c) => (
+          {congestionData.map((c, i) => (
             <Circle key={`circle-${c.id}`}
               center={{ lat: c.school.lat, lng: c.school.lng }}
               radius={80 + c.congestion * 120}
-              options={{
-                fillColor: congestionColor(c.congestion),
-                fillOpacity: 0.15 + c.congestion * 0.2,
-                strokeColor: congestionColor(c.congestion),
-                strokeOpacity: 0.4, strokeWeight: 1,
-              }}
+              options={circleOptions[i]}
             />
           ))}
 
           {/* Corridor polylines — click opens InfoWindow (#6) */}
-          {congestionData.map((c) => (
+          {congestionData.map((c, i) => (
             <Polyline key={c.id} path={c.path}
-              options={{
-                strokeColor: congestionColor(c.congestion),
-                strokeOpacity: 0.9,
-                strokeWeight: 4 + c.congestion * 8,
-                clickable: true,
-              }}
+              options={polylineOptions[i]}
               onClick={() => {
                 navigateToSchool(c.id);
                 setActiveInfo(c.id);
@@ -753,7 +787,7 @@ export default function CorridorMap() {
           ))}
 
           {/* School markers */}
-          {congestionData.map((c) => (
+          {congestionData.map((c, i) => (
             <Marker key={`marker-${c.id}`}
               position={{ lat: c.school.lat, lng: c.school.lng }}
               title={c.school.name}
@@ -762,11 +796,7 @@ export default function CorridorMap() {
                 setActiveInfo(c.id);
                 if (features.interventions) setDispatchTarget(c.id);
               }}
-              icon={{
-                path: google.maps.SymbolPath.CIRCLE, scale: 10,
-                fillColor: congestionColor(c.congestion), fillOpacity: 1,
-                strokeColor: "#ffffff", strokeWeight: 2,
-              }}
+              icon={markerIcons[i]}
             />
           ))}
 
@@ -800,10 +830,7 @@ export default function CorridorMap() {
 
           {/* Geofence layer */}
           <GeofenceLayer
-            corridors={congestionData.map((c) => ({
-              id: c.id, schoolName: c.school.name, lat: c.school.lat, lng: c.school.lng,
-              congestion: c.congestion, speedAvg: 20 - c.congestion * 15,
-            }))}
+            corridors={geofenceLayerCorridors}
             geofences={geofences}
             onUpdateGeofence={updateGeofence}
             visible={features.geofences}
