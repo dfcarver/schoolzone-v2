@@ -775,7 +775,7 @@ export default function CorridorMap() {
                 : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
             }`}
           >All Schools</button>
-          {CORRIDORS.map((c) => {
+          {corridors.map((c) => {
             const cd = congestionData.find((d) => d.id === c.id);
             return (
               <button key={c.id}
@@ -919,7 +919,7 @@ export default function CorridorMap() {
       <div className="h-[600px] rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700">
         <GoogleMap mapContainerStyle={MAP_CONTAINER_STYLE}
           center={mapCenter}
-          zoom={DEFAULT_ZOOM}
+          zoom={cityConfig.defaultZoom}
           onLoad={onLoad} onUnmount={onUnmount} options={mapOptions}>
 
           {features.traffic && <TrafficLayer />}
@@ -1104,7 +1104,7 @@ export default function CorridorMap() {
 
         {features.parentFlow && (
           <ParentFlowPanel
-            schools={CORRIDORS.map((c) => ({ id: c.id, name: c.school.name, type: c.school.type, enrollment: c.school.enrollment }))}
+            schools={corridors.map((c) => ({ id: c.id, name: c.school.name, type: c.school.type, enrollment: c.school.enrollment }))}
             timeMin={timeMin}
             dismissalOverrides={dismissalOverrides}
             onChangeDismissal={handleChangeDismissal}
