@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useDemoConfig, ScenarioId } from "@/lib/demoConfig";
+import { usePushNotifications } from "@/lib/hooks/usePushNotifications";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useMobileNav } from "@/components/AppShell";
 import { useTheme } from "@/lib/ThemeProvider";
@@ -37,6 +38,7 @@ export default function Topbar({ snapshotId, timestamp, title = "Operations Cons
   const { theme, toggle: toggleTheme } = useTheme();
   const { unreadCount } = useNotifications();
   const { syncStatus } = useLiveStateContext();
+  const { status: pushStatus, subscribed, subscribe, unsubscribe } = usePushNotifications();
   const [showNotifs, setShowNotifs] = useState(false);
   const formattedTime = timestamp ? formatTime(timestamp) : "--:--:--";
 

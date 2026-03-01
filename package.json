@@ -10,12 +10,15 @@
     "test": "node --import tsx --test tests/*.test.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-athena": "^3.1000.0",
     "@react-google-maps/api": "^2.20.8",
     "@supabase/supabase-js": "^2.98.0",
+    "@types/web-push": "^3.6.4",
     "next": "14.2.21",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "recharts": "^2.13.3"
+    "recharts": "^2.13.3",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@types/node": "^20.17.12",

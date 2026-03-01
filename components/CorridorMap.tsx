@@ -33,6 +33,7 @@ import {
   CorridorDef,
 } from "@/lib/hooks/useCongestionEngine";
 import { useGeofenceAlerts } from "@/lib/hooks/useGeofenceAlerts";
+import { useDemoConfig } from "@/lib/demoConfig";
 import MapToolbar, { MapFeatureFlags } from "./map/MapToolbar";
 import IncidentOverlay from "./map/IncidentOverlay";
 import GeofenceLayer from "./map/GeofenceLayer";
@@ -148,14 +149,14 @@ interface CityConfig {
 
 const KHALIFA_CORRIDORS: CorridorDef[] = [
   {
-    id: "zone-kc-001",
+    id: "khalifa-001",
     name: "Yasmina Academy Corridor",
     path: [
-      { lat: 24.424, lng: 54.547 },
-      { lat: 24.416, lng: 54.547 },
-      { lat: 24.416, lng: 54.554 },
+      { lat: 24.424, lng: 54.547 },   // north — Al Wataniya St approach
+      { lat: 24.416, lng: 54.547 },   // school frontage
+      { lat: 24.416, lng: 54.555 },   // turns east along cross street
     ],
-    school: { zone_id: "zone-kc-001", name: "Yasmina British Academy", lat: 24.4158592, lng: 54.5471628, type: "high", enrollment: 1200 },
+    school: { zone_id: "khalifa-001", name: "Yasmina British Academy", lat: 24.4158592, lng: 54.5471628, type: "high", enrollment: 1200 },
     baselineCongestion: 0.09,
     peaks: [
       { centerMin: 7 * 60 + 15, spread: 25, intensity: 0.82 },
@@ -163,14 +164,14 @@ const KHALIFA_CORRIDORS: CorridorDef[] = [
     ],
   },
   {
-    id: "zone-kc-002",
+    id: "khalifa-002",
     name: "ADNOC Schools Corridor",
     path: [
-      { lat: 24.411, lng: 54.530 },
-      { lat: 24.411, lng: 54.542 },
-      { lat: 24.404, lng: 54.542 },
+      { lat: 24.417, lng: 54.504 },   // west — E10 road approach
+      { lat: 24.417, lng: 54.515 },   // school entrance on E10
+      { lat: 24.423, lng: 54.515 },   // turns north along side street
     ],
-    school: { zone_id: "zone-kc-002", name: "ADNOC Schools Khalifa", lat: 24.4110, lng: 54.5420, type: "elementary", enrollment: 650 },
+    school: { zone_id: "khalifa-002", name: "ADNOC Schools Khalifa City", lat: 24.416729, lng: 54.514899, type: "elementary", enrollment: 650 },
     baselineCongestion: 0.07,
     peaks: [
       { centerMin: 7 * 60 + 30, spread: 22, intensity: 0.74 },
@@ -178,14 +179,14 @@ const KHALIFA_CORRIDORS: CorridorDef[] = [
     ],
   },
   {
-    id: "zone-kc-003",
-    name: "Khalifa International Corridor",
+    id: "khalifa-003",
+    name: "ISC Khalifa City Corridor",
     path: [
-      { lat: 24.428, lng: 54.557 },
-      { lat: 24.420, lng: 54.557 },
-      { lat: 24.420, lng: 54.566 },
+      { lat: 24.428, lng: 54.566 },   // north — 22nd St approach
+      { lat: 24.415, lng: 54.566 },   // school frontage
+      { lat: 24.415, lng: 54.577 },   // turns east along school road
     ],
-    school: { zone_id: "zone-kc-003", name: "Khalifa International Academy", lat: 24.4195, lng: 54.5575, type: "middle", enrollment: 820 },
+    school: { zone_id: "khalifa-003", name: "Int'l School of Choueifat", lat: 24.41446, lng: 54.56633, type: "middle", enrollment: 820 },
     baselineCongestion: 0.08,
     peaks: [
       { centerMin: 7 * 60 + 45, spread: 20, intensity: 0.71 },
@@ -196,14 +197,14 @@ const KHALIFA_CORRIDORS: CorridorDef[] = [
 
 const MBZ_CORRIDORS: CorridorDef[] = [
   {
-    id: "zone-mbz-001",
+    id: "mbz-001",
     name: "Aldar Academies MBZ Corridor",
     path: [
-      { lat: 24.371, lng: 54.553 },
-      { lat: 24.371, lng: 54.564 },
-      { lat: 24.364, lng: 54.564 },
+      { lat: 24.371, lng: 54.550 },   // west — Zone 22 approach
+      { lat: 24.371, lng: 54.564 },   // school entrance
+      { lat: 24.363, lng: 54.564 },   // turns south along side street
     ],
-    school: { zone_id: "zone-mbz-001", name: "Aldar Academies MBZ", lat: 24.370560, lng: 54.563863, type: "high", enrollment: 1100 },
+    school: { zone_id: "mbz-001", name: "Aldar Academies MBZ", lat: 24.370560, lng: 54.563863, type: "high", enrollment: 1100 },
     baselineCongestion: 0.10,
     peaks: [
       { centerMin: 7 * 60 + 20, spread: 24, intensity: 0.83 },
@@ -211,14 +212,14 @@ const MBZ_CORRIDORS: CorridorDef[] = [
     ],
   },
   {
-    id: "zone-mbz-002",
-    name: "Al Bateen Academy Corridor",
+    id: "mbz-002",
+    name: "ADIS MBZ Corridor",
     path: [
-      { lat: 24.372, lng: 54.556 },
-      { lat: 24.364, lng: 54.556 },
-      { lat: 24.364, lng: 54.563 },
+      { lat: 24.358, lng: 54.542 },   // north — 63rd Street approach
+      { lat: 24.346, lng: 54.542 },   // school entrance (near Al Ain University)
+      { lat: 24.346, lng: 54.553 },   // turns east along Zone 17 road
     ],
-    school: { zone_id: "zone-mbz-002", name: "Al Bateen Academy", lat: 24.3640, lng: 54.5590, type: "elementary", enrollment: 540 },
+    school: { zone_id: "mbz-002", name: "Abu Dhabi Int'l School MBZ", lat: 24.346302, lng: 54.541512, type: "elementary", enrollment: 540 },
     baselineCongestion: 0.08,
     peaks: [
       { centerMin: 7 * 60 + 40, spread: 18, intensity: 0.70 },
@@ -226,14 +227,14 @@ const MBZ_CORRIDORS: CorridorDef[] = [
     ],
   },
   {
-    id: "zone-mbz-003",
+    id: "mbz-003",
     name: "Emirates National School Corridor",
     path: [
-      { lat: 24.378, lng: 54.562 },
-      { lat: 24.378, lng: 54.570 },
-      { lat: 24.371, lng: 54.570 },
+      { lat: 24.361, lng: 54.537 },   // west — Al Fan Street approach (Zone 3)
+      { lat: 24.361, lng: 54.551 },   // school entrance
+      { lat: 24.354, lng: 54.551 },   // turns south along side street
     ],
-    school: { zone_id: "zone-mbz-003", name: "Emirates National School", lat: 24.3780, lng: 54.5660, type: "middle", enrollment: 780 },
+    school: { zone_id: "mbz-003", name: "Emirates National School MBZ", lat: 24.360989, lng: 54.550989, type: "middle", enrollment: 780 },
     baselineCongestion: 0.09,
     peaks: [
       { centerMin: 7 * 60 + 30, spread: 22, intensity: 0.77 },
@@ -256,19 +257,19 @@ const CITIES: CityConfig[] = [
     id: "khalifa_city_auh",
     label: "Khalifa City, AUH",
     corridors: KHALIFA_CORRIDORS,
-    overviewCenter: { lat: 24.415, lng: 54.548 },
+    overviewCenter: { lat: 24.416, lng: 54.549 },
     overviewZoom: 14,
     defaultZoom: 17,
-    bounds: { north: 24.445, south: 24.390, east: 54.590, west: 54.515 },
+    bounds: { north: 24.445, south: 24.390, east: 54.600, west: 54.495 },
   },
   {
     id: "mbz_city_auh",
     label: "MBZ City, AUH",
     corridors: MBZ_CORRIDORS,
-    overviewCenter: { lat: 24.371, lng: 54.562 },
+    overviewCenter: { lat: 24.360, lng: 54.552 },
     overviewZoom: 14,
     defaultZoom: 17,
-    bounds: { north: 24.400, south: 24.340, east: 54.600, west: 54.530 },
+    bounds: { north: 24.400, south: 24.325, east: 54.600, west: 54.510 },
   },
 ];
 
@@ -479,48 +480,80 @@ export default function CorridorMap() {
   });
   const { timeMin, setTimeMin, isPlaying, setIsPlaying, congestionData, getCongestion } = engine;
 
+  // Live AWS risk override — fetch from Snapshot API when dataMode === "live"
+  const { config: demoConfig } = useDemoConfig();
+  const [liveOverrides, setLiveOverrides] = useState<Map<string, number>>(new Map());
+  useEffect(() => {
+    const awsUrl = process.env.NEXT_PUBLIC_AWS_SNAPSHOT_API_URL;
+    if (!awsUrl || demoConfig.dataMode !== "live") { setLiveOverrides(new Map()); return; }
+    let cancelled = false;
+    const fetchLive = async () => {
+      try {
+        const params = new URLSearchParams({ city: selectedCity, weather });
+        const res = await fetch(`${awsUrl}?${params}`, { cache: "no-store" });
+        if (!res.ok || cancelled) return;
+        const data = await res.json();
+        if (cancelled) return;
+        const map = new Map<string, number>();
+        for (const zone of data.zones ?? []) map.set(zone.zone_id, zone.risk_score ?? 0);
+        setLiveOverrides(map);
+      } catch { /* silently ignore — fall back to local model */ }
+    };
+    fetchLive();
+    const interval = setInterval(fetchLive, 30_000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [demoConfig.dataMode, selectedCity, weather]);
+
+  // Blend live risk scores into congestionData (live overrides replace local model values)
+  const displayData = useMemo(
+    () => liveOverrides.size > 0
+      ? congestionData.map((c) => liveOverrides.has(c.school.zone_id) ? { ...c, congestion: liveOverrides.get(c.school.zone_id)! } : c)
+      : congestionData,
+    [congestionData, liveOverrides]
+  );
+
   // Fix 3: memoize map options so GoogleMap doesn't get a new object every render
   const mapOptions = useMemo(() => getMapOptions(mapViewType, cityConfig.bounds), [mapViewType, cityConfig]);
 
   // Fix 2: memoize mapped arrays passed to child components / hooks
   const geofenceAlertsData = useMemo(
-    () => congestionData.map((c) => ({ id: c.id, school: { name: c.school.name }, congestion: c.congestion })),
-    [congestionData]
+    () => displayData.map((c) => ({ id: c.id, school: { name: c.school.name }, congestion: c.congestion })),
+    [displayData]
   );
   const geofenceLayerCorridors = useMemo(
-    () => congestionData.map((c) => ({
+    () => displayData.map((c) => ({
       id: c.id, schoolName: c.school.name, lat: c.school.lat, lng: c.school.lng,
       congestion: c.congestion, speedAvg: 20 - c.congestion * 15,
     })),
-    [congestionData]
+    [displayData]
   );
 
   // Fix 4: memoize Circle / Polyline / Marker options to avoid new objects every render
   const circleOptions = useMemo(
-    () => congestionData.map((c) => ({
+    () => displayData.map((c) => ({
       fillColor: congestionColor(c.congestion),
       fillOpacity: 0.15 + c.congestion * 0.2,
       strokeColor: congestionColor(c.congestion),
       strokeOpacity: 0.4, strokeWeight: 1,
     })),
-    [congestionData]
+    [displayData]
   );
   const polylineOptions = useMemo(
-    () => congestionData.map((c) => ({
+    () => displayData.map((c) => ({
       strokeColor: congestionColor(c.congestion),
       strokeOpacity: 0.9,
       strokeWeight: 4 + c.congestion * 8,
       clickable: true,
     })),
-    [congestionData]
+    [displayData]
   );
   const markerIcons = useMemo(
-    () => isLoaded ? congestionData.map((c) => ({
+    () => isLoaded ? displayData.map((c) => ({
       path: google.maps.SymbolPath.CIRCLE, scale: 10,
       fillColor: congestionColor(c.congestion), fillOpacity: 1,
       strokeColor: "#ffffff", strokeWeight: 2,
     })) : [],
-    [congestionData, isLoaded]
+    [displayData, isLoaded]
   );
 
   // Filter incidents in historical mode
@@ -605,10 +638,10 @@ export default function CorridorMap() {
 
   const dispatchCorridor = useMemo(() => {
     if (!dispatchTarget) return null;
-    const c = congestionData.find((cd) => cd.id === dispatchTarget);
+    const c = displayData.find((cd) => cd.id === dispatchTarget);
     if (!c) return null;
     return { id: c.id, name: c.name, congestion: c.congestion };
-  }, [dispatchTarget, congestionData]);
+  }, [dispatchTarget, displayData]);
 
   // Handler for loading a saved scenario (updates time + weather too)
   const handleLoadSaved = useCallback((
@@ -776,7 +809,7 @@ export default function CorridorMap() {
             }`}
           >All Schools</button>
           {corridors.map((c) => {
-            const cd = congestionData.find((d) => d.id === c.id);
+            const cd = displayData.find((d) => d.id === c.id);
             return (
               <button key={c.id}
                 onClick={() => navigateToSchool(c.id)}
@@ -926,7 +959,7 @@ export default function CorridorMap() {
           <TransitLayer />
 
           {/* Congestion radius circles */}
-          {congestionData.map((c, i) => (
+          {displayData.map((c, i) => (
             <Circle key={`circle-${c.id}`}
               center={{ lat: c.school.lat, lng: c.school.lng }}
               radius={80 + c.congestion * 120}
@@ -935,7 +968,7 @@ export default function CorridorMap() {
           ))}
 
           {/* Corridor polylines — click opens InfoWindow (#6) */}
-          {congestionData.map((c, i) => (
+          {displayData.map((c, i) => (
             <Polyline key={c.id} path={c.path}
               options={polylineOptions[i]}
               onClick={() => {
@@ -947,7 +980,7 @@ export default function CorridorMap() {
           ))}
 
           {/* School markers */}
-          {congestionData.map((c, i) => (
+          {displayData.map((c, i) => (
             <Marker key={`marker-${c.id}`}
               position={{ lat: c.school.lat, lng: c.school.lng }}
               title={c.school.name}
@@ -961,7 +994,7 @@ export default function CorridorMap() {
           ))}
 
           {/* Info windows */}
-          {congestionData.map((c) =>
+          {displayData.map((c) =>
             activeInfo === c.id && (
               <InfoWindow key={`info-${c.id}`}
                 position={{ lat: c.school.lat, lng: c.school.lng }}
@@ -997,7 +1030,7 @@ export default function CorridorMap() {
           />
 
           {/* Corridor name + congestion % labels */}
-          <CorridorLabels corridors={congestionData} visible={selectedSchool !== ""} />
+          <CorridorLabels corridors={displayData} visible={selectedSchool !== ""} />
         </GoogleMap>
       </div>
 
@@ -1018,7 +1051,7 @@ export default function CorridorMap() {
           ))}
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-          {congestionData.map((c) => (
+          {displayData.map((c) => (
             <button key={`card-${c.id}`}
               onClick={() => { navigateToSchool(c.id); if (features.interventions) setDispatchTarget(c.id); }}
               className={`border rounded-lg px-3 py-2 flex items-center gap-2 text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
@@ -1069,7 +1102,7 @@ export default function CorridorMap() {
               Blue circles appear around each school on the map. They turn red when congestion exceeds the alert threshold. Click any circle directly on the map to edit its radius, threshold, and speed limit.
             </FeatureHint>
             <div className="space-y-1.5 text-[10px]">
-              {congestionData.map((c) => {
+              {displayData.map((c) => {
                 const gf = geofences.find((g) => g.zoneId === c.id && g.enabled);
                 if (!gf) return null;
                 const breached = c.congestion > gf.congestionThreshold;
@@ -1092,7 +1125,7 @@ export default function CorridorMap() {
 
         {features.whatIf && (
           <WhatIfPanel
-            corridors={congestionData.map((c) => ({ id: c.id, schoolName: c.school.name, baseCongestion: c.congestion }))}
+            corridors={displayData.map((c) => ({ id: c.id, schoolName: c.school.name, baseCongestion: c.congestion }))}
             getCongestion={getCongestion}
             currentTimeMin={timeMin}
             weather={weather}
