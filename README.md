@@ -223,6 +223,12 @@ AI_NARRATIVE_ENABLED=true
 
 ---
 
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for a full history of changes.
+
+---
+
 ## License
 
 Proprietary — Abu Dhabi Department of Transport.
