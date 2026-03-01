@@ -23,9 +23,11 @@ import { buildEscalationInput } from "@/lib/engines/buildInputs";
 import EscalationGauge from "@/components/intelligence/EscalationGauge";
 import SimulationPanel from "@/components/intelligence/SimulationPanel";
 import CorridorMap from "@/components/CorridorMap";
+import AIPredictionPanel from "@/components/ai/AIPredictionPanel";
+import InterventionFeed from "@/components/InterventionFeed";
 
 export default function ExecutivePage() {
-  const { liveState, loading, error, lastValidation } = useLiveState();
+  const { liveState, loading, error, lastValidation, appliedHistory } = useLiveState();
 
   const rollup = useMemo(() => {
     if (!liveState) return null;
@@ -202,6 +204,7 @@ export default function ExecutivePage() {
               <p className="text-sm text-gray-400 dark:text-gray-500">Select a corridor above to generate an AI operational brief.</p>
             </div>
           )}
+          {selectedZone && <AIPredictionPanel zone={selectedZone} />}
           {selectedZone && escalationOutput && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
               <EscalationGauge output={escalationOutput} driftStatus={driftStatus === "DRIFT" ? "CRITICAL" : driftStatus} />
@@ -210,10 +213,13 @@ export default function ExecutivePage() {
           )}
         </div>
 
+        {/* Intervention Audit Trail */}
+        <InterventionFeed history={appliedHistory} />
+
         {/* Export */}
         <div className="flex justify-end">
           <button
-            onClick={() => exportExecutiveSummaryJSON(rollup)}
+            onClick={() => exportExecutiveSummaryJSON(rollup, appliedHistory, activeMitigations)}
             className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             Export Summary JSON

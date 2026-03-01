@@ -1,5 +1,6 @@
 import { Incident } from "./types";
-import { DistrictRollup } from "./rollups";
+import { DistrictRollup, ActiveMitigation } from "./rollups";
+import type { StoredIntervention } from "./interventionStore";
 
 function downloadJSON(data: unknown, filename: string): void {
   const json = JSON.stringify(data, null, 2);
@@ -26,9 +27,20 @@ export interface ExecutiveSummaryExport {
   interventions_applied_today: number;
   effectiveness_pct: number;
   governance_status: string;
+  operator_interventions: Array<{
+    zone_id: string;
+    action: string;
+    priority: string;
+    applied_at: string;
+  }>;
+  active_mitigations: ActiveMitigation[];
 }
 
-export function exportExecutiveSummaryJSON(rollup: DistrictRollup): void {
+export function exportExecutiveSummaryJSON(
+  rollup: DistrictRollup,
+  interventionHistory: StoredIntervention[] = [],
+  activeMitigations: ActiveMitigation[] = []
+): void {
   const payload: ExecutiveSummaryExport = {
     generated_at: new Date().toISOString(),
     district_risk_index: rollup.districtRiskIndex,
@@ -37,6 +49,13 @@ export function exportExecutiveSummaryJSON(rollup: DistrictRollup): void {
     interventions_applied_today: rollup.interventionsAppliedToday,
     effectiveness_pct: rollup.effectiveness,
     governance_status: rollup.governanceStatus,
+    operator_interventions: interventionHistory.map((i) => ({
+      zone_id: i.zoneId,
+      action: i.recommendation.action,
+      priority: i.recommendation.priority,
+      applied_at: new Date(i.appliedAt).toISOString(),
+    })),
+    active_mitigations: activeMitigations,
   };
   downloadJSON(payload, `executive-summary-${Date.now()}.json`);
 }

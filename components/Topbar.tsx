@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { useMobileNav } from "@/components/AppShell";
 import { useTheme } from "@/lib/ThemeProvider";
 import { useNotifications } from "@/lib/notifications";
+import { useLiveStateContext } from "@/lib/LiveStateProvider";
 import NotificationPanel from "@/components/NotificationPanel";
 
 interface TopbarProps {
@@ -35,6 +36,7 @@ export default function Topbar({ snapshotId, timestamp, title = "Operations Cons
   const { toggle } = useMobileNav();
   const { theme, toggle: toggleTheme } = useTheme();
   const { unreadCount } = useNotifications();
+  const { sseStatus } = useLiveStateContext();
   const [showNotifs, setShowNotifs] = useState(false);
   const formattedTime = timestamp ? formatTime(timestamp) : "--:--:--";
 
@@ -88,6 +90,18 @@ export default function Topbar({ snapshotId, timestamp, title = "Operations Cons
           )}
         </button>
         <span className="hidden sm:inline text-xs font-mono text-gray-600 dark:text-gray-400">{formattedTime}</span>
+        <span className={`hidden sm:flex items-center gap-1.5 text-xs ${
+          sseStatus === "live" ? "text-emerald-600 dark:text-emerald-400" :
+          sseStatus === "connecting" ? "text-amber-600 dark:text-amber-400" :
+          "text-red-600 dark:text-red-400"
+        }`}>
+          <span className={`w-2 h-2 rounded-full ${
+            sseStatus === "live" ? "bg-emerald-500" :
+            sseStatus === "connecting" ? "bg-amber-400 animate-pulse" :
+            "bg-red-500"
+          }`} />
+          {sseStatus === "live" ? "Synced" : sseStatus === "connecting" ? "Connecting…" : "Disconnected"}
+        </span>
 
         {/* Theme toggle */}
         <button

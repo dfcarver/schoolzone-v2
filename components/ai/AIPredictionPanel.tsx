@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { ZoneLiveState, ForecastPoint } from "@/lib/types";
 import { PredictRequest, PredictResponse } from "@/lib/ai/predictTypes";
 import ForecastChart from "@/components/ForecastChart";
@@ -29,9 +29,11 @@ type PanelState =
 
 export default function AIPredictionPanel({ zone }: AIPredictionPanelProps) {
   const [state, setState] = useState<PanelState>({ status: "idle" });
-  const prevInterventionCount = useRef(-1);
+  const hasRunRef = useRef(false);
+  const prevInterventionCountRef = useRef(-1);
 
-  const runPrediction = async (z: ZoneLiveState) => {
+  const runPrediction = useCallback(async (z: ZoneLiveState) => {
+    hasRunRef.current = true;
     setState({ status: "loading" });
 
     const demoInterventions = z.interventions
@@ -65,7 +67,6 @@ export default function AIPredictionPanel({ zone }: AIPredictionPanelProps) {
 
       const data = (await res.json()) as PredictResponse;
 
-      // Convert predicted_forecast to ForecastPoint[] using baseline time labels
       const predicted: ForecastPoint[] = data.predicted_forecast.map((p, i) => ({
         time: z.forecast_30m[i]?.time ?? `+${p.horizon_minutes}m`,
         risk: Math.min(1, Math.max(0, p.predicted_risk)),
@@ -79,16 +80,17 @@ export default function AIPredictionPanel({ zone }: AIPredictionPanelProps) {
         message: err instanceof Error ? err.message : "Network error",
       });
     }
-  };
+  }, []);
 
-  // Auto-run on mount, then re-run whenever the intervention count changes
+  // Auto-refresh only after the first manual run, when intervention count changes
   useEffect(() => {
+    if (!hasRunRef.current) return;
     const count = zone.interventions.filter((i) => i.id.startsWith("demo-int-")).length;
-    if (count !== prevInterventionCount.current) {
-      prevInterventionCount.current = count;
+    if (count !== prevInterventionCountRef.current) {
+      prevInterventionCountRef.current = count;
       runPrediction(zone);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zone.interventions.length]);
 
   return (
@@ -105,9 +107,19 @@ export default function AIPredictionPanel({ zone }: AIPredictionPanelProps) {
           disabled={state.status === "loading"}
           className="px-3 py-1.5 text-xs font-medium text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {state.status === "loading" ? "Predicting…" : "Re-predict"}
+          {state.status === "loading"
+            ? "Predicting…"
+            : state.status === "idle"
+            ? "Run Prediction"
+            : "Re-predict"}
         </button>
       </div>
+
+      {state.status === "idle" && (
+        <p className="text-sm text-gray-400 dark:text-gray-500">
+          Run a prediction to see how active interventions are projected to affect the 30-minute risk trajectory.
+        </p>
+      )}
 
       {state.status === "loading" && (
         <div className="space-y-3 animate-pulse">

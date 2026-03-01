@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/lib/ThemeProvider";
 import { NotificationsProvider } from "@/lib/notifications";
 import Sidebar from "@/components/Sidebar";
 import AlertEngine from "@/components/AlertEngine";
+import InterventionNotifier from "@/components/InterventionNotifier";
 
 interface MobileNavContextValue {
   isOpen: boolean;
@@ -63,6 +64,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
                 <main className="flex-1 bg-gray-50 dark:bg-gray-950 min-w-0">{children}</main>
                 <AlertEngine />
+                <InterventionNotifier />
               </div>
             )}
           </MobileNavContext.Provider>
