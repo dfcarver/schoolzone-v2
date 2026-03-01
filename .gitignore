@@ -20,3 +20,8 @@ npm-debug.log*
 
 # windsurf
 .windsurfrules
+
+# CDK
+infra/cdk.out/
+infra/node_modules/
+infra/dist/
