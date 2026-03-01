@@ -714,9 +714,20 @@ export default function CorridorMap() {
       <div>
         <div className="flex items-start justify-between mb-3">
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Corridor Traffic Map</h3>
-            <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
-              Springfield, IL — {weather !== "clear" ? `${WEATHER_PROFILES[weather].icon} ${WEATHER_PROFILES[weather].label} · ` : ""}
+            <div className="flex items-center gap-2 mb-0.5">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Corridor Traffic Map</h3>
+              <select
+                value={selectedCity}
+                onChange={(e) => setSelectedCity(e.target.value as CityId)}
+                className="text-xs border border-gray-200 dark:border-gray-600 rounded-md px-2 py-0.5 text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800"
+              >
+                {CITIES.map(city => (
+                  <option key={city.id} value={city.id}>{city.label}</option>
+                ))}
+              </select>
+            </div>
+            <p className="text-[11px] text-gray-400 dark:text-gray-500">
+              {cityConfig.label} — {weather !== "clear" ? `${WEATHER_PROFILES[weather].icon} ${WEATHER_PROFILES[weather].label} · ` : ""}
               {activeScenario ? `Scenario: ${WHAT_IF_SCENARIOS.find((s) => s.id === activeScenario)?.label} · ` : ""}
               Select a time of day to view school-zone congestion
             </p>
