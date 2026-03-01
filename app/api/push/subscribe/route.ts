@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { subscriptionCache } from "@/lib/pushSubscriptionCache";
 
 export async function POST(req: NextRequest) {
   const subscription = await req.json();
@@ -31,5 +32,3 @@ export async function DELETE(req: NextRequest) {
   return NextResponse.json({ ok: true });
 }
 
-// Fallback in-memory store when Supabase admin is unavailable
-export const subscriptionCache = new Set<string>();

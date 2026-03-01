@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import webpush from "web-push";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { subscriptionCache } from "../subscribe/route";
+import { subscriptionCache } from "@/lib/pushSubscriptionCache";
 
 webpush.setVapidDetails(
   process.env.VAPID_SUBJECT ?? "mailto:admin@schoolzone.app",
