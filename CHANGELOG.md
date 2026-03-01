@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to SchoolZone Digital Twin (MRDT) are documented here.
+All notable changes to SchoolZone Digital Twin (MRDT) are documented here. For full system documentation, see [docs/SPECIFICATION.md](./docs/SPECIFICATION.md).
 
 ---
 
