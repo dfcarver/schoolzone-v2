@@ -14,11 +14,13 @@ import { ForecastPoint } from "@/lib/types";
 
 interface ForecastChartProps {
   data: ForecastPoint[];
+  predicted?: ForecastPoint[];
   title?: string;
 }
 
 export default function ForecastChart({
   data,
+  predicted,
   title = "30-Minute Risk Forecast",
 }: ForecastChartProps) {
   if (!data || data.length === 0) {
@@ -30,10 +32,11 @@ export default function ForecastChart({
     );
   }
 
-  const chartData = data.map((d) => ({
+  const chartData = data.map((d, i) => ({
     ...d,
     riskPct: Math.round(d.risk * 100),
     confPct: Math.round(d.confidence * 100),
+    predictedRiskPct: predicted?.[i] != null ? Math.round(predicted[i].risk * 100) : undefined,
   }));
 
   return (
@@ -88,18 +91,35 @@ export default function ForecastChart({
               strokeDasharray="4 4"
               dot={false}
             />
+            {predicted && (
+              <Line
+                type="monotone"
+                dataKey="predictedRiskPct"
+                stroke="#10b981"
+                strokeWidth={2}
+                strokeDasharray="6 3"
+                dot={{ r: 3, fill: "#10b981" }}
+                activeDot={{ r: 5 }}
+              />
+            )}
           </ComposedChart>
         </ResponsiveContainer>
       </div>
       <div className="flex items-center gap-4 mt-3">
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-0.5 bg-red-500 rounded" />
-          <span className="text-xs text-gray-500 dark:text-gray-400">Risk</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">Baseline</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-0.5 bg-blue-500 rounded border-dashed" />
           <span className="text-xs text-gray-500 dark:text-gray-400">Confidence</span>
         </div>
+        {predicted && (
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-0.5 bg-emerald-500 rounded" />
+            <span className="text-xs text-gray-500 dark:text-gray-400">AI Predicted</span>
+          </div>
+        )}
       </div>
     </div>
   );

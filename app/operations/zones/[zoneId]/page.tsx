@@ -11,6 +11,7 @@ import RiskTimeline from "@/components/RiskTimeline";
 import RecommendationCard from "@/components/RecommendationCard";
 import InterventionsTable from "@/components/InterventionsTable";
 import AIBriefPanel from "@/components/ai/AIBriefPanel";
+import AIPredictionPanel from "@/components/ai/AIPredictionPanel";
 import EscalationGauge from "@/components/intelligence/EscalationGauge";
 import AnomalyBadge from "@/components/intelligence/AnomalyBadge";
 import SimulationPanel from "@/components/intelligence/SimulationPanel";
@@ -57,6 +58,11 @@ export default function OpsZoneDetailPage() {
     if (!zone) return null;
     return computeAnomaly(buildAnomalyInput(zone));
   }, [zone]);
+
+  const appliedActions = useMemo(
+    () => new Set(zone?.interventions.filter((i) => i.id.startsWith("demo-int-")).map((i) => i.action)),
+    [zone]
+  );
 
   const handleApply = useCallback(
     (recId: string) => {
@@ -121,7 +127,12 @@ export default function OpsZoneDetailPage() {
           ) : (
             <div className="space-y-3">
               {zone.recommendations.map((rec) => (
-                <RecommendationCard key={rec.id} recommendation={rec} onApply={handleApply} />
+                <RecommendationCard
+                  key={rec.id}
+                  recommendation={rec}
+                  onApply={appliedActions.has(rec.action) ? undefined : handleApply}
+                  applied={appliedActions.has(rec.action)}
+                />
               ))}
             </div>
           )}
@@ -152,6 +163,8 @@ export default function OpsZoneDetailPage() {
             <SimulationPanel baselineForecast={zone.forecast_30m} escalationProbability={escalationOutput.escalation_probability} />
           </div>
         )}
+
+        <AIPredictionPanel zone={zone} />
 
         {aiBriefRequest && <AIBriefPanel request={aiBriefRequest} />}
       </div>

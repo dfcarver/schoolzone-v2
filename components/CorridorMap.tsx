@@ -889,8 +889,8 @@ export default function CorridorMap() {
                 return (
                   <div key={c.id} className="flex items-center justify-between">
                     <span className="text-gray-600 dark:text-gray-300 truncate">{c.school.name}</span>
-                    <span className={`font-medium shrink-0 ml-2 ${breached ? "text-red-600" : "text-gray-400"}`}>
-                      {breached ? "⚠ Breached" : `${Math.round(c.congestion * 100)}% / ${Math.round(gf.congestionThreshold * 100)}%`}
+                    <span className={`font-medium shrink-0 ml-2 ${breached ? "text-amber-600" : "text-gray-400"}`}>
+                      {breached ? "⚠ At Risk" : `${Math.round(c.congestion * 100)}% / ${Math.round(gf.congestionThreshold * 100)}%`}
                     </span>
                   </div>
                 );
