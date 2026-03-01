@@ -18,7 +18,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::304240833047:role/cdk-hnb659fds-deploy-role-304240833047-us-east-1",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::304240833047:role/cdk-hnb659fds-cfn-exec-role-304240833047-us-east-1",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-304240833047-us-east-1/eced8a9bd0a46e829cbc487395b658f08763103f0b1ee40c8d13469d9e2102cb.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-304240833047-us-east-1/f0fcb33fde1d76168fedd62ac0305e450ce3eb53389b2c8af2f10b98cf1b24cc.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -46,16 +46,18 @@
             "data": "DataLakeE54831B2"
           }
         ],
-        "/SchoolzoneStack/TimestreamDB": [
+        "/SchoolzoneStack/ZoneStateTable": [
           {
-            "type": "aws:cdk:logicalId",
-            "data": "TimestreamDB"
+            "type": "aws:cdk:hasPhysicalName",
+            "data": {
+              "Ref": "ZoneStateTable2B29E037"
+            }
           }
         ],
-        "/SchoolzoneStack/TimestreamTable": [
+        "/SchoolzoneStack/ZoneStateTable/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "TimestreamTable"
+            "data": "ZoneStateTable2B29E037"
           }
         ],
         "/SchoolzoneStack/FirehoseRole/Resource": [
@@ -208,10 +210,10 @@
             "data": "DataLakeBucketName"
           }
         ],
-        "/SchoolzoneStack/TimestreamDatabaseName": [
+        "/SchoolzoneStack/DynamoDBTableName": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "TimestreamDatabaseName"
+            "data": "DynamoDBTableName"
           }
         ],
         "/SchoolzoneStack/KinesisStreamName": [
