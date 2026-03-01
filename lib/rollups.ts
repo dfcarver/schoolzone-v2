@@ -177,8 +177,13 @@ export function computeActiveMitigations(liveState: LiveState): ActiveMitigation
       });
     }
   }
-  // Operator-dispatched first, then by time
-  mitigations.sort((a, b) => Number(b.isOperatorDispatched) - Number(a.isOperatorDispatched));
+  // Most recent first, operator-dispatched before non-operator at the same time
+  mitigations.sort((a, b) => {
+    if (a.isOperatorDispatched !== b.isOperatorDispatched) {
+      return Number(b.isOperatorDispatched) - Number(a.isOperatorDispatched);
+    }
+    return b.appliedAt.localeCompare(a.appliedAt);
+  });
   return mitigations.slice(0, 6);
 }
 
