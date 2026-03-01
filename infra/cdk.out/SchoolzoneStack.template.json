@@ -1,0 +1,924 @@
+{
+ "Description": "SchoolZone Digital Twin — traffic data pipeline (Kinesis → Timestream → S3)",
+ "Resources": {
+  "TrafficStream6F808C3E": {
+   "Type": "AWS::Kinesis::Stream",
+   "Properties": {
+    "Name": "schoolzone-traffic",
+    "RetentionPeriodHours": 24,
+    "ShardCount": 1,
+    "StreamEncryption": {
+     "EncryptionType": "KMS",
+     "KeyId": "alias/aws/kinesis"
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/TrafficStream/Resource"
+   }
+  },
+  "DataLakeE54831B2": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketEncryption": {
+     "ServerSideEncryptionConfiguration": [
+      {
+       "ServerSideEncryptionByDefault": {
+        "SSEAlgorithm": "AES256"
+       }
+      }
+     ]
+    },
+    "BucketName": "schoolzone-datalake-304240833047-us-east-1",
+    "LifecycleConfiguration": {
+     "Rules": [
+      {
+       "Id": "transition-to-ia",
+       "Status": "Enabled",
+       "Transitions": [
+        {
+         "StorageClass": "STANDARD_IA",
+         "TransitionInDays": 30
+        },
+        {
+         "StorageClass": "GLACIER_IR",
+         "TransitionInDays": 90
+        }
+       ]
+      }
+     ]
+    },
+    "PublicAccessBlockConfiguration": {
+     "BlockPublicAcls": true,
+     "BlockPublicPolicy": true,
+     "IgnorePublicAcls": true,
+     "RestrictPublicBuckets": true
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/DataLake/Resource"
+   }
+  },
+  "TimestreamDB": {
+   "Type": "AWS::Timestream::Database",
+   "Properties": {
+    "DatabaseName": "schoolzone-db"
+   },
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/TimestreamDB"
+   }
+  },
+  "TimestreamTable": {
+   "Type": "AWS::Timestream::Table",
+   "Properties": {
+    "DatabaseName": "schoolzone-db",
+    "MagneticStoreWriteProperties": {
+     "enableMagneticStoreWrites": true
+    },
+    "RetentionProperties": {
+     "memoryStoreRetentionPeriodInHours": "24",
+     "magneticStoreRetentionPeriodInDays": "365"
+    },
+    "TableName": "telemetry"
+   },
+   "DependsOn": [
+    "TimestreamDB"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/TimestreamTable"
+   }
+  },
+  "FirehoseRoleAA67C190": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "firehose.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Policies": [
+     {
+      "PolicyDocument": {
+       "Statement": [
+        {
+         "Action": [
+          "kinesis:DescribeStream",
+          "kinesis:GetRecords",
+          "kinesis:GetShardIterator",
+          "kinesis:ListShards",
+          "kinesis:ListStreams"
+         ],
+         "Effect": "Allow",
+         "Resource": {
+          "Fn::GetAtt": [
+           "TrafficStream6F808C3E",
+           "Arn"
+          ]
+         }
+        }
+       ],
+       "Version": "2012-10-17"
+      },
+      "PolicyName": "KinesisAccess"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/FirehoseRole/Resource"
+   }
+  },
+  "FirehoseRoleDefaultPolicyF034DFF7": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:Abort*",
+        "s3:DeleteObject*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "DataLakeE54831B2",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "DataLakeE54831B2",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "FirehoseRoleDefaultPolicyF034DFF7",
+    "Roles": [
+     {
+      "Ref": "FirehoseRoleAA67C190"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/FirehoseRole/DefaultPolicy/Resource"
+   }
+  },
+  "FirehoseToS3": {
+   "Type": "AWS::KinesisFirehose::DeliveryStream",
+   "Properties": {
+    "DeliveryStreamName": "schoolzone-to-datalake",
+    "DeliveryStreamType": "KinesisStreamAsSource",
+    "ExtendedS3DestinationConfiguration": {
+     "BucketARN": {
+      "Fn::GetAtt": [
+       "DataLakeE54831B2",
+       "Arn"
+      ]
+     },
+     "BufferingHints": {
+      "IntervalInSeconds": 60,
+      "SizeInMBs": 5
+     },
+     "CompressionFormat": "GZIP",
+     "ErrorOutputPrefix": "errors/!{firehose:error-output-type}/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/",
+     "Prefix": "raw/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/hour=!{timestamp:HH}/",
+     "RoleARN": {
+      "Fn::GetAtt": [
+       "FirehoseRoleAA67C190",
+       "Arn"
+      ]
+     }
+    },
+    "KinesisStreamSourceConfiguration": {
+     "KinesisStreamARN": {
+      "Fn::GetAtt": [
+       "TrafficStream6F808C3E",
+       "Arn"
+      ]
+     },
+     "RoleARN": {
+      "Fn::GetAtt": [
+       "FirehoseRoleAA67C190",
+       "Arn"
+      ]
+     }
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/FirehoseToS3"
+   }
+  },
+  "GeneratorServiceRole1052AE5C": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/Generator/ServiceRole/Resource"
+   }
+  },
+  "GeneratorServiceRoleDefaultPolicy86DAFD0F": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "kinesis:ListShards",
+        "kinesis:PutRecord",
+        "kinesis:PutRecords"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "TrafficStream6F808C3E",
+         "Arn"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "GeneratorServiceRoleDefaultPolicy86DAFD0F",
+    "Roles": [
+     {
+      "Ref": "GeneratorServiceRole1052AE5C"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/Generator/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "Generator170C31BE": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-304240833047-us-east-1",
+     "S3Key": "c9f672600c16754380365d56be3af621c7afc9b0394c01d2a3467cb1ed3aa774.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "KINESIS_STREAM_NAME": {
+       "Ref": "TrafficStream6F808C3E"
+      }
+     }
+    },
+    "FunctionName": "schoolzone-generator",
+    "Handler": "index.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "GeneratorServiceRole1052AE5C",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x",
+    "Timeout": 30
+   },
+   "DependsOn": [
+    "GeneratorServiceRoleDefaultPolicy86DAFD0F",
+    "GeneratorServiceRole1052AE5C"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/Generator/Resource",
+    "aws:asset:path": "asset.c9f672600c16754380365d56be3af621c7afc9b0394c01d2a3467cb1ed3aa774",
+    "aws:asset:is-bundled": true,
+    "aws:asset:property": "Code"
+   }
+  },
+  "GeneratorLogRetentionECA0CD5F": {
+   "Type": "Custom::LogRetention",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A",
+      "Arn"
+     ]
+    },
+    "LogGroupName": {
+     "Fn::Join": [
+      "",
+      [
+       "/aws/lambda/",
+       {
+        "Ref": "Generator170C31BE"
+       }
+      ]
+     ]
+    },
+    "RetentionInDays": 7
+   },
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/Generator/LogRetention/Resource"
+   }
+  },
+  "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/Resource"
+   }
+  },
+  "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "logs:DeleteRetentionPolicy",
+        "logs:PutRetentionPolicy"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB",
+    "Roles": [
+     {
+      "Ref": "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Handler": "index.handler",
+    "Runtime": "nodejs22.x",
+    "Timeout": 900,
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-304240833047-us-east-1",
+     "S3Key": "2819175352ad1ce0dae768e83fc328fb70fb5f10b4a8ff0ccbcb791f02b0716d.zip"
+    },
+    "Role": {
+     "Fn::GetAtt": [
+      "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB",
+      "Arn"
+     ]
+    }
+   },
+   "DependsOn": [
+    "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB",
+    "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/Resource",
+    "aws:asset:path": "asset.2819175352ad1ce0dae768e83fc328fb70fb5f10b4a8ff0ccbcb791f02b0716d",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "GeneratorScheduleA6C284E3": {
+   "Type": "AWS::Events::Rule",
+   "Properties": {
+    "Description": "Triggers the SchoolZone traffic generator every minute",
+    "Name": "schoolzone-generator-schedule",
+    "ScheduleExpression": "rate(1 minute)",
+    "State": "ENABLED",
+    "Targets": [
+     {
+      "Arn": {
+       "Fn::GetAtt": [
+        "Generator170C31BE",
+        "Arn"
+       ]
+      },
+      "Id": "Target0"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/GeneratorSchedule/Resource"
+   }
+  },
+  "GeneratorScheduleAllowEventRuleSchoolzoneStackGeneratorA419698DEAAD6C47": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "Generator170C31BE",
+      "Arn"
+     ]
+    },
+    "Principal": "events.amazonaws.com",
+    "SourceArn": {
+     "Fn::GetAtt": [
+      "GeneratorScheduleA6C284E3",
+      "Arn"
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/GeneratorSchedule/AllowEventRuleSchoolzoneStackGeneratorA419698D"
+   }
+  },
+  "ProcessorServiceRole5039D372": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/Processor/ServiceRole/Resource"
+   }
+  },
+  "ProcessorServiceRoleDefaultPolicyDA9D4DBA": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "kinesis:DescribeStream",
+        "kinesis:DescribeStreamConsumer",
+        "kinesis:DescribeStreamSummary",
+        "kinesis:GetRecords",
+        "kinesis:GetShardIterator",
+        "kinesis:ListShards",
+        "kinesis:ListStreams",
+        "kinesis:SubscribeToShard"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "TrafficStream6F808C3E",
+         "Arn"
+        ]
+       }
+      },
+      {
+       "Action": [
+        "timestream:DescribeEndpoints",
+        "timestream:WriteRecords"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "ProcessorServiceRoleDefaultPolicyDA9D4DBA",
+    "Roles": [
+     {
+      "Ref": "ProcessorServiceRole5039D372"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/Processor/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "Processor60228016": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-304240833047-us-east-1",
+     "S3Key": "b981f0ae8ec1ce364d4f78cb60bf1b4681d431165f75a33881d7afffd82309b6.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "TIMESTREAM_DATABASE": "schoolzone-db",
+      "TIMESTREAM_TABLE": "telemetry"
+     }
+    },
+    "FunctionName": "schoolzone-processor",
+    "Handler": "index.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "ProcessorServiceRole5039D372",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x",
+    "Timeout": 30
+   },
+   "DependsOn": [
+    "ProcessorServiceRoleDefaultPolicyDA9D4DBA",
+    "ProcessorServiceRole5039D372"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/Processor/Resource",
+    "aws:asset:path": "asset.b981f0ae8ec1ce364d4f78cb60bf1b4681d431165f75a33881d7afffd82309b6",
+    "aws:asset:is-bundled": true,
+    "aws:asset:property": "Code"
+   }
+  },
+  "ProcessorLogRetention3AC18A3D": {
+   "Type": "Custom::LogRetention",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A",
+      "Arn"
+     ]
+    },
+    "LogGroupName": {
+     "Fn::Join": [
+      "",
+      [
+       "/aws/lambda/",
+       {
+        "Ref": "Processor60228016"
+       }
+      ]
+     ]
+    },
+    "RetentionInDays": 7
+   },
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/Processor/LogRetention/Resource"
+   }
+  },
+  "ProcessorKinesisEventSourceSchoolzoneStackTrafficStreamBE85A4284AB6B3F3": {
+   "Type": "AWS::Lambda::EventSourceMapping",
+   "Properties": {
+    "BatchSize": 100,
+    "BisectBatchOnFunctionError": true,
+    "EventSourceArn": {
+     "Fn::GetAtt": [
+      "TrafficStream6F808C3E",
+      "Arn"
+     ]
+    },
+    "FunctionName": {
+     "Ref": "Processor60228016"
+    },
+    "MaximumRetryAttempts": 3,
+    "StartingPosition": "LATEST"
+   },
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/Processor/KinesisEventSource:SchoolzoneStackTrafficStreamBE85A428/Resource"
+   }
+  },
+  "SnapshotApiServiceRoleB25736BA": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/SnapshotApi/ServiceRole/Resource"
+   }
+  },
+  "SnapshotApiServiceRoleDefaultPolicy211223D6": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "timestream:DescribeEndpoints",
+        "timestream:Select"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "SnapshotApiServiceRoleDefaultPolicy211223D6",
+    "Roles": [
+     {
+      "Ref": "SnapshotApiServiceRoleB25736BA"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/SnapshotApi/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "SnapshotApiA2A24C59": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-304240833047-us-east-1",
+     "S3Key": "f1b557925b3ea5eef42f7142817f78f6ad7be9f5a5ee31c048ba39664faf5d9d.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "TIMESTREAM_DATABASE": "schoolzone-db",
+      "TIMESTREAM_TABLE": "telemetry"
+     }
+    },
+    "FunctionName": "schoolzone-snapshot-api",
+    "Handler": "index.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "SnapshotApiServiceRoleB25736BA",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x",
+    "Timeout": 15
+   },
+   "DependsOn": [
+    "SnapshotApiServiceRoleDefaultPolicy211223D6",
+    "SnapshotApiServiceRoleB25736BA"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/SnapshotApi/Resource",
+    "aws:asset:path": "asset.f1b557925b3ea5eef42f7142817f78f6ad7be9f5a5ee31c048ba39664faf5d9d",
+    "aws:asset:is-bundled": true,
+    "aws:asset:property": "Code"
+   }
+  },
+  "SnapshotApiLogRetention75943F4B": {
+   "Type": "Custom::LogRetention",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A",
+      "Arn"
+     ]
+    },
+    "LogGroupName": {
+     "Fn::Join": [
+      "",
+      [
+       "/aws/lambda/",
+       {
+        "Ref": "SnapshotApiA2A24C59"
+       }
+      ]
+     ]
+    },
+    "RetentionInDays": 7
+   },
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/SnapshotApi/LogRetention/Resource"
+   }
+  },
+  "SnapshotApiFunctionUrl36CFA87E": {
+   "Type": "AWS::Lambda::Url",
+   "Properties": {
+    "AuthType": "NONE",
+    "Cors": {
+     "AllowHeaders": [
+      "Content-Type",
+      "Authorization"
+     ],
+     "AllowMethods": [
+      "GET"
+     ],
+     "AllowOrigins": [
+      "*"
+     ],
+     "MaxAge": 60
+    },
+    "TargetFunctionArn": {
+     "Fn::GetAtt": [
+      "SnapshotApiA2A24C59",
+      "Arn"
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/SnapshotApi/FunctionUrl/Resource"
+   }
+  },
+  "SnapshotApiinvokefunctionurl0D3EB9D5": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunctionUrl",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "SnapshotApiA2A24C59",
+      "Arn"
+     ]
+    },
+    "FunctionUrlAuthType": "NONE",
+    "Principal": "*"
+   },
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/SnapshotApi/invoke-function-url"
+   }
+  },
+  "SnapshotApiinvokefunctionB7EA6B76": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "SnapshotApiA2A24C59",
+      "Arn"
+     ]
+    },
+    "InvokedViaFunctionUrl": true,
+    "Principal": "*"
+   },
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/SnapshotApi/invoke-function"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/22Ry27DIBBFv6V7TNOkUtdNH6u+5LRrCzsTd2wMFgOuIot/L4PdrLq6w+UwXIat3N5u5OZK/VDRHPtCYy3ng1dNL5JVzT0aICT2HKhBPJzMUkVBOznvQ9ODZ3etFtkrgig8DkAZlnMiHpVXddpg+lPVOhHIW6XV2cv6YTU2Z14uVRRrghM6+LYEkjuBxgncec2k1VAfVWXsETqSb1meg2k8WpNSVooIPMl7lhXOgS4M3wZuQCJePU1g/MEG18CrGkc0LQP/uH/nv5xmIkkU2rYkX2xbgk88twM+mAZYhvWZSWMUOU0adLv2L4Fyc3Epkvke/Bh8FPw02dH1dHMnd+m3OkIsXDA8YVku+guOsx7gygEAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "SchoolzoneStack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "DataLakeBucketName": {
+   "Description": "S3 data lake bucket",
+   "Value": {
+    "Ref": "DataLakeE54831B2"
+   },
+   "Export": {
+    "Name": "SchoolzoneDataLakeBucket"
+   }
+  },
+  "TimestreamDatabaseName": {
+   "Description": "Timestream database name",
+   "Value": "schoolzone-db"
+  },
+  "KinesisStreamName": {
+   "Description": "Kinesis Data Stream name",
+   "Value": {
+    "Ref": "TrafficStream6F808C3E"
+   }
+  },
+  "SnapshotApiUrl": {
+   "Description": "Add this to your Next.js .env.local as NEXT_PUBLIC_AWS_SNAPSHOT_API_URL",
+   "Value": {
+    "Fn::GetAtt": [
+     "SnapshotApiFunctionUrl36CFA87E",
+     "FunctionUrl"
+    ]
+   },
+   "Export": {
+    "Name": "SchoolzoneSnapshotApiUrl"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}
