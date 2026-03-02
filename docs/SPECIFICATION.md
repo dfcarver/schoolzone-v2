@@ -1,6 +1,6 @@
 # SchoolZone Digital Twin — Product Specification
 
-**Document version:** 1.1
+**Document version:** 1.2
 **Platform version:** Current (Next.js 14, App Router)
 **Owner:** Abu Dhabi Department of Transport
 **Classification:** Proprietary
@@ -219,27 +219,34 @@ Switching city resets selected school, zoom level, and pans the map to the new r
 
 | Zone | School Name | Type | Enrollment |
 |------|-------------|------|:----------:|
-| zone-001 | Lincoln Elementary | Elementary | 420 |
-| zone-002 | Roosevelt Middle School | Middle | 610 |
-| zone-003 | Jefferson High School | High | 1,050 |
-| zone-004 | Washington Elementary | Elementary | 385 |
-| zone-005 | Adams Middle School | Middle | 540 |
+| zone-001 | Lincoln Elementary | Elementary | 485 |
+| zone-002 | Washington Middle School | Middle | 720 |
+| zone-003 | Jefferson High School | High | 1,100 |
+| zone-004 | Roosevelt Academy | Elementary | 320 |
+| zone-005 | Adams Preparatory | Middle | 610 |
 
 #### Khalifa City, AUH — Schools & Corridors
 
 | Zone | School Name | Type | Enrollment |
 |------|-------------|------|:----------:|
 | khalifa-001 | Yasmina British Academy | High | 1,200 |
-| khalifa-002 | ADNOC Schools Khalifa | Elementary | 650 |
-| khalifa-003 | Khalifa International Academy | Middle | 820 |
+| khalifa-002 | ADNOC Schools Khalifa City | Elementary | 650 |
+| khalifa-003 | Int'l School of Choueifat | Middle | 820 |
 
 #### MBZ City, AUH — Schools & Corridors
 
 | Zone | School Name | Type | Enrollment |
 |------|-------------|------|:----------:|
 | mbz-001 | Aldar Academies MBZ | High | 1,100 |
-| mbz-002 | Al Bateen Academy | Elementary | 540 |
-| mbz-003 | Emirates National School | Middle | 780 |
+| mbz-002 | Abu Dhabi Int'l School MBZ | Elementary | 540 |
+| mbz-003 | Emirates National School MBZ | Middle | 780 |
+
+#### Live Traffic Data
+
+When in **Live** data mode, corridor congestion is supplemented by real-time data:
+
+- **Google Routes API** — `/api/traffic/live?city=<cityId>` calls `routes.googleapis.com/directions/v2:computeRoutes` with `TRAFFIC_AWARE` routing for each corridor. Congestion = `min(1, delaySec / staticSec)`. Results are cached server-side for 60 seconds.
+- **TomTom Incidents API** — `/api/incidents/live?city=springfield_il` fetches live incidents within the Springfield bounding box. In Demo mode or for non-Springfield cities, the synthetic incident data is used instead. Results are cached server-side for 5 minutes.
 
 #### Map Elements
 
@@ -282,9 +289,11 @@ Four one-click scenario presets that simultaneously set time, weather, and featu
 A compact grid showing all zones with risk at three time horizons.
 
 - **Time horizons:** NOW, +15 minutes, +30 minutes
-- **Risk source:** `computeHeatmap()` reads current snapshot forecast points
+- **Risk source (Springfield):** `computeHeatmap()` reads current snapshot forecast points
+- **Risk source (Abu Dhabi cities):** Risk values generated from `getCongestionForCorridor()` at the current minute-of-day ± offsets; city switches in real time alongside the Corridor Map
 - **Card content:** Zone name, risk value (0–100) per horizon, active intervention badge
-- **Color coding:** Green (LOW), Amber (MED), Red (HIGH)
+- **Color coding:** Green (LOW ≤ 39), Amber (MED 40–59), Red (HIGH ≥ 60)
+- **City awareness:** Heatmap cards reflect the selected city; switching the city picker on the Corridor Map immediately updates the heatmap to show the correct schools
 - **Interaction:** Click zone card → navigate to zone detail page
 
 ---
@@ -856,7 +865,7 @@ Error codes: `NO_API_KEY`, `INVALID_REQUEST`, `CONTRACT_VIOLATION`, `LLM_ERROR`
 
 ---
 
-### GET `/api/incidents` — Fetch Incidents
+### GET `/api/incidents` — Fetch Incidents (Demo)
 
 | | |
 |--|--|
@@ -864,6 +873,33 @@ Error codes: `NO_API_KEY`, `INVALID_REQUEST`, `CONTRACT_VIOLATION`, `LLM_ERROR`
 | **Query params** | `?scenario=normal\|surge\|weather\|dismissal` (validated against whitelist) |
 | **Output** | `Incident[]` or `{ error: string }` |
 | **Data source** | `/public/mock/scenarios/{scenario}/incidents.json` |
+
+---
+
+### GET `/api/traffic/live` — Live Corridor Congestion
+
+| | |
+|--|--|
+| **Auth** | None (server-side; requires Google Maps API key) |
+| **Query params** | `?city=<cityId>` (default: `springfield_il`) |
+| **Output** | `{ city, zones: [{ zone_id, congestion, delay_seconds }], fetched_at }` |
+| **Cache** | 60 seconds server-side per city |
+| **Data source** | Google Routes API v2 (`routes.googleapis.com`) with `TRAFFIC_AWARE` routing |
+| **Error** | `{ error: "Maps API key not configured" }` (503) if no key present |
+
+---
+
+### GET `/api/incidents/live` — Live Incident Data
+
+| | |
+|--|--|
+| **Auth** | None (server-side; requires `TOMTOM_API_KEY`) |
+| **Query params** | `?city=<cityId>` |
+| **Output** | `MappedIncident[]` or `{ error: string }` |
+| **Cache** | 5 minutes server-side |
+| **Data source** | TomTom Traffic Incidents API v5 |
+| **Constraint** | Only populated for `city=springfield_il`; returns `[]` for other cities |
+| **Error** | `{ error: "TOMTOM_API_KEY not configured" }` (503) if key missing |
 
 ---
 
@@ -1005,6 +1041,25 @@ cdk deploy      # ~2 minutes
 - **Env var:** `OPENAI_API_KEY` (server-side only; never exposed to client)
 - **Settings:** Temperature 0.2, `response_format: { type: "json_object" }`
 - **Feature flag:** `AI_NARRATIVE_ENABLED` (server env var; set to `"false"` to disable LLM calls)
+
+### Google Routes API
+
+- **Endpoint:** `https://routes.googleapis.com/directions/v2:computeRoutes` (POST)
+- **Env vars:** `GOOGLE_MAPS_SERVER_KEY` (preferred, server-only) or `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` (fallback)
+- **Usage:** Called server-side from `/api/traffic/live` for each corridor; computes real-time congestion using `TRAFFIC_AWARE` routing
+- **Required Google Cloud APIs:** Routes API (in addition to Maps JavaScript API)
+- **Congestion formula:** `congestion = min(1, (duration - staticDuration) / staticDuration)`
+- **Cache:** 60-second module-level Map cache on the server; all corridors for a city fetched in parallel via `Promise.allSettled`
+
+### TomTom Traffic Incidents API
+
+- **Endpoint:** `https://api.tomtom.com/traffic/services/5/incidentDetails` (GET)
+- **Env var:** `TOMTOM_API_KEY` (server-side only)
+- **Usage:** Called server-side from `/api/incidents/live` for the Springfield, IL bounding box
+- **Fields fetched:** `iconCategory`, `magnitudeOfDelay`, `events/description`, `startTime`, `from`, `to`, geometry
+- **Mapping:** `iconCategory` → incident type string and human label; `magnitudeOfDelay` (0–4) → `RiskLevel` (≥3 HIGH, ≥2 MED, else LOW)
+- **Zone assignment:** Each incident is assigned to the nearest corridor school by Euclidean coordinate distance
+- **Cache:** 5-minute module-level Map cache on the server
 
 ---
 
@@ -1227,12 +1282,15 @@ schoolzone-v2/
 |----------|:--------:|-------|-------------|
 | `OPENAI_API_KEY` | Yes* | Server-only | OpenAI API key for AI briefing |
 | `AI_NARRATIVE_ENABLED` | No | Server | Set `"false"` to disable LLM calls (returns fallback). Default: `"true"` |
-| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Yes | Client | Google Maps JavaScript API key |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Yes | Client | Google Maps JavaScript API key (Maps JavaScript API) |
+| `GOOGLE_MAPS_SERVER_KEY` | No | Server-only | Google Maps key for Routes API calls; falls back to `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` if not set |
+| `TOMTOM_API_KEY` | No† | Server-only | TomTom developer API key; required for live incident data in Springfield IL |
 | `NEXT_PUBLIC_SUPABASE_URL` | Yes | Client | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Client | Supabase anonymous API key |
 | `NEXT_PUBLIC_AWS_SNAPSHOT_API_URL` | No | Client | Lambda Function URL for live data pipeline. If set, app fetches live telemetry instead of mock JSON. |
 
 \* Required only for AI brief feature; all other features work without it.
+† Required only for live TomTom incident overlay; incidents fall back to synthetic demo data when not set.
 
 ### Local Development
 

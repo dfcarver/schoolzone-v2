@@ -8,6 +8,24 @@ All notable changes to SchoolZone Digital Twin (MRDT) are documented here. For f
 
 ---
 
+## 2026-03-01 (continued +2)
+
+### Added
+- **Live corridor congestion via Google Routes API** — `/api/traffic/live` proxies `routes.googleapis.com/directions/v2:computeRoutes` with `TRAFFIC_AWARE` routing for each corridor; congestion index = `delaySec / staticSec`, clamped 0–1; 60-second server-side cache per city; in Demo mode returns zero overrides and the synthetic model takes over
+- **Live incident overlay via TomTom Traffic Incidents API v5** — `/api/incidents/live` fetches real-time incidents within the Springfield IL bounding box; maps `iconCategory` → incident type and label, `magnitudeOfDelay` → `RiskLevel`; assigns each incident to the nearest corridor school; 5-minute server-side cache; only active in Springfield IL Live mode
+- **City-aware Portfolio Risk Heatmap** — heatmap cards now reflect the active city; switching to Khalifa City or MBZ City replaces Springfield school cards with Abu Dhabi school cards; risk values generated from the congestion engine (`getCongestionForCorridor`) at NOW, +15 min, +30 min horizons
+- **`lib/cityConfig.ts`** — shared module exporting `CityId`, `CityBounds`, `CityConfig`, `CITIES`, `SPRINGFIELD_CORRIDORS`, `KHALIFA_CORRIDORS`, `MBZ_CORRIDORS`; eliminates duplication between `CorridorMap.tsx` and `app/executive/page.tsx`
+- **`lib/pushSubscriptionCache.ts`** — centralises the in-memory push subscription Set; fixes a Next.js build error caused by exporting a non-HTTP-verb constant from a route file
+
+### Fixed
+- **High-Risk Window KPI** showed raw ISO timestamp (e.g. `~2026-03-02T00:31:20.87Z`); now formats as `HH:MM` via `toLocaleTimeString()`
+
+### Environment Variables
+- `GOOGLE_MAPS_SERVER_KEY` — optional server-only key for the Google Routes API; falls back to `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
+- `TOMTOM_API_KEY` — required for live TomTom incident data in Springfield IL
+
+---
+
 ## 2026-03-01 (continued +1)
 
 ### Added
