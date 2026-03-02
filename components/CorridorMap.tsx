@@ -265,29 +265,29 @@ export default function CorridorMap({ selectedCity: selectedCityProp, onCityChan
   });
   const { timeMin, setTimeMin, isPlaying, setIsPlaying, congestionData, getCongestion } = engine;
 
-  // Live AWS risk override — fetch from Snapshot API when dataMode === "live"
+  // Live Google Routes API congestion override
   const { config: demoConfig } = useDemoConfig();
   const [liveOverrides, setLiveOverrides] = useState<Map<string, number>>(new Map());
   useEffect(() => {
-    const awsUrl = process.env.NEXT_PUBLIC_AWS_SNAPSHOT_API_URL;
-    if (!awsUrl || demoConfig.dataMode !== "live") { setLiveOverrides(new Map()); return; }
+    if (demoConfig.dataMode !== "live") { setLiveOverrides(new Map()); return; }
     let cancelled = false;
     const fetchLive = async () => {
       try {
-        const params = new URLSearchParams({ city: selectedCity, weather });
-        const res = await fetch(`${awsUrl}?${params}`, { cache: "no-store" });
+        const res = await fetch(`/api/traffic/live?city=${selectedCity}`, { cache: "no-store" });
         if (!res.ok || cancelled) return;
         const data = await res.json();
         if (cancelled) return;
         const map = new Map<string, number>();
-        for (const zone of data.zones ?? []) map.set(zone.zone_id, zone.risk_score ?? 0);
-        setLiveOverrides(map);
-      } catch { /* silently ignore — fall back to local model */ }
+        for (const zone of data.zones ?? []) {
+          if (zone.congestion !== null) map.set(zone.zone_id, zone.congestion);
+        }
+        if (map.size > 0) setLiveOverrides(map);
+      } catch { /* fall back to local model */ }
     };
     fetchLive();
-    const interval = setInterval(fetchLive, 30_000);
+    const interval = setInterval(fetchLive, 60_000);
     return () => { cancelled = true; clearInterval(interval); };
-  }, [demoConfig.dataMode, selectedCity, weather]);
+  }, [demoConfig.dataMode, selectedCity]);
 
   // Blend live risk scores into congestionData (live overrides replace local model values)
   const displayData = useMemo(
