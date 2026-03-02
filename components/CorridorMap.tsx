@@ -30,10 +30,10 @@ import {
   congestionLabel,
   congestionColor,
   formatTime,
-  CorridorDef,
 } from "@/lib/hooks/useCongestionEngine";
 import { useGeofenceAlerts } from "@/lib/hooks/useGeofenceAlerts";
 import { useDemoConfig } from "@/lib/demoConfig";
+import { CityId, CITIES, SPRINGFIELD_CORRIDORS } from "@/lib/cityConfig";
 import MapToolbar, { MapFeatureFlags } from "./map/MapToolbar";
 import IncidentOverlay from "./map/IncidentOverlay";
 import GeofenceLayer from "./map/GeofenceLayer";
@@ -46,232 +46,7 @@ import QuickstartStrip, { QuickstartPreset } from "./map/QuickstartStrip";
 import CorridorLabels from "./map/CorridorLabels";
 import FeatureHint from "./map/FeatureHint";
 
-// ---------------------------------------------------------------------------
-// Corridor definitions
-// ---------------------------------------------------------------------------
-
-const SPRINGFIELD_CORRIDORS: CorridorDef[] = [
-  {
-    id: "zone-001",
-    name: "Oak Avenue Corridor",
-    path: [
-      { lat: 39.7845, lng: -89.6501 }, // north — runs south along Oak Ave
-      { lat: 39.7817, lng: -89.6501 }, // corner at school
-      { lat: 39.7817, lng: -89.6461 }, // turns east along school frontage
-    ],
-    school: { zone_id: "zone-001", name: "Lincoln Elementary", lat: 39.7817, lng: -89.6501, type: "elementary", enrollment: 485 },
-    baselineCongestion: 0.08,
-    peaks: [
-      { centerMin: 7 * 60 + 45, spread: 20, intensity: 0.82 },
-      { centerMin: 15 * 60, spread: 20, intensity: 0.88 },
-    ],
-  },
-  {
-    id: "zone-002",
-    name: "Maple Drive Corridor",
-    path: [
-      { lat: 39.7900, lng: -89.6492 }, // west — runs east along Maple Dr
-      { lat: 39.7900, lng: -89.6440 }, // corner at school
-      { lat: 39.7870, lng: -89.6440 }, // turns south along side street
-    ],
-    school: { zone_id: "zone-002", name: "Washington Middle School", lat: 39.7900, lng: -89.6440, type: "middle", enrollment: 720 },
-    baselineCongestion: 0.10,
-    peaks: [
-      { centerMin: 7 * 60 + 30, spread: 22, intensity: 0.70 },
-      { centerMin: 15 * 60 + 15, spread: 22, intensity: 0.78 },
-      { centerMin: 16 * 60 + 30, spread: 30, intensity: 0.35 },
-    ],
-  },
-  {
-    id: "zone-003",
-    name: "Elm Street Corridor",
-    path: [
-      { lat: 39.7755, lng: -89.6635 }, // west — runs east along Elm St
-      { lat: 39.7755, lng: -89.6580 }, // school
-      { lat: 39.7755, lng: -89.6535 }, // continues east
-    ],
-    school: { zone_id: "zone-003", name: "Jefferson High School", lat: 39.7755, lng: -89.6580, type: "high", enrollment: 1100 },
-    baselineCongestion: 0.12,
-    peaks: [
-      { centerMin: 7 * 60 + 15, spread: 25, intensity: 0.75 },
-      { centerMin: 15 * 60 + 30, spread: 25, intensity: 0.85 },
-      { centerMin: 17 * 60, spread: 35, intensity: 0.40 },
-    ],
-  },
-  {
-    id: "zone-004",
-    name: "Pine Boulevard Corridor",
-    path: [
-      { lat: 39.7864, lng: -89.6390 }, // north — runs south along Pine Blvd
-      { lat: 39.7832, lng: -89.6390 }, // corner at school
-      { lat: 39.7832, lng: -89.6348 }, // turns east along cross street
-    ],
-    school: { zone_id: "zone-004", name: "Roosevelt Academy", lat: 39.7832, lng: -89.6390, type: "elementary", enrollment: 320 },
-    baselineCongestion: 0.06,
-    peaks: [
-      { centerMin: 7 * 60 + 50, spread: 18, intensity: 0.65 },
-      { centerMin: 14 * 60 + 50, spread: 18, intensity: 0.72 },
-    ],
-  },
-  {
-    id: "zone-005",
-    name: "Cedar Lane Corridor",
-    path: [
-      { lat: 39.7950, lng: -89.6572 }, // west — runs east along Cedar Ln
-      { lat: 39.7950, lng: -89.6520 }, // corner at school
-      { lat: 39.7918, lng: -89.6520 }, // turns south along side street
-    ],
-    school: { zone_id: "zone-005", name: "Adams Preparatory", lat: 39.7950, lng: -89.6520, type: "middle", enrollment: 610 },
-    baselineCongestion: 0.09,
-    peaks: [
-      { centerMin: 7 * 60 + 25, spread: 22, intensity: 0.72 },
-      { centerMin: 15 * 60 + 10, spread: 22, intensity: 0.80 },
-      { centerMin: 16 * 60 + 45, spread: 30, intensity: 0.30 },
-    ],
-  },
-];
-
-// ---------------------------------------------------------------------------
-// City definitions
-// ---------------------------------------------------------------------------
-
-type CityId = "springfield_il" | "khalifa_city_auh" | "mbz_city_auh";
-
-interface CityConfig {
-  id: CityId;
-  label: string;
-  corridors: CorridorDef[];
-  overviewCenter: { lat: number; lng: number };
-  overviewZoom: number;
-  defaultZoom: number;
-  bounds: google.maps.LatLngBoundsLiteral;
-}
-
-const KHALIFA_CORRIDORS: CorridorDef[] = [
-  {
-    id: "khalifa-001",
-    name: "Yasmina Academy Corridor",
-    path: [
-      { lat: 24.424, lng: 54.547 },   // north — Al Wataniya St approach
-      { lat: 24.416, lng: 54.547 },   // school frontage
-      { lat: 24.416, lng: 54.555 },   // turns east along cross street
-    ],
-    school: { zone_id: "khalifa-001", name: "Yasmina British Academy", lat: 24.4158592, lng: 54.5471628, type: "high", enrollment: 1200 },
-    baselineCongestion: 0.09,
-    peaks: [
-      { centerMin: 7 * 60 + 15, spread: 25, intensity: 0.82 },
-      { centerMin: 14 * 60 + 30, spread: 25, intensity: 0.87 },
-    ],
-  },
-  {
-    id: "khalifa-002",
-    name: "ADNOC Schools Corridor",
-    path: [
-      { lat: 24.417, lng: 54.504 },   // west — E10 road approach
-      { lat: 24.417, lng: 54.515 },   // school entrance on E10
-      { lat: 24.423, lng: 54.515 },   // turns north along side street
-    ],
-    school: { zone_id: "khalifa-002", name: "ADNOC Schools Khalifa City", lat: 24.416729, lng: 54.514899, type: "elementary", enrollment: 650 },
-    baselineCongestion: 0.07,
-    peaks: [
-      { centerMin: 7 * 60 + 30, spread: 22, intensity: 0.74 },
-      { centerMin: 14 * 60 + 15, spread: 22, intensity: 0.79 },
-    ],
-  },
-  {
-    id: "khalifa-003",
-    name: "ISC Khalifa City Corridor",
-    path: [
-      { lat: 24.428, lng: 54.566 },   // north — 22nd St approach
-      { lat: 24.415, lng: 54.566 },   // school frontage
-      { lat: 24.415, lng: 54.577 },   // turns east along school road
-    ],
-    school: { zone_id: "khalifa-003", name: "Int'l School of Choueifat", lat: 24.41446, lng: 54.56633, type: "middle", enrollment: 820 },
-    baselineCongestion: 0.08,
-    peaks: [
-      { centerMin: 7 * 60 + 45, spread: 20, intensity: 0.71 },
-      { centerMin: 14 * 60 + 45, spread: 20, intensity: 0.81 },
-    ],
-  },
-];
-
-const MBZ_CORRIDORS: CorridorDef[] = [
-  {
-    id: "mbz-001",
-    name: "Aldar Academies MBZ Corridor",
-    path: [
-      { lat: 24.371, lng: 54.550 },   // west — Zone 22 approach
-      { lat: 24.371, lng: 54.564 },   // school entrance
-      { lat: 24.363, lng: 54.564 },   // turns south along side street
-    ],
-    school: { zone_id: "mbz-001", name: "Aldar Academies MBZ", lat: 24.370560, lng: 54.563863, type: "high", enrollment: 1100 },
-    baselineCongestion: 0.10,
-    peaks: [
-      { centerMin: 7 * 60 + 20, spread: 24, intensity: 0.83 },
-      { centerMin: 14 * 60 + 30, spread: 25, intensity: 0.88 },
-    ],
-  },
-  {
-    id: "mbz-002",
-    name: "ADIS MBZ Corridor",
-    path: [
-      { lat: 24.358, lng: 54.542 },   // north — 63rd Street approach
-      { lat: 24.346, lng: 54.542 },   // school entrance (near Al Ain University)
-      { lat: 24.346, lng: 54.553 },   // turns east along Zone 17 road
-    ],
-    school: { zone_id: "mbz-002", name: "Abu Dhabi Int'l School MBZ", lat: 24.346302, lng: 54.541512, type: "elementary", enrollment: 540 },
-    baselineCongestion: 0.08,
-    peaks: [
-      { centerMin: 7 * 60 + 40, spread: 18, intensity: 0.70 },
-      { centerMin: 14 * 60 + 20, spread: 20, intensity: 0.75 },
-    ],
-  },
-  {
-    id: "mbz-003",
-    name: "Emirates National School Corridor",
-    path: [
-      { lat: 24.361, lng: 54.537 },   // west — Al Fan Street approach (Zone 3)
-      { lat: 24.361, lng: 54.551 },   // school entrance
-      { lat: 24.354, lng: 54.551 },   // turns south along side street
-    ],
-    school: { zone_id: "mbz-003", name: "Emirates National School MBZ", lat: 24.360989, lng: 54.550989, type: "middle", enrollment: 780 },
-    baselineCongestion: 0.09,
-    peaks: [
-      { centerMin: 7 * 60 + 30, spread: 22, intensity: 0.77 },
-      { centerMin: 14 * 60 + 45, spread: 22, intensity: 0.84 },
-    ],
-  },
-];
-
-const CITIES: CityConfig[] = [
-  {
-    id: "springfield_il",
-    label: "Springfield, IL",
-    corridors: SPRINGFIELD_CORRIDORS,
-    overviewCenter: { lat: 39.7860, lng: -89.6480 },
-    overviewZoom: 15,
-    defaultZoom: 19,
-    bounds: { north: 39.8077, south: 39.7643, east: -89.6197, west: -89.6763 },
-  },
-  {
-    id: "khalifa_city_auh",
-    label: "Khalifa City, AUH",
-    corridors: KHALIFA_CORRIDORS,
-    overviewCenter: { lat: 24.416, lng: 54.549 },
-    overviewZoom: 14,
-    defaultZoom: 17,
-    bounds: { north: 24.445, south: 24.390, east: 54.600, west: 54.495 },
-  },
-  {
-    id: "mbz_city_auh",
-    label: "MBZ City, AUH",
-    corridors: MBZ_CORRIDORS,
-    overviewCenter: { lat: 24.360, lng: 54.552 },
-    overviewZoom: 14,
-    defaultZoom: 17,
-    bounds: { north: 24.400, south: 24.325, east: 54.600, west: 54.510 },
-  },
-];
+// Corridor and city definitions live in lib/cityConfig.ts
 
 const TIME_PRESETS = [
   { label: "Early AM", min: 6 * 60 },
@@ -364,7 +139,12 @@ let dispatchCounter = 0;
 // Component
 // ---------------------------------------------------------------------------
 
-export default function CorridorMap() {
+interface CorridorMapProps {
+  selectedCity?: CityId;
+  onCityChange?: (city: CityId) => void;
+}
+
+export default function CorridorMap({ selectedCity: selectedCityProp, onCityChange }: CorridorMapProps = {}) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
   const { isLoaded, loadError } = useJsApiLoader({ googleMapsApiKey: apiKey });
   const { push: pushNotification } = useNotifications();
@@ -372,8 +152,13 @@ export default function CorridorMap() {
   const mapRef = useRef<google.maps.Map | null>(null);
   const schoolZoom = useRef<number>(19); // set from actual map idle event; reset on city change
 
-  // City selection
-  const [selectedCity, setSelectedCity] = useState<CityId>("springfield_il");
+  // City selection — controlled by parent if prop provided, otherwise internal
+  const [internalCity, setInternalCity] = useState<CityId>("springfield_il");
+  const selectedCity = selectedCityProp ?? internalCity;
+  const setSelectedCity = useCallback((city: CityId) => {
+    setInternalCity(city);
+    onCityChange?.(city);
+  }, [onCityChange]);
   const cityConfig = useMemo(() => CITIES.find(c => c.id === selectedCity)!, [selectedCity]);
   const corridors = cityConfig.corridors;
 

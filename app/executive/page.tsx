@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useLiveState } from "@/lib/useLiveState";
 import Topbar from "@/components/Topbar";
 import ExecutiveKPI from "@/components/ExecutiveKPI";
@@ -23,6 +23,9 @@ import { buildEscalationInput } from "@/lib/engines/buildInputs";
 import EscalationGauge from "@/components/intelligence/EscalationGauge";
 import SimulationPanel from "@/components/intelligence/SimulationPanel";
 import CorridorMap from "@/components/CorridorMap";
+import { CityId, CITIES } from "@/lib/cityConfig";
+import { getCongestionForCorridor } from "@/lib/hooks/useCongestionEngine";
+import { RiskLevel } from "@/lib/types";
 import AIPredictionPanel from "@/components/ai/AIPredictionPanel";
 import InterventionFeed from "@/components/InterventionFeed";
 
@@ -35,10 +38,24 @@ export default function ExecutivePage() {
     return computeDistrictRollup(liveState, lastValidation, drift);
   }, [liveState, lastValidation]);
 
+  const [selectedCity, setSelectedCity] = useState<CityId>("springfield_il");
+  const handleCityChange = useCallback((city: CityId) => setSelectedCity(city), []);
+
   const heatmap = useMemo(() => {
     if (!liveState) return [];
-    return computeHeatmap(liveState);
-  }, [liveState]);
+    if (selectedCity === "springfield_il") return computeHeatmap(liveState);
+    // For Abu Dhabi cities, generate heatmap entries from corridor definitions
+    const cityConfig = CITIES.find(c => c.id === selectedCity)!;
+    const now = new Date();
+    const minuteOfDay = now.getHours() * 60 + now.getMinutes();
+    return cityConfig.corridors.map((corridor) => {
+      const riskNow = Math.round(getCongestionForCorridor(corridor, minuteOfDay, 1.0, null) * 100);
+      const risk15  = Math.round(getCongestionForCorridor(corridor, minuteOfDay + 15, 1.0, null) * 100);
+      const risk30  = Math.round(getCongestionForCorridor(corridor, minuteOfDay + 30, 1.0, null) * 100);
+      const risk_level: RiskLevel = riskNow >= 60 ? "HIGH" : riskNow >= 40 ? "MEDIUM" : "LOW";
+      return { zone_id: corridor.school.zone_id, name: corridor.school.name, riskNow, risk15, risk30, risk_level, hasActiveIntervention: false };
+    });
+  }, [liveState, selectedCity]);
 
   const emergingRisks = useMemo(() => {
     if (!liveState) return [];
@@ -123,7 +140,7 @@ export default function ExecutivePage() {
         <RiskHeatmap entries={heatmap} />
 
         {/* Corridor Traffic Map */}
-        <CorridorMap />
+        <CorridorMap selectedCity={selectedCity} onCityChange={handleCityChange} />
 
         {/* Two-column: Emerging Risks + Active Mitigations */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
