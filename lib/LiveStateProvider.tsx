@@ -155,7 +155,7 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
     // Send push notification for newly HIGH-risk zones (transitions only)
     if (baseState && config.dataMode === "live") {
       const currentHigh = new Set(baseState.zones.filter((z) => z.risk_level === "HIGH").map((z) => z.zone_id));
-      for (const zoneId of currentHigh) {
+      Array.from(currentHigh).forEach((zoneId) => {
         if (!prevHighZones.current.has(zoneId)) {
           const zone = baseState.zones.find((z) => z.zone_id === zoneId);
           fetch("/api/push/notify", {
@@ -170,7 +170,7 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
             }),
           }).catch(() => {/* non-critical */});
         }
-      }
+      });
       prevHighZones.current = currentHigh;
     }
   }, [baseState, config.dataMode]);
