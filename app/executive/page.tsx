@@ -52,7 +52,7 @@ export default function ExecutivePage() {
       const riskNow = Math.round(getCongestionForCorridor(corridor, minuteOfDay, 1.0, null) * 100);
       const risk15  = Math.round(getCongestionForCorridor(corridor, minuteOfDay + 15, 1.0, null) * 100);
       const risk30  = Math.round(getCongestionForCorridor(corridor, minuteOfDay + 30, 1.0, null) * 100);
-      const risk_level: RiskLevel = riskNow >= 60 ? "HIGH" : riskNow >= 40 ? "MEDIUM" : "LOW";
+      const risk_level: RiskLevel = riskNow >= 60 ? RiskLevel.HIGH : riskNow >= 40 ? RiskLevel.MED : RiskLevel.LOW;
       return { zone_id: corridor.school.zone_id, name: corridor.school.name, riskNow, risk15, risk30, risk_level, hasActiveIntervention: false };
     });
   }, [liveState, selectedCity]);
