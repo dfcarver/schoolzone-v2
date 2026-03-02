@@ -227,19 +227,15 @@ export default function CorridorMap({ selectedCity: selectedCityProp, onCityChan
     setDispatched((prev) => prev.map((d) => (d.id === id ? { ...d, status } : d)));
   }, []);
 
-  // Incidents — fetched from API instead of hardcoded
+  // Incidents — mock data fetch (always)
   const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [liveMappedIncidents, setLiveMappedIncidents] = useState<MappedIncident[]>([]);
   useEffect(() => {
     fetch("/api/incidents")
       .then((r) => r.json())
       .then((data: Incident[]) => setIncidents(data))
       .catch(() => {/* leave empty on error */});
   }, []);
-
-  const mappedIncidents = useMemo<MappedIncident[]>(
-    () => mapIncidentsToCoords(incidents),
-    [incidents]
-  );
 
   // Historical playback mode
   const [historicalMode, setHistoricalMode] = useState(false);
@@ -265,8 +261,32 @@ export default function CorridorMap({ selectedCity: selectedCityProp, onCityChan
   });
   const { timeMin, setTimeMin, isPlaying, setIsPlaying, congestionData, getCongestion } = engine;
 
-  // Live Google Routes API congestion override
+  // Live Google Routes API congestion override + TomTom incidents
   const { config: demoConfig } = useDemoConfig();
+
+  // Live TomTom incidents — Springfield only, refreshes every 5 min
+  useEffect(() => {
+    if (demoConfig.dataMode !== "live" || selectedCity !== "springfield_il") {
+      setLiveMappedIncidents([]);
+      return;
+    }
+    let cancelled = false;
+    const fetchLiveIncidents = () => {
+      fetch(`/api/incidents/live?city=${selectedCity}`, { cache: "no-store" })
+        .then((r) => r.json())
+        .then((data: MappedIncident[]) => { if (!cancelled) setLiveMappedIncidents(data); })
+        .catch(() => {/* fall back to mock data */});
+    };
+    fetchLiveIncidents();
+    const interval = setInterval(fetchLiveIncidents, 5 * 60_000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [demoConfig.dataMode, selectedCity]);
+
+  const mappedIncidents = useMemo<MappedIncident[]>(
+    () => liveMappedIncidents.length > 0 ? liveMappedIncidents : mapIncidentsToCoords(incidents),
+    [incidents, liveMappedIncidents]
+  );
+
   const [liveOverrides, setLiveOverrides] = useState<Map<string, number>>(new Map());
   useEffect(() => {
     if (demoConfig.dataMode !== "live") { setLiveOverrides(new Map()); return; }
