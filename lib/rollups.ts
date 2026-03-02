@@ -63,7 +63,9 @@ export function computeDistrictRollup(
       }
     }
   }
-  const forecastedHighRiskWindow = peakTime ? `~${peakTime}` : "N/A";
+  const forecastedHighRiskWindow = peakTime
+    ? `~${new Date(peakTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+    : "N/A";
   const forecastedHighRiskValue = Math.round(peakRisk * 100);
 
   // Interventions applied today
