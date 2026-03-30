@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/lib/ThemeProvider";
 import { NotificationsProvider } from "@/lib/notifications";
 import TopNav from "@/components/TopNav";
 import DemoBanner from "@/components/DemoBanner";
+import DemoFlow from "@/components/DemoFlow";
 import AlertEngine from "@/components/AlertEngine";
 import InterventionNotifier from "@/components/InterventionNotifier";
 
@@ -26,6 +27,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               <TopNav />
               <DemoBanner />
               <main className="flex-1">{children}</main>
+              <DemoFlow />
               <AlertEngine />
               <InterventionNotifier />
             </div>
