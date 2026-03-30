@@ -198,6 +198,45 @@ export class SchoolzoneStack extends cdk.Stack {
       },
     });
 
+    // ── Analytics API Lambda ───────────────────────────────────────────────────
+    // Runs Athena queries against the S3 data lake and returns hourly aggregates.
+    // Called directly from the Next.js analytics page via Function URL.
+    const analyticsApiFn = new lambdaNodejs.NodejsFunction(this, "AnalyticsApi", {
+      ...lambdaDefaults,
+      functionName: "schoolzone-analytics-api",
+      entry: path.join(__dirname, "../lambdas/analytics-api/index.ts"),
+      handler: "handler",
+      timeout: cdk.Duration.seconds(60),
+      environment: {
+        ATHENA_RESULTS_BUCKET: `s3://${dataLakeBucket.bucketName}/athena-results/`,
+      },
+    });
+
+    // Athena permissions
+    analyticsApiFn.addToRolePolicy(new iam.PolicyStatement({
+      actions: [
+        "athena:StartQueryExecution",
+        "athena:GetQueryExecution",
+        "athena:GetQueryResults",
+        "athena:StopQueryExecution",
+        "glue:GetTable",
+        "glue:GetDatabase",
+        "glue:GetPartitions",
+      ],
+      resources: ["*"],
+    }));
+    dataLakeBucket.grantReadWrite(analyticsApiFn);
+
+    const analyticsUrl = analyticsApiFn.addFunctionUrl({
+      authType: lambda.FunctionUrlAuthType.NONE,
+      cors: {
+        allowedOrigins: ["*"],
+        allowedMethods: [lambda.HttpMethod.GET],
+        allowedHeaders: ["Content-Type"],
+        maxAge: cdk.Duration.seconds(60),
+      },
+    });
+
     // ── Outputs ────────────────────────────────────────────────────────────────
     new cdk.CfnOutput(this, "DataLakeBucketName", {
       value: dataLakeBucket.bucketName,
@@ -220,6 +259,13 @@ export class SchoolzoneStack extends cdk.Stack {
       description:
         "Add this to your Next.js .env.local as NEXT_PUBLIC_AWS_SNAPSHOT_API_URL",
       exportName: "SchoolzoneSnapshotApiUrl",
+    });
+
+    new cdk.CfnOutput(this, "AnalyticsApiUrl", {
+      value: analyticsUrl.url,
+      description:
+        "Add this to your Vercel env as NEXT_PUBLIC_AWS_ANALYTICS_API_URL",
+      exportName: "SchoolzoneAnalyticsApiUrl",
     });
   }
 }
