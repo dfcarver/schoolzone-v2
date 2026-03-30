@@ -33,6 +33,7 @@ import {
 } from "@/lib/hooks/useCongestionEngine";
 import { useGeofenceAlerts } from "@/lib/hooks/useGeofenceAlerts";
 import { useDemoConfig } from "@/lib/demoConfig";
+import { useLiveState } from "@/lib/useLiveState";
 import { CityId, CITIES, SPRINGFIELD_CORRIDORS } from "@/lib/cityConfig";
 import MapToolbar, { MapFeatureFlags } from "./map/MapToolbar";
 import IncidentOverlay from "./map/IncidentOverlay";
@@ -263,6 +264,16 @@ export default function CorridorMap({ selectedCity: selectedCityProp, onCityChan
 
   // Live Google Routes API congestion override + TomTom incidents
   const { config: demoConfig } = useDemoConfig();
+  const { liveState } = useLiveState();
+
+  // For Abu Dhabi cities, use Lambda zone risk scores directly so corridor
+  // colours match the Portfolio Heatmap (both sourced from the same Lambda data)
+  const zoneRiskOverrides = useMemo(() => {
+    if (!liveState || selectedCity === "springfield_il") return new Map<string, number>();
+    const map = new Map<string, number>();
+    for (const zone of liveState.zones) map.set(zone.zone_id, zone.risk_score);
+    return map;
+  }, [liveState, selectedCity]);
 
   // Live TomTom incidents — Springfield only, refreshes every 5 min
   useEffect(() => {
@@ -309,13 +320,21 @@ export default function CorridorMap({ selectedCity: selectedCityProp, onCityChan
     return () => { cancelled = true; clearInterval(interval); };
   }, [demoConfig.dataMode, selectedCity]);
 
-  // Blend live risk scores into congestionData (live overrides replace local model values)
-  const displayData = useMemo(
-    () => liveOverrides.size > 0
-      ? congestionData.map((c) => liveOverrides.has(c.school.zone_id) ? { ...c, congestion: liveOverrides.get(c.school.zone_id)! } : c)
-      : congestionData,
-    [congestionData, liveOverrides]
-  );
+  // Blend live risk scores into congestionData.
+  // Priority: zoneRiskOverrides (Lambda) > liveOverrides (traffic API) > local model
+  const displayData = useMemo(() => {
+    if (zoneRiskOverrides.size > 0) {
+      return congestionData.map((c) =>
+        zoneRiskOverrides.has(c.school.zone_id) ? { ...c, congestion: zoneRiskOverrides.get(c.school.zone_id)! } : c
+      );
+    }
+    if (liveOverrides.size > 0) {
+      return congestionData.map((c) =>
+        liveOverrides.has(c.school.zone_id) ? { ...c, congestion: liveOverrides.get(c.school.zone_id)! } : c
+      );
+    }
+    return congestionData;
+  }, [congestionData, liveOverrides, zoneRiskOverrides]);
 
   // Fix 3: memoize map options so GoogleMap doesn't get a new object every render
   const mapOptions = useMemo(() => getMapOptions(mapViewType, cityConfig.bounds), [mapViewType, cityConfig]);
