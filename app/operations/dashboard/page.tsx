@@ -26,8 +26,13 @@ export default function OperationsDashboardPage() {
   const { config, updateConfig } = useDemoConfig();
   const selectedCity = config.selectedCity;
 
+  // For Abu Dhabi, use liveState.zones directly (Lambda data with overrides/noise)
+  // so KPIs and tiles match the heatmap. Fall back to client-side model only if
+  // liveState hasn't loaded yet.
   const corridorZones = useMemo(() => {
     if (selectedCity === "springfield_il") return null;
+    if (liveState && liveState.zones.length > 0) return liveState.zones;
+    // Pre-load fallback from client-side model while Lambda data arrives
     const cityConfig = CITIES.find(c => c.id === selectedCity);
     if (!cityConfig) return null;
     const now = new Date();
@@ -51,7 +56,7 @@ export default function OperationsDashboardPage() {
         interventions: [],
       };
     });
-  }, [selectedCity]);
+  }, [selectedCity, liveState]);
 
   const corridorKpis = useMemo(() => {
     if (!corridorZones) return null;

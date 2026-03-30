@@ -71,6 +71,22 @@ export default function LoginPage() {
           <p className="text-xs text-slate-600 mt-0.5">Abu Dhabi Department of Transport</p>
         </div>
 
+        {/* Credentials hint */}
+        <div className="mb-4 bg-slate-900/60 border border-slate-800 rounded-xl px-4 py-3 text-xs text-slate-500 space-y-1">
+          <p className="font-medium text-slate-400 mb-1.5">Access credentials</p>
+          {[
+            { user: "admin", pass: "admin2026", label: "Full access" },
+            { user: "executive", pass: "exec2026", label: "Command Brief" },
+            { user: "operator", pass: "ops2026", label: "Operations" },
+            { user: "governance", pass: "gov2026", label: "Governance" },
+          ].map(({ user, pass, label }) => (
+            <div key={user} className="flex items-center justify-between gap-4">
+              <span className="font-mono text-slate-400">{user} / {pass}</span>
+              <span className="text-slate-600">{label}</span>
+            </div>
+          ))}
+        </div>
+
         {/* Form */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
           <form onSubmit={handleSubmit} className="space-y-4">

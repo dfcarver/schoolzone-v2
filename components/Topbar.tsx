@@ -80,6 +80,8 @@ export default function Topbar({ snapshotId, timestamp, title = "Operations Cons
 
         {/* Weather toggle — affects Lambda risk model */}
         {config.dataMode === "live" && (
+          <div className="flex items-center gap-1.5">
+          <span className="text-xs text-slate-500 hidden sm:inline">Weather:</span>
           <div className="flex items-center rounded-lg border border-slate-700 overflow-hidden text-xs">
             {(["clear", "rain", "fog"] as WeatherMode[]).map((w) => (
               <button
@@ -93,6 +95,7 @@ export default function Topbar({ snapshotId, timestamp, title = "Operations Cons
                 {w === "clear" ? "☀️" : w === "rain" ? "🌧️" : "🌫️"}
               </button>
             ))}
+          </div>
           </div>
         )}
 

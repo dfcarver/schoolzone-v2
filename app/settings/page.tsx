@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useDemoConfig, ScenarioId } from "@/lib/demoConfig";
 import { useToast } from "@/components/Toast";
 import Topbar from "@/components/Topbar";
@@ -21,6 +22,23 @@ const INTERVAL_OPTIONS = [
 export default function SettingsPage() {
   const { config, updateConfig } = useDemoConfig();
   const { toast } = useToast();
+  const [resetting, setResetting] = useState(false);
+
+  async function handleReset() {
+    setResetting(true);
+    try {
+      const res = await fetch("/api/interventions/reset", { method: "POST" });
+      if (res.ok) {
+        toast("Intervention history cleared — demo is reset", "success");
+      } else {
+        toast("Reset failed", "error");
+      }
+    } catch {
+      toast("Reset failed", "error");
+    } finally {
+      setResetting(false);
+    }
+  }
 
   return (
     <div className="flex flex-col h-screen">
@@ -135,11 +153,25 @@ export default function SettingsPage() {
           </div>
         </section>
 
+        {/* Reset Demo */}
+        <section className="border-t border-gray-200 dark:border-gray-700 pt-6">
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">Reset Demo</h2>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+            Clears all applied interventions from the database so the demo starts clean.
+          </p>
+          <button
+            onClick={handleReset}
+            disabled={resetting}
+            className="px-4 py-2 text-sm font-medium text-red-700 dark:text-red-400 bg-white dark:bg-gray-900 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 transition-colors disabled:opacity-50"
+          >
+            {resetting ? "Resetting…" : "Clear Intervention History"}
+          </button>
+        </section>
+
         {/* Info */}
         <section className="border-t border-gray-200 dark:border-gray-700 pt-6">
           <p className="text-xs text-gray-400 dark:text-gray-500">
             All settings are persisted to localStorage and take effect immediately.
-            Demo mutations are in-memory only and reset on page refresh.
           </p>
         </section>
       </div>
