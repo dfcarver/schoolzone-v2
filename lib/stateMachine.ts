@@ -10,6 +10,69 @@ import {
 } from "./types";
 import { recordDemoMutation } from "./metrics";
 import * as logger from "./logger";
+import type { ScenarioId } from "./demoConfig";
+
+// Per-scenario risk multipliers applied on top of live Lambda data.
+// "normal" is the baseline — no change.
+const SCENARIO_MULTIPLIERS: Record<ScenarioId, number> = {
+  normal:    1.00,
+  surge:     1.38,
+  weather:   1.22,
+  dismissal: 1.48,
+};
+
+// Additional context injected into each zone per scenario (for realism).
+const SCENARIO_ZONE_OVERRIDES: Record<ScenarioId, Partial<ZoneLiveState>> = {
+  normal:    {},
+  surge:     { pedestrian_count: undefined }, // computed below
+  weather:   { active_cameras: undefined },   // computed below
+  dismissal: { pedestrian_count: undefined }, // computed below
+};
+
+export function applyScenarioOverlay(state: LiveState, scenario: ScenarioId): LiveState {
+  if (scenario === "normal") return state;
+
+  const multiplier = SCENARIO_MULTIPLIERS[scenario];
+
+  const zones: ZoneLiveState[] = state.zones.map((zone) => {
+    const rawScore  = Math.min(0.97, zone.risk_score * multiplier);
+    const newScore  = Math.round(rawScore * 1000) / 1000;
+    const newLevel  = deriveRiskLevel(newScore);
+    const scaleFactor = zone.risk_score > 0 ? newScore / zone.risk_score : 1;
+
+    const newForecast = zone.forecast_30m.map((fp) => ({
+      ...fp,
+      risk: Math.min(0.97, Math.round(fp.risk * scaleFactor * 1000) / 1000),
+    }));
+
+    // Scenario-specific sensor/activity tweaks
+    let extra: Partial<ZoneLiveState> = {};
+    if (scenario === "surge") {
+      extra = {
+        pedestrian_count: Math.round(zone.pedestrian_count * 1.6),
+        speed_avg_mph: Math.max(5, Math.round(zone.speed_avg_mph * 0.65)),
+      };
+    } else if (scenario === "dismissal") {
+      extra = {
+        pedestrian_count: Math.round(zone.pedestrian_count * 2.2),
+        speed_avg_mph: Math.max(5, Math.round(zone.speed_avg_mph * 0.55)),
+      };
+    } else if (scenario === "weather") {
+      extra = {
+        active_cameras: Math.max(1, Math.floor(zone.active_cameras * 0.7)),
+        speed_avg_mph: Math.max(5, Math.round(zone.speed_avg_mph * 0.75)),
+      };
+    }
+
+    return { ...zone, ...extra, risk_score: newScore, risk_level: newLevel, forecast_30m: newForecast };
+  });
+
+  return {
+    ...state,
+    active_alerts: zones.filter((z) => z.risk_level === RiskLevel.HIGH).length,
+    zones,
+  };
+}
 
 export function nextSnapshotPhase(current: SnapshotPhase): SnapshotPhase {
   switch (current) {

@@ -25,6 +25,7 @@ import {
   snapshotFile,
   applyDemoIntervention,
   mergeSnapshotWithOverrides,
+  applyScenarioOverlay,
 } from "./stateMachine";
 import { useDemoConfig, ScenarioId, DataMode, WeatherMode } from "./demoConfig";
 import { validateLiveState, ValidationResult } from "./validate";

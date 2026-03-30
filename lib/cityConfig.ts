@@ -24,8 +24,9 @@ export const SPRINGFIELD_CORRIDORS: CorridorDef[] = [
     id: "zone-001",
     name: "Oak Avenue Corridor",
     path: [
-      { lat: 39.7852, lng: -89.6501 },
+      { lat: 39.7845, lng: -89.6501 },
       { lat: 39.7817, lng: -89.6501 },
+      { lat: 39.7817, lng: -89.6461 },
     ],
     school: { zone_id: "zone-001", name: "Lincoln Elementary", lat: 39.7817, lng: -89.6501, type: "elementary", enrollment: 485 },
     baselineCongestion: 0.08,
@@ -40,6 +41,7 @@ export const SPRINGFIELD_CORRIDORS: CorridorDef[] = [
     path: [
       { lat: 39.7900, lng: -89.6492 },
       { lat: 39.7900, lng: -89.6440 },
+      { lat: 39.7870, lng: -89.6440 },
     ],
     school: { zone_id: "zone-002", name: "Washington Middle School", lat: 39.7900, lng: -89.6440, type: "middle", enrollment: 720 },
     baselineCongestion: 0.10,
@@ -54,6 +56,7 @@ export const SPRINGFIELD_CORRIDORS: CorridorDef[] = [
     name: "Elm Street Corridor",
     path: [
       { lat: 39.7755, lng: -89.6635 },
+      { lat: 39.7755, lng: -89.6580 },
       { lat: 39.7755, lng: -89.6535 },
     ],
     school: { zone_id: "zone-003", name: "Jefferson High School", lat: 39.7755, lng: -89.6580, type: "high", enrollment: 1100 },
@@ -70,6 +73,7 @@ export const SPRINGFIELD_CORRIDORS: CorridorDef[] = [
     path: [
       { lat: 39.7864, lng: -89.6390 },
       { lat: 39.7832, lng: -89.6390 },
+      { lat: 39.7832, lng: -89.6348 },
     ],
     school: { zone_id: "zone-004", name: "Roosevelt Academy", lat: 39.7832, lng: -89.6390, type: "elementary", enrollment: 320 },
     baselineCongestion: 0.06,
@@ -84,6 +88,7 @@ export const SPRINGFIELD_CORRIDORS: CorridorDef[] = [
     path: [
       { lat: 39.7950, lng: -89.6572 },
       { lat: 39.7950, lng: -89.6520 },
+      { lat: 39.7918, lng: -89.6520 },
     ],
     school: { zone_id: "zone-005", name: "Adams Preparatory", lat: 39.7950, lng: -89.6520, type: "middle", enrollment: 610 },
     baselineCongestion: 0.09,
@@ -100,8 +105,9 @@ export const KHALIFA_CORRIDORS: CorridorDef[] = [
     id: "khalifa-001",
     name: "Yasmina Academy Corridor",
     path: [
-      { lat: 24.4242, lng: 54.5472 },
-      { lat: 24.4159, lng: 54.5472 },
+      { lat: 24.424, lng: 54.547 },
+      { lat: 24.416, lng: 54.547 },
+      { lat: 24.416, lng: 54.555 },
     ],
     school: { zone_id: "khalifa-001", name: "Yasmina British Academy", lat: 24.4158592, lng: 54.5471628, type: "high", enrollment: 1200 },
     baselineCongestion: 0.09,
@@ -114,8 +120,9 @@ export const KHALIFA_CORRIDORS: CorridorDef[] = [
     id: "khalifa-002",
     name: "ADNOC Schools Corridor",
     path: [
-      { lat: 24.4167, lng: 54.504 },
-      { lat: 24.4167, lng: 54.5149 },
+      { lat: 24.417, lng: 54.504 },
+      { lat: 24.417, lng: 54.515 },
+      { lat: 24.423, lng: 54.515 },
     ],
     school: { zone_id: "khalifa-002", name: "ADNOC Schools Khalifa City", lat: 24.416729, lng: 54.514899, type: "elementary", enrollment: 650 },
     baselineCongestion: 0.07,
@@ -128,8 +135,9 @@ export const KHALIFA_CORRIDORS: CorridorDef[] = [
     id: "khalifa-003",
     name: "ISC Khalifa City Corridor",
     path: [
-      { lat: 24.4280, lng: 54.5663 },
-      { lat: 24.4145, lng: 54.5663 },
+      { lat: 24.428, lng: 54.566 },
+      { lat: 24.415, lng: 54.566 },
+      { lat: 24.415, lng: 54.577 },
     ],
     school: { zone_id: "khalifa-003", name: "Int'l School of Choueifat", lat: 24.41446, lng: 54.56633, type: "middle", enrollment: 820 },
     baselineCongestion: 0.08,
@@ -145,8 +153,9 @@ export const MBZ_CORRIDORS: CorridorDef[] = [
     id: "mbz-001",
     name: "Aldar Academies MBZ Corridor",
     path: [
-      { lat: 24.3706, lng: 54.550 },
-      { lat: 24.3706, lng: 54.5639 },
+      { lat: 24.371, lng: 54.550 },
+      { lat: 24.371, lng: 54.564 },
+      { lat: 24.363, lng: 54.564 },
     ],
     school: { zone_id: "mbz-001", name: "Aldar Academies MBZ", lat: 24.370560, lng: 54.563863, type: "high", enrollment: 1100 },
     baselineCongestion: 0.10,
@@ -159,8 +168,9 @@ export const MBZ_CORRIDORS: CorridorDef[] = [
     id: "mbz-002",
     name: "ADIS MBZ Corridor",
     path: [
-      { lat: 24.358, lng: 54.5415 },
-      { lat: 24.3463, lng: 54.5415 },
+      { lat: 24.358, lng: 54.542 },
+      { lat: 24.346, lng: 54.542 },
+      { lat: 24.346, lng: 54.553 },
     ],
     school: { zone_id: "mbz-002", name: "Abu Dhabi Int'l School MBZ", lat: 24.346302, lng: 54.541512, type: "elementary", enrollment: 540 },
     baselineCongestion: 0.08,
@@ -174,7 +184,8 @@ export const MBZ_CORRIDORS: CorridorDef[] = [
     name: "Emirates National School Corridor",
     path: [
       { lat: 24.361, lng: 54.537 },
-      { lat: 24.361, lng: 54.5510 },
+      { lat: 24.361, lng: 54.551 },
+      { lat: 24.354, lng: 54.551 },
     ],
     school: { zone_id: "mbz-003", name: "Emirates National School MBZ", lat: 24.360989, lng: 54.550989, type: "middle", enrollment: 780 },
     baselineCongestion: 0.09,
