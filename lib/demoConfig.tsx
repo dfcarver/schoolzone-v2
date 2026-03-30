@@ -58,8 +58,8 @@ function loadConfig(): DemoConfig {
 function saveConfig(config: DemoConfig): void {
   if (typeof window === "undefined") return;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { simTimeMin: _, ...toSave } = config;
+    const toSave = { ...config };
+    delete (toSave as Partial<DemoConfig>).simTimeMin;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
   } catch {
     // localStorage unavailable

@@ -116,7 +116,7 @@ export default function ExecutivePage() {
     if (!liveState || liveState.zones.length === 0) { setSelectedZoneId(""); return; }
     const top = [...liveState.zones].sort((a, b) => b.risk_score - a.risk_score)[0];
     setSelectedZoneId(top.zone_id);
-  }, [selectedCity, liveState?.zones.length]);
+  }, [selectedCity, liveState]);
 
   const driftStatus = useMemo(() => {
     if (!liveState) return "NORMAL" as const;
