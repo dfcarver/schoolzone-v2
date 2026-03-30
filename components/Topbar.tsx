@@ -106,18 +106,24 @@ export default function Topbar({ snapshotId, timestamp, title = "Operations Cons
         {/* Timestamp */}
         <span className="hidden md:inline text-xs font-mono text-slate-600">{formattedTime}</span>
 
-        {/* Sync status — only show when Supabase is configured or when actively synced */}
-        {(syncStatus === "live" || syncStatus === "connecting" || process.env.NEXT_PUBLIC_SUPABASE_URL) && (
+        {/* Sync status — show AWS Live when in live mode, Supabase status otherwise */}
+        {config.dataMode === "live" ? (
+          <span className="hidden sm:flex items-center gap-1.5 text-xs text-emerald-400">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+            </span>
+            <span className="hidden md:inline">AWS Live</span>
+          </span>
+        ) : syncStatus !== "disconnected" && (
           <span className={`hidden sm:flex items-center gap-1.5 text-xs ${
-            syncStatus === "live" ? "text-emerald-400" :
-            syncStatus === "connecting" ? "text-amber-400" : "text-slate-500"
+            syncStatus === "live" ? "text-emerald-400" : "text-amber-400"
           }`}>
             <span className={`w-1.5 h-1.5 rounded-full ${
-              syncStatus === "live" ? "bg-emerald-500" :
-              syncStatus === "connecting" ? "bg-amber-400 animate-pulse" : "bg-slate-600"
+              syncStatus === "live" ? "bg-emerald-500" : "bg-amber-400 animate-pulse"
             }`} />
             <span className="hidden md:inline">
-              {syncStatus === "live" ? "Synced" : syncStatus === "connecting" ? "Connecting…" : "Offline"}
+              {syncStatus === "live" ? "Synced" : "Connecting…"}
             </span>
           </span>
         )}
