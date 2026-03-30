@@ -264,7 +264,7 @@ export default function CorridorMap({ selectedCity: selectedCityProp, onCityChan
   const { timeMin, setTimeMin, isPlaying, setIsPlaying, congestionData, getCongestion } = engine;
 
   // Live Google Routes API congestion override + TomTom incidents
-  const { config: demoConfig } = useDemoConfig();
+  const { config: demoConfig, updateConfig } = useDemoConfig();
   const { liveState, simulatedZones } = useLiveState();
 
   // For Abu Dhabi cities, use Lambda zone risk scores directly so corridor
@@ -487,8 +487,10 @@ export default function CorridorMap({ selectedCity: selectedCityProp, onCityChan
     setIsPlaying(false);
     setFeatures((prev) => ({ ...prev, ...preset.features }));
     if (preset.scenario) setActiveScenario(preset.scenario);
+    // Sync global scenario so LiveStateProvider applies risk multipliers
+    updateConfig({ scenario: preset.globalScenario });
     setActivePreset((prev) => (prev === preset.label ? null : preset.label));
-  }, [setTimeMin, setIsPlaying]);
+  }, [setTimeMin, setIsPlaying, updateConfig]);
 
   // Active feature summary badges
   const summaryBadges = useMemo(() => {

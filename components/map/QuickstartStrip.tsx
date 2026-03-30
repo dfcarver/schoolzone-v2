@@ -3,6 +3,7 @@
 import { WeatherCondition } from "@/lib/mapFeatures";
 import { WhatIfScenarioId } from "@/lib/mapFeatures";
 import { MapFeatureFlags } from "./MapToolbar";
+import type { ScenarioId } from "@/lib/demoConfig";
 
 export interface QuickstartPreset {
   label: string;
@@ -12,6 +13,7 @@ export interface QuickstartPreset {
   weather: WeatherCondition;
   features: Partial<MapFeatureFlags>;
   scenario: WhatIfScenarioId | null;
+  globalScenario: ScenarioId;
 }
 
 export const QUICKSTART_PRESETS: QuickstartPreset[] = [
@@ -23,6 +25,7 @@ export const QUICKSTART_PRESETS: QuickstartPreset[] = [
     weather: "rain",
     features: { weather: true, geofences: true, incidents: true },
     scenario: null,
+    globalScenario: "surge",
   },
   {
     label: "Dismissal Crisis",
@@ -32,6 +35,7 @@ export const QUICKSTART_PRESETS: QuickstartPreset[] = [
     weather: "clear",
     features: { incidents: true, whatIf: true, interventions: true },
     scenario: null,
+    globalScenario: "dismissal",
   },
   {
     label: "Morning Drop-off",
@@ -41,6 +45,7 @@ export const QUICKSTART_PRESETS: QuickstartPreset[] = [
     weather: "clear",
     features: { parentFlow: true, interventions: true },
     scenario: null,
+    globalScenario: "normal",
   },
   {
     label: "Fog Alert",
@@ -50,6 +55,7 @@ export const QUICKSTART_PRESETS: QuickstartPreset[] = [
     weather: "fog",
     features: { weather: true, geofences: true, whatIf: true },
     scenario: "traffic_diversion",
+    globalScenario: "weather",
   },
 ];
 
