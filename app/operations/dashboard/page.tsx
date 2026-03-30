@@ -112,7 +112,6 @@ export default function OperationsDashboardPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {displayZones.map((zone) => (
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 <ZoneTile key={zone.zone_id} zone={zone as any} />
               ))}
             </div>
@@ -120,9 +119,7 @@ export default function OperationsDashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {firstZone && (firstZone as any).forecast_30m?.length > 0 && (
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             <ForecastChart
               data={(firstZone as any).forecast_30m}
               title={`Risk Forecast — ${firstZone.name}`}
