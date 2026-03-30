@@ -15,6 +15,7 @@ import {
   Recommendation,
   RiskLevel,
   SnapshotPhase,
+  deriveRiskLevel,
 } from "./types";
 import type { StoredIntervention } from "./interventionStore";
 import { supabase } from "./supabase";
@@ -239,15 +240,6 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // If this zone is currently being simulated, cancel the incident —
-      // the intervention resolves it
-      setIncidentOverrides((prev) => {
-        if (!prev.has(zoneId)) return prev;
-        const next = new Map(prev);
-        next.delete(zoneId);
-        return next;
-      });
-
       // Optimistic local update — apply immediately without waiting for Supabase
       optimisticIds.current.add(recommendation.id);
       const optimisticEntry: StoredIntervention = { zoneId, recommendation, appliedAt: Date.now() };
@@ -288,12 +280,17 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
         zones: state.zones.map((z) => {
           const until = incidentOverrides.get(z.zone_id);
           if (!until || until < now) return z;
-          // Spike forecast_30m so Emerging Risks and forecast chart reflect the incident
+          // Calculate how much dispatch has reduced this zone relative to base,
+          // and apply that same reduction on top of the 0.94 spike
+          const baseZone = baseState?.zones.find(b => b.zone_id === z.zone_id);
+          const reduction = baseZone ? Math.max(0, baseZone.risk_score - z.risk_score) : 0;
+          const spikedScore = Math.max(0.22, 0.94 - reduction);
+          const spikedLevel = deriveRiskLevel(spikedScore);
           const spikedForecast = z.forecast_30m.map((fp, i) => ({
             ...fp,
-            risk: Math.max(fp.risk, Math.max(0, 0.94 - i * 0.07)),
+            risk: Math.max(fp.risk, Math.max(0, spikedScore - i * 0.07)),
           }));
-          return { ...z, risk_score: 0.94, risk_level: RiskLevel.HIGH, forecast_30m: spikedForecast };
+          return { ...z, risk_score: spikedScore, risk_level: spikedLevel, forecast_30m: spikedForecast };
         }),
       };
     }
