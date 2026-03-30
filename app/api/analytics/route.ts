@@ -12,14 +12,6 @@ const POLL_INTERVAL   = 600;  // ms
 const MAX_POLLS       = 30;   // 18s timeout
 
 function getAthenaClient(): AthenaClient {
-  const accessKeyId     = process.env.AWS_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
-  if (accessKeyId && secretAccessKey) {
-    return new AthenaClient({
-      region: "us-east-1",
-      credentials: { accessKeyId, secretAccessKey, sessionToken: process.env.AWS_SESSION_TOKEN },
-    });
-  }
   return new AthenaClient({ region: "us-east-1" });
 }
 
@@ -59,12 +51,7 @@ async function runQuery(sql: string): Promise<Record<string, string>[]> {
  * Returns hourly average risk scores per zone for the last N hours.
  */
 export async function GET(req: NextRequest) {
-  const awsConfigured =
-    process.env.NEXT_PUBLIC_AWS_SNAPSHOT_API_URL &&
-    process.env.AWS_ACCESS_KEY_ID &&
-    process.env.AWS_SECRET_ACCESS_KEY;
-
-  if (!awsConfigured) {
+  if (!process.env.NEXT_PUBLIC_AWS_SNAPSHOT_API_URL) {
     return NextResponse.json({ error: "AWS pipeline not configured" }, { status: 503 });
   }
 
