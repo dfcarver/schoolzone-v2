@@ -13,6 +13,7 @@ import {
 import {
   LiveState,
   Recommendation,
+  RiskLevel,
   SnapshotPhase,
 } from "./types";
 import type { StoredIntervention } from "./interventionStore";
@@ -258,7 +259,7 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
         zones: state.zones.map((z) => {
           const until = incidentOverrides.get(z.zone_id);
           if (!until || until < now) return z;
-          return { ...z, risk_score: 0.94, risk_level: "HIGH" as const };
+          return { ...z, risk_score: 0.94, risk_level: RiskLevel.HIGH };
         }),
       };
     }
