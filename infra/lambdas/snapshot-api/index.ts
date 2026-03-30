@@ -103,7 +103,17 @@ export const handler = async (event: {
 }): Promise<{ statusCode: number; headers: Record<string, string>; body: string }> => {
   const cityId  = (event.queryStringParameters?.city    ?? "springfield_il") as string;
   const weather = (event.queryStringParameters?.weather ?? "clear") as WeatherCondition;
-  const now     = new Date();
+  const simHour = event.queryStringParameters?.sim_hour;
+
+  // Allow callers to simulate a specific UTC hour for demo/off-hours cities
+  let now = new Date();
+  if (simHour !== undefined) {
+    const h = parseInt(simHour, 10);
+    if (!isNaN(h) && h >= 0 && h <= 23) {
+      now = new Date(now);
+      now.setUTCHours(h, 30, 0, 0);
+    }
+  }
 
   let dbData = new Map<string, DynamoZoneRow>();
   try {
