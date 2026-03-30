@@ -484,14 +484,14 @@ export default function CorridorMap({ selectedCity: selectedCityProp, onCityChan
     savedWeather: WeatherCondition
   ) => {
     setActiveScenario(scenarioId);
-    setTimeMin(savedTime);
+    handleTimeChange(savedTime);
     setWeather(savedWeather);
-  }, [setTimeMin]);
+  }, [handleTimeChange]);
 
   // Quickstart presets
   const [activePreset, setActivePreset] = useState<string | null>(null);
   const handleQuickstart = useCallback((preset: QuickstartPreset) => {
-    setTimeMin(preset.timeMin);
+    handleTimeChange(preset.timeMin);
     setWeather(preset.weather);
     setIsPlaying(false);
     setFeatures((prev) => ({ ...prev, ...preset.features }));
@@ -499,7 +499,7 @@ export default function CorridorMap({ selectedCity: selectedCityProp, onCityChan
     // Sync global scenario so LiveStateProvider applies risk multipliers
     updateConfig({ scenario: preset.globalScenario });
     setActivePreset((prev) => (prev === preset.label ? null : preset.label));
-  }, [setTimeMin, setIsPlaying, updateConfig]);
+  }, [handleTimeChange, setIsPlaying, updateConfig]);
 
   // Active feature summary badges
   const summaryBadges = useMemo(() => {
@@ -774,7 +774,7 @@ export default function CorridorMap({ selectedCity: selectedCityProp, onCityChan
         <div className="flex flex-wrap gap-1.5">
           {TIME_PRESETS.map((p) => (
             <button key={p.label}
-              onClick={() => { setTimeMin(p.min); setIsPlaying(false); }}
+              onClick={() => { handleTimeChange(p.min); setIsPlaying(false); }}
               className={`text-[10px] px-2.5 py-1 rounded-full border transition-colors ${
                 Math.abs(timeMin - p.min) < 10
                   ? "bg-emerald-50 dark:bg-emerald-950 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 font-semibold"
