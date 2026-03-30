@@ -358,6 +358,13 @@ function buildZoneState(zone, row, now, weather) {
     if (override.activeCameras !== void 0)
       activeCameras = override.activeCameras;
   }
+  let forecast = computeForecast(zone, now, weather);
+  if (override) {
+    forecast = forecast.map((fp) => ({
+      ...fp,
+      risk: Math.round(clamp2(addNoise(fp.risk, 0.03), override.riskFloor, override.riskCeiling) * 1e3) / 1e3
+    }));
+  }
   return {
     zone_id: zone.id,
     name: zone.name,
@@ -368,7 +375,7 @@ function buildZoneState(zone, row, now, weather) {
     vehicle_count: vehicleCount,
     active_cameras: activeCameras,
     total_cameras: totalCameras,
-    forecast_30m: computeForecast(zone, now, weather),
+    forecast_30m: forecast,
     recommendations: SYNTHETIC_RECOMMENDATIONS[zone.id] ?? [],
     events: buildSyntheticEvents(zone.id, now),
     interventions: []
