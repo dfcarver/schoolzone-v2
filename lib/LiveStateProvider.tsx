@@ -239,6 +239,15 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      // If this zone is currently being simulated, cancel the incident —
+      // the intervention resolves it
+      setIncidentOverrides((prev) => {
+        if (!prev.has(zoneId)) return prev;
+        const next = new Map(prev);
+        next.delete(zoneId);
+        return next;
+      });
+
       // Optimistic local update — apply immediately without waiting for Supabase
       optimisticIds.current.add(recommendation.id);
       const optimisticEntry: StoredIntervention = { zoneId, recommendation, appliedAt: Date.now() };
