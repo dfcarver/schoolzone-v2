@@ -62,8 +62,9 @@ export default function OpsZoneDetailPage() {
   const [localApplied, setLocalApplied] = useState<Set<string>>(new Set());
 
   const appliedActions = useMemo(() => {
-    const fromZone = new Set(zone?.interventions.filter((i) => i.id.startsWith("demo-int-")).map((i) => i.action) ?? []);
-    return new Set([...fromZone, ...localApplied]);
+    const actions = zone?.interventions.filter((i) => i.id.startsWith("demo-int-")).map((i) => i.action) ?? [];
+    localApplied.forEach((a) => actions.push(a));
+    return new Set(actions);
   }, [zone, localApplied]);
 
   const fallbackRecs: Recommendation[] = useMemo(() => {
