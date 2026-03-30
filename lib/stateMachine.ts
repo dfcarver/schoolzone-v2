@@ -21,6 +21,15 @@ const SCENARIO_MULTIPLIERS: Record<ScenarioId, number> = {
   dismissal: 1.48,
 };
 
+// Minimum risk floor per scenario — ensures visible change regardless of time of day.
+// Without a floor, multiplying 15% × 1.48 still looks like 22%, which appears unchanged.
+const SCENARIO_FLOORS: Record<ScenarioId, number> = {
+  normal:    0,
+  surge:     0.42,
+  weather:   0.32,
+  dismissal: 0.52,
+};
+
 // Additional context injected into each zone per scenario (for realism).
 const SCENARIO_ZONE_OVERRIDES: Record<ScenarioId, Partial<ZoneLiveState>> = {
   normal:    {},
@@ -35,7 +44,7 @@ export function applyScenarioOverlay(state: LiveState, scenario: ScenarioId): Li
   const multiplier = SCENARIO_MULTIPLIERS[scenario];
 
   const zones: ZoneLiveState[] = state.zones.map((zone) => {
-    const rawScore  = Math.min(0.97, zone.risk_score * multiplier);
+    const rawScore  = Math.min(0.97, Math.max(SCENARIO_FLOORS[scenario], zone.risk_score * multiplier));
     const newScore  = Math.round(rawScore * 1000) / 1000;
     const newLevel  = deriveRiskLevel(newScore);
     const scaleFactor = zone.risk_score > 0 ? newScore / zone.risk_score : 1;
