@@ -245,8 +245,8 @@ export const handler = async (event: {
     timestamp:            now.toISOString(),
     district_risk:        riskLevel(avgRisk),
     active_alerts:        activeAlerts,
-    avg_latency_ms:       42,
-    camera_health_pct:    98,
+    avg_latency_ms:       36 + Math.floor(Math.random() * 20),
+    camera_health_pct:    zones.some(z => z.active_cameras < z.total_cameras) ? 94 : 98,
     forecast_horizon_min: 30,
     zones,
   };

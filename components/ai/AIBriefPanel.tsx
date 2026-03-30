@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { AIBriefRequest, AIBriefResponse } from "@/lib/ai/types";
 
 interface AIBriefPanelProps {
@@ -18,6 +18,7 @@ export default function AIBriefPanel({ request, onApply }: AIBriefPanelProps) {
   const [state, setState] = useState<PanelState>({ status: "idle" });
   const [explainOpen, setExplainOpen] = useState(false);
   const [applied, setApplied] = useState(false);
+  const autoFiredRef = useRef(false);
 
   const generateBrief = useCallback(async () => {
     setState({ status: "loading" });
@@ -42,6 +43,15 @@ export default function AIBriefPanel({ request, onApply }: AIBriefPanelProps) {
       setState({ status: "error", message: err instanceof Error ? err.message : "Network error" });
     }
   }, [request]);
+
+  // Auto-generate on first mount so the brief is ready without clicking
+  useEffect(() => {
+    if (!autoFiredRef.current) {
+      autoFiredRef.current = true;
+      generateBrief();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">

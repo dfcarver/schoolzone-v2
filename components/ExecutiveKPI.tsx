@@ -49,7 +49,7 @@ export default function ExecutiveKPI({
       </div>
       <div className="flex items-baseline gap-1.5">
         <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">{value}</span>
-        {trend && (
+        {trend && trend !== "flat" && (
           <span className={`text-sm font-semibold ${TREND_COLOR[trend]}`}>
             {TREND_ICON[trend]}
           </span>

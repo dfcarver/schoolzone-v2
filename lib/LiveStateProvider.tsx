@@ -37,6 +37,7 @@ interface LiveStateContextValue {
   error: string | null;
   lastValidation: ValidationResult | null;
   applyDemo: (zoneId: string, recommendation: Recommendation) => void;
+  simulateIncident: (zoneId: string) => void;
   syncStatus: SyncStatus;
   appliedHistory: StoredIntervention[];
 }
@@ -47,6 +48,7 @@ const LiveStateContext = createContext<LiveStateContextValue>({
   error: null,
   lastValidation: null,
   applyDemo: () => {},
+  simulateIncident: () => {},
   syncStatus: "connecting",
   appliedHistory: [],
 });
@@ -236,14 +238,36 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
     [config.demoMutationEnabled]
   );
 
-  const mergedState = useMemo(
-    () => (baseState ? mergeSnapshotWithOverrides(baseState, demoState) : null),
-    [baseState, demoState]
-  );
+  // Simulated incident overrides — temporary HIGH risk spikes for demo
+  const [incidentOverrides, setIncidentOverrides] = useState<Map<string, number>>(new Map());
+
+  const simulateIncident = useCallback((zoneId: string) => {
+    setIncidentOverrides((prev) => { const next = new Map(prev); next.set(zoneId, Date.now() + 60_000); return next; });
+    setTimeout(() => {
+      setIncidentOverrides((prev) => { const next = new Map(prev); next.delete(zoneId); return next; });
+    }, 60_000);
+  }, []);
+
+  const mergedState = useMemo(() => {
+    if (!baseState) return null;
+    let state = mergeSnapshotWithOverrides(baseState, demoState);
+    if (incidentOverrides.size > 0) {
+      const now = Date.now();
+      state = {
+        ...state,
+        zones: state.zones.map((z) => {
+          const until = incidentOverrides.get(z.zone_id);
+          if (!until || until < now) return z;
+          return { ...z, risk_score: 0.94, risk_level: "HIGH" as const };
+        }),
+      };
+    }
+    return state;
+  }, [baseState, demoState, incidentOverrides]);
 
   const contextValue = useMemo(
-    () => ({ liveState: mergedState, loading, error, lastValidation, applyDemo, syncStatus, appliedHistory }),
-    [mergedState, loading, error, lastValidation, applyDemo, syncStatus, appliedHistory]
+    () => ({ liveState: mergedState, loading, error, lastValidation, applyDemo, simulateIncident, syncStatus, appliedHistory }),
+    [mergedState, loading, error, lastValidation, applyDemo, simulateIncident, syncStatus, appliedHistory]
   );
 
   return (

@@ -30,7 +30,7 @@ import AIPredictionPanel from "@/components/ai/AIPredictionPanel";
 import InterventionFeed from "@/components/InterventionFeed";
 
 export default function ExecutivePage() {
-  const { liveState, loading, error, lastValidation, appliedHistory, applyDemo } = useLiveState();
+  const { liveState, loading, error, lastValidation, appliedHistory, applyDemo, simulateIncident } = useLiveState();
   const { config, updateConfig } = useDemoConfig();
   const selectedCity = config.selectedCity;
   const [cityRefreshing, setCityRefreshing] = useState(false);
@@ -216,6 +216,13 @@ export default function ExecutivePage() {
                       <span className={`text-sm font-bold ${r.peakRisk >= 0.7 ? "text-red-600" : r.peakRisk >= 0.4 ? "text-amber-600" : "text-green-600"}`}>
                         {Math.round(r.peakRisk * 100)}%
                       </span>
+                      <button
+                        onClick={() => simulateIncident(r.zone_id)}
+                        className="text-[10px] border border-red-800 rounded px-2 py-0.5 text-red-400 hover:bg-red-950"
+                        title="Spike this zone to HIGH risk for 60 seconds"
+                      >
+                        🔴 Simulate
+                      </button>
                       <button
                         onClick={() => setDispatchOpen(dispatchOpen === r.zone_id ? null : r.zone_id)}
                         className="text-[10px] border border-slate-600 rounded px-2 py-0.5 text-slate-300 hover:bg-slate-800"

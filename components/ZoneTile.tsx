@@ -49,7 +49,11 @@ export default function ZoneTile({ zone }: ZoneTileProps) {
         </div>
         <div>
           <span className="text-gray-400 dark:text-gray-500">Avg Speed</span>
-          <p className="font-medium text-gray-900 dark:text-gray-100">{zone.speed_avg_mph} mph</p>
+          {zone.zone_id.startsWith("khalifa-") || zone.zone_id.startsWith("mbz-") ? (
+            <p className="font-medium text-gray-900 dark:text-gray-100">{Math.round(zone.speed_avg_mph * 1.609)} km/h</p>
+          ) : (
+            <p className="font-medium text-gray-900 dark:text-gray-100">{zone.speed_avg_mph} mph</p>
+          )}
         </div>
         <div>
           <span className="text-gray-400 dark:text-gray-500">Pedestrians</span>

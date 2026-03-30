@@ -123,7 +123,7 @@ export default function OpsZoneDetailPage() {
           </div>
           <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
             <span>Score: {(zone.risk_score * 100).toFixed(0)}%</span>
-            <span>Speed: {zone.speed_avg_mph} mph</span>
+            <span>Speed: {zoneId.startsWith("khalifa-") || zoneId.startsWith("mbz-") ? `${Math.round(zone.speed_avg_mph * 1.609)} km/h` : `${zone.speed_avg_mph} mph`}</span>
             <span>Pedestrians: {zone.pedestrian_count}</span>
             <span>Cameras: {zone.active_cameras}/{zone.total_cameras}</span>
           </div>
