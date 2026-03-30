@@ -5,6 +5,7 @@ import { AIBriefRequest, AIBriefResponse } from "@/lib/ai/types";
 
 interface AIBriefPanelProps {
   request: AIBriefRequest;
+  onApply?: (action: string, impact: string, confidence: number) => void;
 }
 
 type PanelState =
@@ -13,9 +14,10 @@ type PanelState =
   | { status: "success"; data: AIBriefResponse; correlationId: string }
   | { status: "error"; message: string };
 
-export default function AIBriefPanel({ request }: AIBriefPanelProps) {
+export default function AIBriefPanel({ request, onApply }: AIBriefPanelProps) {
   const [state, setState] = useState<PanelState>({ status: "idle" });
   const [explainOpen, setExplainOpen] = useState(false);
+  const [applied, setApplied] = useState(false);
 
   const generateBrief = useCallback(async () => {
     setState({ status: "loading" });
@@ -111,6 +113,20 @@ export default function AIBriefPanel({ request }: AIBriefPanelProps) {
             <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{state.data.recommendation.rationale}</p>
             <p className="text-xs text-emerald-700 mt-1.5">Expected impact: {state.data.recommendation.expected_impact}</p>
           </div>
+
+          {/* Apply Recommendation */}
+          {onApply && (
+            <button
+              onClick={() => {
+                onApply(state.data.recommendation.action, state.data.recommendation.expected_impact, state.data.confidence);
+                setApplied(true);
+              }}
+              disabled={applied}
+              className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-xs font-medium rounded-lg py-2 transition-colors"
+            >
+              {applied ? "Applied ✓" : "Apply Recommendation"}
+            </button>
+          )}
 
           {/* Caveats */}
           {state.data.caveats.length > 0 && (

@@ -31,7 +31,7 @@ import AIPredictionPanel from "@/components/ai/AIPredictionPanel";
 import InterventionFeed from "@/components/InterventionFeed";
 
 export default function ExecutivePage() {
-  const { liveState, loading, error, lastValidation, appliedHistory } = useLiveState();
+  const { liveState, loading, error, lastValidation, appliedHistory, applyDemo } = useLiveState();
   const { config, updateConfig } = useDemoConfig();
   const selectedCity = config.selectedCity;
 
@@ -106,6 +106,14 @@ export default function ExecutivePage() {
   }, [liveState, selectedCity, appliedHistory]);
 
   const [selectedZoneId, setSelectedZoneId] = useState<string>("");
+  const [dispatchOpen, setDispatchOpen] = useState<string | null>(null);
+
+  const DISPATCH_OPTIONS = [
+    "Deploy crossing guard",
+    "Activate speed signs",
+    "Send parent notification",
+    "Request police patrol",
+  ];
 
   useEffect(() => {
     setSelectedZoneId("");
@@ -194,14 +202,38 @@ export default function ExecutivePage() {
             ) : (
               <div className="space-y-3">
                 {emergingRisks.map((r) => (
-                  <div key={r.zone_id} className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800 last:border-0">
+                  <div key={r.zone_id} className="relative flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800 last:border-0">
                     <div>
                       <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{r.zoneName}</span>
                       <span className="text-xs text-gray-400 dark:text-gray-500 ml-2">peaks at {r.peakTime}</span>
                     </div>
-                    <span className={`text-sm font-bold ${r.peakRisk >= 0.7 ? "text-red-600" : r.peakRisk >= 0.4 ? "text-amber-600" : "text-green-600"}`}>
-                      {Math.round(r.peakRisk * 100)}%
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm font-bold ${r.peakRisk >= 0.7 ? "text-red-600" : r.peakRisk >= 0.4 ? "text-amber-600" : "text-green-600"}`}>
+                        {Math.round(r.peakRisk * 100)}%
+                      </span>
+                      <button
+                        onClick={() => setDispatchOpen(dispatchOpen === r.zone_id ? null : r.zone_id)}
+                        className="text-[10px] border border-slate-600 rounded px-2 py-0.5 text-slate-300 hover:bg-slate-800"
+                      >
+                        ⚡ Dispatch
+                      </button>
+                      {dispatchOpen === r.zone_id && (
+                        <div className="absolute right-0 top-full mt-1 bg-slate-900 border border-slate-700 rounded-lg shadow-lg z-10 min-w-[180px]">
+                          {DISPATCH_OPTIONS.map((option) => (
+                            <button
+                              key={option}
+                              onClick={() => {
+                                applyDemo(r.zone_id, { id: `quick-${Date.now()}`, action: option, impact: "Immediate risk reduction", confidence: 0.85, priority: RiskLevel.HIGH });
+                                setDispatchOpen(null);
+                              }}
+                              className="w-full text-[11px] text-left px-3 py-1.5 text-slate-200 hover:bg-slate-800"
+                            >
+                              {option}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -257,7 +289,12 @@ export default function ExecutivePage() {
             </select>
           </div>
           {aiBriefRequest ? (
-            <AIBriefPanel request={aiBriefRequest} />
+            <AIBriefPanel
+              request={aiBriefRequest}
+              onApply={(action, impact, confidence) =>
+                applyDemo(selectedZoneId, { id: `ai-rec-${Date.now()}`, action, impact, confidence, priority: RiskLevel.HIGH })
+              }
+            />
           ) : (
             <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
               <p className="text-sm text-gray-400 dark:text-gray-500">Select a corridor above to generate an AI operational brief.</p>
