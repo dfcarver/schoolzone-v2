@@ -750,7 +750,7 @@ export default function CorridorMap({ selectedCity: selectedCityProp, onCityChan
           </button>
           <span className="text-sm font-mono font-semibold text-gray-900 dark:text-gray-100 w-[80px] text-center">{formatTime(timeMin)}</span>
           <input type="range" min={6 * 60} max={20 * 60} step={5} value={timeMin}
-            onChange={(e) => { setTimeMin(Number(e.target.value)); setIsPlaying(false); }}
+            onChange={(e) => { handleTimeChange(Number(e.target.value)); setIsPlaying(false); }}
             className="flex-1 h-2 accent-emerald-600 cursor-pointer"
           />
           {/* Historical mode toggle */}
