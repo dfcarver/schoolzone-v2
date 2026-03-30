@@ -533,6 +533,7 @@ export default function CorridorMap({ selectedCity: selectedCityProp, onCityChan
 
   const fallbackProps = {
     corridors,
+    cityLabel: CITIES.find(c => c.id === selectedCity)?.label,
     engine,
     weather,
     setWeather,

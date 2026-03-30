@@ -5,6 +5,7 @@ import { useDemoConfig, ScenarioId, WeatherMode } from "@/lib/demoConfig";
 import { useNotifications } from "@/lib/notifications";
 import { useLiveStateContext } from "@/lib/LiveStateProvider";
 import NotificationPanel from "@/components/NotificationPanel";
+import { CITIES } from "@/lib/cityConfig";
 
 interface TopbarProps {
   snapshotId?: string;
@@ -33,12 +34,16 @@ export default function Topbar({ snapshotId, timestamp, title = "Operations Cons
   const { syncStatus } = useLiveStateContext();
   const [showNotifs, setShowNotifs] = useState(false);
   const formattedTime = timestamp ? formatTime(timestamp) : "--:--:--";
+  const cityLabel = CITIES.find(c => c.id === config.selectedCity)?.label;
 
   return (
     <header className="h-12 bg-slate-900/80 border-b border-slate-800 flex items-center justify-between px-4 sm:px-6 shrink-0">
       {/* Left: page title */}
       <div className="flex items-center gap-3 min-w-0">
         <h1 className="text-sm font-semibold text-slate-200 truncate">{title}</h1>
+        {cityLabel && (
+          <span className="hidden sm:inline text-xs text-slate-400 px-2 py-0.5 bg-slate-800 rounded-md shrink-0">{cityLabel}</span>
+        )}
         {snapshotId && (
           <span className="hidden md:inline text-xs text-slate-600 font-mono">{snapshotId}</span>
         )}

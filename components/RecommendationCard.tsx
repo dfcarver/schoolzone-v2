@@ -3,9 +3,9 @@
 import { Recommendation, RiskLevel } from "@/lib/types";
 
 const PRIORITY_BADGE: Record<string, string> = {
-  LOW: "bg-green-100 text-green-700",
-  MED: "bg-amber-100 text-amber-700",
-  HIGH: "bg-red-100 text-red-700",
+  LOW: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400",
+  MED: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
+  HIGH: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400",
 };
 
 const ETA_LABEL: Record<RiskLevel, string> = {

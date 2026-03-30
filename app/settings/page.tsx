@@ -168,6 +168,33 @@ export default function SettingsPage() {
           </button>
         </section>
 
+        {/* Data Sources */}
+        <section className="border-t border-gray-200 dark:border-gray-700 pt-6">
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Data Sources</h2>
+          <div className="space-y-2">
+            {[
+              { label: "AWS Lambda (Snapshot API)", configured: !!process.env.NEXT_PUBLIC_AWS_SNAPSHOT_API_URL, hint: "Zone telemetry & risk scores" },
+              { label: "Google Maps", configured: !!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY, hint: "Corridor traffic map" },
+              { label: "Supabase Realtime", configured: !!process.env.NEXT_PUBLIC_SUPABASE_URL, hint: "Intervention broadcast & audit trail" },
+              { label: "TomTom Incidents", configured: !!process.env.NEXT_PUBLIC_TOMTOM_API_KEY, hint: "Live traffic incidents overlay" },
+            ].map((src) => (
+              <div key={src.label} className="flex items-center justify-between bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-3">
+                <div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{src.label}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{src.hint}</p>
+                </div>
+                <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full shrink-0 ml-4 ${
+                  src.configured
+                    ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400"
+                    : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500"
+                }`}>
+                  {src.configured ? "Configured" : "Not set"}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* Info */}
         <section className="border-t border-gray-200 dark:border-gray-700 pt-6">
           <p className="text-xs text-gray-400 dark:text-gray-500">

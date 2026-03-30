@@ -136,6 +136,16 @@ export default function ExecutivePage() {
     return buildAIBriefRequest(selectedZone, driftStatus, escalationOutput?.escalation_probability);
   }, [selectedZone, driftStatus, escalationOutput]);
 
+  const districtSummary = useMemo(() => {
+    if (!liveState || !rollup) return null;
+    const highZones = liveState.zones.filter(z => z.risk_level === "HIGH");
+    const cityLabel = CITIES.find(c => c.id === selectedCity)?.label ?? selectedCity;
+    const riskDesc = highZones.length === 0
+      ? "All zones within normal parameters"
+      : `${highZones.length} zone${highZones.length > 1 ? "s" : ""} at HIGH risk — ${highZones.map(z => z.name).join(", ")}`;
+    return `${cityLabel} · ${riskDesc} · Risk Index ${rollup.districtRiskIndex} · Governance ${rollup.governanceStatus}`;
+  }, [liveState, rollup, selectedCity]);
+
   if (loading) return <PageSkeleton />;
   if (error || !liveState || !rollup) return <ErrorState message={error ?? "Demo Data Unavailable"} />;
 
@@ -190,6 +200,13 @@ export default function ExecutivePage() {
             trend={rollupTrend.alerts}
           />
         </div>
+
+        {/* District summary */}
+        {districtSummary && (
+          <div className="bg-slate-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-3">
+            <p className="text-sm text-gray-600 dark:text-gray-400">{districtSummary}</p>
+          </div>
+        )}
 
         {/* Heatmap */}
         <RiskHeatmap entries={heatmap} />
@@ -325,12 +342,18 @@ export default function ExecutivePage() {
         <InterventionFeed history={appliedHistory} />
 
         {/* Export */}
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={() => window.print()}
+            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          >
+            Export PDF
+          </button>
           <button
             onClick={() => exportExecutiveSummaryJSON(rollup, appliedHistory, activeMitigations)}
             className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
-            Export Summary JSON
+            Export JSON
           </button>
         </div>
       </div>

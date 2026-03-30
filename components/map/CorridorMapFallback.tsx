@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import {
   WeatherCondition,
   WEATHER_PROFILES,
@@ -25,21 +25,6 @@ import MapToolbar, { MapFeatureFlags } from "@/components/map/MapToolbar";
 
 const SVG_W = 500;
 const SVG_H = 360;
-const LAT_MIN = 39.7740;
-const LAT_MAX = 39.7970;
-const LNG_MIN = -89.6610;
-const LNG_MAX = -89.6375;
-
-function toSVG(lat: number, lng: number): { x: number; y: number } {
-  const x = ((lng - LNG_MIN) / (LNG_MAX - LNG_MIN)) * SVG_W;
-  const y = ((LAT_MAX - lat) / (LAT_MAX - LAT_MIN)) * SVG_H;
-  return { x, y };
-}
-
-// Pre-compute school SVG positions from corridor definitions
-function schoolPos(corridor: CorridorDef) {
-  return toSVG(corridor.school.lat, corridor.school.lng);
-}
 
 // ---------------------------------------------------------------------------
 // Time presets (same as CorridorMap)
@@ -61,6 +46,7 @@ const TIME_PRESETS = [
 interface CorridorMapFallbackProps {
   reason: "no-api-key" | "load-error";
   corridors: CorridorDef[];
+  cityLabel?: string;
   engine: UseCongestionEngineResult;
   weather: WeatherCondition;
   setWeather: (w: WeatherCondition) => void;
@@ -79,6 +65,7 @@ interface CorridorMapFallbackProps {
 export default function CorridorMapFallback({
   reason,
   corridors,
+  cityLabel,
   engine,
   weather,
   features,
@@ -89,6 +76,22 @@ export default function CorridorMapFallback({
 }: CorridorMapFallbackProps) {
   const { timeMin, setTimeMin, isPlaying, setIsPlaying, congestionData } = engine;
 
+  // Compute SVG bounds dynamically from corridor paths (city-agnostic)
+  const svgBounds = useMemo(() => {
+    const pts = corridors.flatMap(c => [...c.path, { lat: c.school.lat, lng: c.school.lng }]);
+    if (pts.length === 0) return { latMin: 39.774, latMax: 39.797, lngMin: -89.661, lngMax: -89.638 };
+    const lats = pts.map(p => p.lat);
+    const lngs = pts.map(p => p.lng);
+    const pad = 0.004;
+    return { latMin: Math.min(...lats) - pad, latMax: Math.max(...lats) + pad, lngMin: Math.min(...lngs) - pad, lngMax: Math.max(...lngs) + pad };
+  }, [corridors]);
+
+  const toSVG = useCallback((lat: number, lng: number) => {
+    const x = ((lng - svgBounds.lngMin) / (svgBounds.lngMax - svgBounds.lngMin)) * SVG_W;
+    const y = ((svgBounds.latMax - lat) / (svgBounds.latMax - svgBounds.latMin)) * SVG_H;
+    return { x, y };
+  }, [svgBounds]);
+
   // Build midpoint of each corridor path for the SVG line
   const corridorLines = useMemo(() => {
     return corridors.map((c) => {
@@ -97,15 +100,15 @@ export default function CorridorMapFallback({
       const entry = congestionData.find((cd) => cd.id === c.id);
       return { id: c.id, d, color: congestionColor(entry?.congestion ?? 0), congestion: entry?.congestion ?? 0 };
     });
-  }, [corridors, congestionData]);
+  }, [corridors, congestionData, toSVG]);
 
   const schoolNodes = useMemo(() => {
     return corridors.map((c) => {
-      const pos = schoolPos(c);
+      const pos = toSVG(c.school.lat, c.school.lng);
       const entry = congestionData.find((cd) => cd.id === c.id);
       return { id: c.id, name: c.school.name, ...pos, color: congestionColor(entry?.congestion ?? 0), congestion: entry?.congestion ?? 0 };
     });
-  }, [corridors, congestionData]);
+  }, [corridors, congestionData, toSVG]);
 
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5 space-y-4">
@@ -115,7 +118,7 @@ export default function CorridorMapFallback({
           <div>
             <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Corridor Traffic Map</h3>
             <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
-              Springfield, IL — {weather !== "clear" ? `${WEATHER_PROFILES[weather].icon} ${WEATHER_PROFILES[weather].label} · ` : ""}
+              {cityLabel ?? "School Zone Network"} — {weather !== "clear" ? `${WEATHER_PROFILES[weather].icon} ${WEATHER_PROFILES[weather].label} · ` : ""}
               Select a time of day to view school-zone congestion
             </p>
           </div>

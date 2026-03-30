@@ -111,8 +111,8 @@ export default function OpsZoneDetailPage() {
           <span className="text-sm text-gray-900 dark:text-gray-100 font-medium">{zone.name}</span>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{zone.name}</h1>
             <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${RISK_BADGE[zone.risk_level]}`}>
               {zone.risk_level} RISK
@@ -121,7 +121,7 @@ export default function OpsZoneDetailPage() {
               <AnomalyBadge output={anomalyOutput} />
             )}
           </div>
-          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 dark:text-gray-400">
             <span>Score: {(zone.risk_score * 100).toFixed(0)}%</span>
             <span>Speed: {zoneId.startsWith("khalifa-") || zoneId.startsWith("mbz-") ? `${Math.round(zone.speed_avg_mph * 1.609)} km/h` : `${zone.speed_avg_mph} mph`}</span>
             <span>Pedestrians: {zone.pedestrian_count}</span>
@@ -160,7 +160,16 @@ export default function OpsZoneDetailPage() {
                 <div key={`${evt.time}-${i}`} className="flex items-start gap-3 py-2 border-b border-gray-50 dark:border-gray-800 last:border-0">
                   <span className="text-xs font-mono text-gray-400 dark:text-gray-500 shrink-0 pt-0.5">{evt.time}</span>
                   <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase shrink-0 w-24 pt-0.5">{evt.type}</span>
-                  <span className="text-sm text-gray-700 dark:text-gray-300">{evt.detail}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300 flex-1">{evt.detail}</span>
+                  {i === zone.events.length - 1 && (
+                    <span className="shrink-0 flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                      <span className="relative flex h-1.5 w-1.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+                      </span>
+                      NEW
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
