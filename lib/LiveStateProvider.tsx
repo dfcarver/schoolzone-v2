@@ -261,7 +261,12 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
         zones: state.zones.map((z) => {
           const until = incidentOverrides.get(z.zone_id);
           if (!until || until < now) return z;
-          return { ...z, risk_score: 0.94, risk_level: RiskLevel.HIGH };
+          // Spike forecast_30m so Emerging Risks and forecast chart reflect the incident
+          const spikedForecast = z.forecast_30m.map((fp, i) => ({
+            ...fp,
+            risk: Math.max(fp.risk, Math.max(0, 0.94 - i * 0.07)),
+          }));
+          return { ...z, risk_score: 0.94, risk_level: RiskLevel.HIGH, forecast_30m: spikedForecast };
         }),
       };
     }
