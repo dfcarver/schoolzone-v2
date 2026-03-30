@@ -113,12 +113,15 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
       if (controller.signal.aborted) return;
 
       if (data) {
+        // Apply scenario multipliers on top of live Lambda data.
+        // Demo mode uses pre-baked scenario files so no overlay needed.
+        const overlaid = dataMode === "live" ? applyScenarioOverlay(data, scenario) : data;
         if (validate) {
-          const result = validateLiveState(data);
+          const result = validateLiveState(overlaid);
           setLastValidation(result);
           if (!result.valid) logger.warn("Snapshot validation failed", result.errors);
         }
-        setBaseState(data);
+        setBaseState(overlaid);
         setError(null);
         recordRotation();
       } else {
