@@ -175,6 +175,15 @@ function buildZoneState(zone: ZoneDef, row: DynamoZoneRow | undefined, now: Date
     if (override.activeCameras !== undefined) activeCameras = override.activeCameras;
   }
 
+  // Apply same overrides to forecast so Emerging Risks section reflects reality
+  let forecast = computeForecast(zone, now, weather);
+  if (override) {
+    forecast = forecast.map(fp => ({
+      ...fp,
+      risk: Math.round(clamp(addNoise(fp.risk, 0.03), override.riskFloor, override.riskCeiling) * 1000) / 1000,
+    }));
+  }
+
   return {
     zone_id:          zone.id,
     name:             zone.name,
@@ -185,7 +194,7 @@ function buildZoneState(zone: ZoneDef, row: DynamoZoneRow | undefined, now: Date
     vehicle_count:    vehicleCount,
     active_cameras:   activeCameras,
     total_cameras:    totalCameras,
-    forecast_30m:     computeForecast(zone, now, weather),
+    forecast_30m:     forecast,
     recommendations:  SYNTHETIC_RECOMMENDATIONS[zone.id] ?? [],
     events:           buildSyntheticEvents(zone.id, now),
     interventions:    [],
