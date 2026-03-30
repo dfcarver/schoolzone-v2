@@ -10,6 +10,7 @@ import {
   InfoWindow,
   TrafficLayer,
   TransitLayer,
+  OverlayView,
 } from "@react-google-maps/api";
 import {
   WeatherCondition,
@@ -264,7 +265,7 @@ export default function CorridorMap({ selectedCity: selectedCityProp, onCityChan
 
   // Live Google Routes API congestion override + TomTom incidents
   const { config: demoConfig } = useDemoConfig();
-  const { liveState } = useLiveState();
+  const { liveState, simulatedZones } = useLiveState();
 
   // For Abu Dhabi cities, use Lambda zone risk scores directly so corridor
   // colours match the Portfolio Heatmap (both sourced from the same Lambda data)
@@ -817,6 +818,26 @@ export default function CorridorMap({ selectedCity: selectedCityProp, onCityChan
               icon={markerIcons[i]}
             />
           ))}
+
+          {/* Incident simulation overlays — pulsing HTML marker for simulated HIGH-risk zones */}
+          {simulatedZones && displayData
+            .filter(c => simulatedZones.has(c.school.zone_id))
+            .map(c => (
+              <OverlayView
+                key={`incident-${c.id}`}
+                position={{ lat: c.school.lat, lng: c.school.lng }}
+                mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+              >
+                <div style={{ transform: "translate(-50%, -50%)", pointerEvents: "none" }} className="relative flex items-center justify-center">
+                  <span className="absolute inline-flex h-16 w-16 rounded-full bg-red-500 opacity-40 animate-ping" />
+                  <span className="absolute inline-flex h-10 w-10 rounded-full bg-red-500 opacity-30 animate-ping" style={{ animationDelay: "0.3s" }} />
+                  <span className="relative flex items-center justify-center h-7 w-7 rounded-full bg-red-600 border-2 border-white shadow-lg">
+                    <span className="text-white text-xs font-bold">!</span>
+                  </span>
+                </div>
+              </OverlayView>
+            ))
+          }
 
           {/* Info windows */}
           {displayData.map((c) =>

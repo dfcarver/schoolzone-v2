@@ -41,6 +41,7 @@ interface LiveStateContextValue {
   simulateIncident: (zoneId: string) => void;
   syncStatus: SyncStatus;
   appliedHistory: StoredIntervention[];
+  simulatedZones: Set<string>;
 }
 
 const LiveStateContext = createContext<LiveStateContextValue>({
@@ -52,6 +53,7 @@ const LiveStateContext = createContext<LiveStateContextValue>({
   simulateIncident: () => {},
   syncStatus: "connecting",
   appliedHistory: [],
+  simulatedZones: new Set<string>(),
 });
 
 export function useLiveStateContext(): LiveStateContextValue {
@@ -266,9 +268,18 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
     return state;
   }, [baseState, demoState, incidentOverrides]);
 
+  const simulatedZones = useMemo(() => {
+    const now = Date.now();
+    return new Set(
+      Array.from(incidentOverrides.entries())
+        .filter(([, until]) => until > now)
+        .map(([zoneId]) => zoneId)
+    );
+  }, [incidentOverrides]);
+
   const contextValue = useMemo(
-    () => ({ liveState: mergedState, loading, error, lastValidation, applyDemo, simulateIncident, syncStatus, appliedHistory }),
-    [mergedState, loading, error, lastValidation, applyDemo, simulateIncident, syncStatus, appliedHistory]
+    () => ({ liveState: mergedState, loading, error, lastValidation, applyDemo, simulateIncident, syncStatus, appliedHistory, simulatedZones }),
+    [mergedState, loading, error, lastValidation, applyDemo, simulateIncident, syncStatus, appliedHistory, simulatedZones]
   );
 
   return (
