@@ -28,10 +28,13 @@ import { useDemoConfig } from "@/lib/demoConfig";
 import { RiskLevel } from "@/lib/types";
 import AIPredictionPanel from "@/components/ai/AIPredictionPanel";
 import InterventionFeed from "@/components/InterventionFeed";
+import { useToast } from "@/components/Toast";
+import DemoGuide from "@/components/DemoGuide";
 
 export default function ExecutivePage() {
-  const { liveState, loading, error, lastValidation, appliedHistory, applyDemo, simulateIncident } = useLiveState();
+  const { liveState, loading, error, lastValidation, appliedHistory, applyDemo, simulateIncident, simulatedZones } = useLiveState();
   const { config, updateConfig } = useDemoConfig();
+  const { toast } = useToast();
   const selectedCity = config.selectedCity;
   const [cityRefreshing, setCityRefreshing] = useState(false);
   const prevCityRef = useRef(selectedCity);
@@ -163,6 +166,9 @@ export default function ExecutivePage() {
         </div>
       )}
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+        {/* Demo Guide */}
+        <DemoGuide />
+
         {/* KPI Row */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <ExecutiveKPI
@@ -233,13 +239,21 @@ export default function ExecutivePage() {
                       <span className={`text-sm font-bold ${r.peakRisk >= 0.7 ? "text-red-600" : r.peakRisk >= 0.4 ? "text-amber-600" : "text-green-600"}`}>
                         {Math.round(r.peakRisk * 100)}%
                       </span>
-                      <button
-                        onClick={() => simulateIncident(r.zone_id)}
-                        className="text-[10px] border border-red-800 rounded px-2 py-0.5 text-red-400 hover:bg-red-950"
-                        title="Spike this zone to HIGH risk for 60 seconds"
-                      >
-                        🔴 Simulate
-                      </button>
+                      {simulatedZones?.has(r.zone_id) && r.peakRisk < 0.65 && (
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-950 border border-green-800 text-green-400">Resolved</span>
+                      )}
+                      {(!simulatedZones?.has(r.zone_id)) && (
+                        <button
+                          onClick={() => {
+                            simulateIncident(r.zone_id);
+                            toast(`Incident simulated for ${r.zoneName}`, "info");
+                          }}
+                          className="text-[10px] border border-red-800 rounded px-2 py-0.5 text-red-400 hover:bg-red-950"
+                          title="Spike this zone to HIGH risk"
+                        >
+                          🔴 Simulate
+                        </button>
+                      )}
                       <button
                         onClick={() => setDispatchOpen(dispatchOpen === r.zone_id ? null : r.zone_id)}
                         className="text-[10px] border border-slate-600 rounded px-2 py-0.5 text-slate-300 hover:bg-slate-800"
@@ -253,6 +267,7 @@ export default function ExecutivePage() {
                               key={option}
                               onClick={() => {
                                 applyDemo(r.zone_id, { id: `quick-${Date.now()}`, action: option, impact: "Immediate risk reduction", confidence: 0.85, priority: RiskLevel.HIGH });
+                                toast(`${option} dispatched to ${r.zoneName}`, "success");
                                 setDispatchOpen(null);
                               }}
                               className="w-full text-[11px] text-left px-3 py-1.5 text-slate-200 hover:bg-slate-800"
