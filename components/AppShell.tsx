@@ -27,7 +27,7 @@ export function useMobileNav() {
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isLoginPage = pathname === "/login";
+  const isLoginPage = pathname === "/login" || pathname === "/";
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const toggle = useCallback(() => setSidebarOpen((v) => !v), []);
