@@ -49,9 +49,10 @@ export function applyScenarioOverlay(state: LiveState, scenario: ScenarioId): Li
     const newLevel  = deriveRiskLevel(newScore);
     const scaleFactor = zone.risk_score > 0 ? newScore / zone.risk_score : 1;
 
+    const floor = SCENARIO_FLOORS[scenario];
     const newForecast = zone.forecast_30m.map((fp) => ({
       ...fp,
-      risk: Math.min(0.97, Math.round(fp.risk * scaleFactor * 1000) / 1000),
+      risk: Math.min(0.97, Math.max(floor, Math.round(fp.risk * scaleFactor * 1000) / 1000)),
     }));
 
     // Scenario-specific sensor/activity tweaks
