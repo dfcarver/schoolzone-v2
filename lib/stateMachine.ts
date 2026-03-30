@@ -5,6 +5,8 @@ import {
   ZoneEvent,
   Recommendation,
   SnapshotPhase,
+  deriveRiskLevel,
+  RiskLevel,
 } from "./types";
 import { recordDemoMutation } from "./metrics";
 import * as logger from "./logger";
@@ -57,8 +59,25 @@ export function applyDemoIntervention(
 
   const updatedZones: ZoneLiveState[] = liveState.zones.map((zone) => {
     if (zone.zone_id !== zoneId) return zone;
+
+    // Reduce risk score: HIGH-priority recs cut more, scaled by confidence
+    const baseCut = recommendation.priority === RiskLevel.HIGH ? 0.20 : 0.13;
+    const reduction = baseCut * recommendation.confidence;
+    const newScore = Math.max(0, Math.round((zone.risk_score - reduction) * 1000) / 1000);
+    const newLevel = deriveRiskLevel(newScore);
+
+    // Apply the same proportional reduction to the 30-min forecast
+    const scaleFactor = zone.risk_score > 0 ? newScore / zone.risk_score : 1;
+    const newForecast = zone.forecast_30m.map((fp) => ({
+      ...fp,
+      risk: Math.round(fp.risk * scaleFactor * 1000) / 1000,
+    }));
+
     return {
       ...zone,
+      risk_score: newScore,
+      risk_level: newLevel,
+      forecast_30m: newForecast,
       interventions: [...zone.interventions, newIntervention],
       events: [...zone.events, newEvent],
     };
@@ -99,15 +118,33 @@ export function mergeSnapshotWithOverrides(
       return snapshotZone;
     }
 
+    // Carry forward risk reduction: use override's score if it's lower than the fresh snapshot
+    const effectiveScore = override.risk_score < snapshotZone.risk_score
+      ? override.risk_score
+      : snapshotZone.risk_score;
+    const effectiveLevel = deriveRiskLevel(effectiveScore);
+
+    // Scale forecast proportionally to the effective score
+    const scaleFactor = snapshotZone.risk_score > 0 ? effectiveScore / snapshotZone.risk_score : 1;
+    const effectiveForecast = scaleFactor < 1
+      ? snapshotZone.forecast_30m.map((fp) => ({ ...fp, risk: Math.round(fp.risk * scaleFactor * 1000) / 1000 }))
+      : snapshotZone.forecast_30m;
+
     return {
       ...snapshotZone,
+      risk_score: effectiveScore,
+      risk_level: effectiveLevel,
+      forecast_30m: effectiveForecast,
       interventions: [...snapshotZone.interventions, ...demoInterventions],
       events: [...snapshotZone.events, ...demoEvents],
     };
   });
 
+  const activeAlerts = mergedZones.filter(z => z.risk_level === RiskLevel.HIGH).length;
+
   return {
     ...snapshot,
+    active_alerts: activeAlerts,
     zones: mergedZones,
   };
 }
