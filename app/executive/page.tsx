@@ -23,7 +23,8 @@ import { buildEscalationInput } from "@/lib/engines/buildInputs";
 import EscalationGauge from "@/components/intelligence/EscalationGauge";
 import SimulationPanel from "@/components/intelligence/SimulationPanel";
 import CorridorMap from "@/components/CorridorMap";
-import { CityId, CITIES } from "@/lib/cityConfig";
+import { CITIES } from "@/lib/cityConfig";
+import { useDemoConfig } from "@/lib/demoConfig";
 import { getCongestionForCorridor } from "@/lib/hooks/useCongestionEngine";
 import { RiskLevel } from "@/lib/types";
 import AIPredictionPanel from "@/components/ai/AIPredictionPanel";
@@ -31,6 +32,8 @@ import InterventionFeed from "@/components/InterventionFeed";
 
 export default function ExecutivePage() {
   const { liveState, loading, error, lastValidation, appliedHistory } = useLiveState();
+  const { config, updateConfig } = useDemoConfig();
+  const selectedCity = config.selectedCity;
 
   const rollup = useMemo(() => {
     if (!liveState) return null;
@@ -38,8 +41,7 @@ export default function ExecutivePage() {
     return computeDistrictRollup(liveState, lastValidation, drift);
   }, [liveState, lastValidation]);
 
-  const [selectedCity, setSelectedCity] = useState<CityId>("khalifa_city_auh");
-  const handleCityChange = useCallback((city: CityId) => setSelectedCity(city), []);
+  const handleCityChange = useCallback((city: typeof selectedCity) => updateConfig({ selectedCity: city }), [updateConfig]);
 
   const heatmap = useMemo(() => {
     if (!liveState) return [];

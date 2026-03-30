@@ -1,14 +1,19 @@
 "use client";
 
+import { useMemo } from "react";
 import { useLiveState } from "@/lib/useLiveState";
+import { useDemoConfig } from "@/lib/demoConfig";
 import { RiskLevel } from "@/lib/types";
 import Topbar from "@/components/Topbar";
 import KPI from "@/components/KPI";
 import ZoneTile from "@/components/ZoneTile";
 import ForecastChart from "@/components/ForecastChart";
 import InterventionsTable from "@/components/InterventionsTable";
+import CorridorMap from "@/components/CorridorMap";
 import { PageSkeleton } from "@/components/Skeleton";
 import ErrorState from "@/components/ErrorState";
+import { CITIES } from "@/lib/cityConfig";
+import { getCongestionForCorridor } from "@/lib/hooks/useCongestionEngine";
 
 function riskStatus(level: RiskLevel): "normal" | "warning" | "critical" {
   if (level === RiskLevel.HIGH) return "critical";
@@ -18,15 +23,46 @@ function riskStatus(level: RiskLevel): "normal" | "warning" | "critical" {
 
 export default function OperationsDashboardPage() {
   const { liveState, loading, error } = useLiveState();
+  const { config, updateConfig } = useDemoConfig();
+  const selectedCity = config.selectedCity;
+
+  const corridorZones = useMemo(() => {
+    if (selectedCity === "springfield_il") return null;
+    const cityConfig = CITIES.find(c => c.id === selectedCity);
+    if (!cityConfig) return null;
+    const now = new Date();
+    const minuteOfDay = now.getHours() * 60 + now.getMinutes();
+    return cityConfig.corridors.map((corridor) => {
+      const riskNow = Math.round(getCongestionForCorridor(corridor, minuteOfDay, 1.0, null) * 100);
+      const risk_level: RiskLevel = riskNow >= 60 ? RiskLevel.HIGH : riskNow >= 40 ? RiskLevel.MED : RiskLevel.LOW;
+      return {
+        zone_id: corridor.school.zone_id,
+        name: corridor.school.name,
+        risk_score: riskNow / 100,
+        risk_level,
+        speed_avg_mph: Math.round(30 - riskNow * 0.2),
+        pedestrian_count: Math.round(riskNow * 0.8),
+        vehicle_count: Math.round(riskNow * 1.5),
+        active_cameras: 4,
+        total_cameras: 4,
+        forecast_30m: [],
+        recommendations: [],
+        events: [],
+        interventions: [],
+      };
+    });
+  }, [selectedCity]);
 
   if (loading) return <PageSkeleton />;
   if (error || !liveState) return <ErrorState message={error ?? "Demo Data Unavailable"} />;
+
+  const displayZones = corridorZones ?? liveState.zones;
 
   const allInterventions = liveState.zones.flatMap((z) =>
     z.interventions.map((i) => ({ ...i, zoneName: z.name }))
   );
 
-  const firstZone = liveState.zones[0];
+  const firstZone = displayZones[0];
 
   return (
     <div className="flex flex-col h-screen">
@@ -64,23 +100,31 @@ export default function OperationsDashboardPage() {
           />
         </div>
 
+        <CorridorMap
+          selectedCity={selectedCity}
+          onCityChange={(city) => updateConfig({ selectedCity: city })}
+        />
+
         <div>
           <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Zone Overview</h2>
-          {liveState.zones.length === 0 ? (
+          {displayZones.length === 0 ? (
             <p className="text-sm text-gray-400 dark:text-gray-500">No zones available</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {liveState.zones.map((zone) => (
-                <ZoneTile key={zone.zone_id} zone={zone} />
+              {displayZones.map((zone) => (
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                <ZoneTile key={zone.zone_id} zone={zone as any} />
               ))}
             </div>
           )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {firstZone && (
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          {firstZone && (firstZone as any).forecast_30m?.length > 0 && (
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             <ForecastChart
-              data={firstZone.forecast_30m}
+              data={(firstZone as any).forecast_30m}
               title={`Risk Forecast — ${firstZone.name}`}
             />
           )}
