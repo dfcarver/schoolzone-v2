@@ -111,10 +111,13 @@ export function applyCongestionTimeBlend(
     if (!corridor) return zone;
 
     const congestion = getCongestionForCorridor(corridor, simTimeMin, weatherMultiplier, null);
-    if (congestion <= zone.risk_score) return zone;
+    // Congestion model peaks at 0.7–0.9 for traffic flow; scale to realistic risk range.
+    // Peak dismissal congestion (0.87) maps to ~0.62 risk — elevated but not catastrophic.
+    const congestionRisk = Math.min(0.72, congestion * 0.72);
+    if (congestionRisk <= zone.risk_score) return zone;
 
     changed = true;
-    const newScore = Math.round(Math.min(0.97, congestion) * 1000) / 1000;
+    const newScore = Math.round(congestionRisk * 1000) / 1000;
     const newLevel = deriveRiskLevel(newScore);
     const scaleFactor = zone.risk_score > 0 ? newScore / zone.risk_score : 1;
     const newForecast = zone.forecast_30m.map((fp) => ({
