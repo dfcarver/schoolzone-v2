@@ -33,6 +33,16 @@ export default function ExecutivePage() {
   const { liveState, loading, error, lastValidation, appliedHistory, applyDemo } = useLiveState();
   const { config, updateConfig } = useDemoConfig();
   const selectedCity = config.selectedCity;
+  const [cityRefreshing, setCityRefreshing] = useState(false);
+  const prevCityRef = useRef(selectedCity);
+  useEffect(() => {
+    if (prevCityRef.current !== selectedCity) {
+      prevCityRef.current = selectedCity;
+      setCityRefreshing(true);
+      const t = setTimeout(() => setCityRefreshing(false), 2000);
+      return () => clearTimeout(t);
+    }
+  }, [selectedCity]);
 
   const rollup = useMemo(() => {
     if (!liveState) return null;
@@ -98,9 +108,12 @@ export default function ExecutivePage() {
     "Request police patrol",
   ];
 
+  // Auto-select highest-risk zone when city changes so AI Brief is pre-populated
   useEffect(() => {
-    setSelectedZoneId("");
-  }, [selectedCity]);
+    if (!liveState || liveState.zones.length === 0) { setSelectedZoneId(""); return; }
+    const top = [...liveState.zones].sort((a, b) => b.risk_score - a.risk_score)[0];
+    setSelectedZoneId(top.zone_id);
+  }, [selectedCity, liveState?.zones.length]);
 
   const driftStatus = useMemo(() => {
     if (!liveState) return "NORMAL" as const;
@@ -133,6 +146,12 @@ export default function ExecutivePage() {
         snapshotId={liveState.snapshot_id}
         timestamp={liveState.timestamp}
       />
+      {cityRefreshing && (
+        <div className="flex items-center gap-2 px-4 sm:px-6 py-2 bg-blue-950/40 border-b border-blue-900/40 text-xs text-blue-400">
+          <span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin shrink-0" />
+          Switching city — refreshing data…
+        </div>
+      )}
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
         {/* KPI Row */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">

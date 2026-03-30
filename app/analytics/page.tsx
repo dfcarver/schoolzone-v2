@@ -176,8 +176,8 @@ export default function AnalyticsPage() {
       )}
 
       {isSynthetic && (
-        <p className="text-[10px] text-amber-500 dark:text-amber-400">
-          Synthetic data — S3 pipeline not yet active for this city
+        <p className="text-[10px] text-gray-400 dark:text-gray-500">
+          Projected model data · Historical pipeline activates upon sensor integration
         </p>
       )}
 

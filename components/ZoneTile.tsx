@@ -25,17 +25,20 @@ export default function ZoneTile({ zone }: ZoneTileProps) {
   return (
     <button
       onClick={() => router.push(`/operations/zones/${zone.zone_id}`)}
-      className={`text-left border-l-4 ${RISK_COLORS[zone.risk_level]} rounded-lg p-4 hover:shadow-md transition-shadow bg-white dark:bg-gray-900 cursor-pointer w-full`}
+      className={`text-left border-l-4 ${RISK_COLORS[zone.risk_level]} rounded-lg p-4 hover:shadow-md transition-all bg-white dark:bg-gray-900 cursor-pointer w-full group hover:border-opacity-100`}
     >
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
           {zone.name}
         </h3>
-        <span
-          className={`text-xs font-medium px-2 py-0.5 rounded-full ${RISK_BADGE[zone.risk_level]}`}
-        >
-          {zone.risk_level}
-        </span>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${RISK_BADGE[zone.risk_level]}`}>
+            {zone.risk_level}
+          </span>
+          <svg className="w-3.5 h-3.5 text-gray-300 dark:text-gray-600 group-hover:text-gray-500 dark:group-hover:text-gray-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
       </div>
       <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-400">
         <div>

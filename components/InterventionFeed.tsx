@@ -13,6 +13,15 @@ function relativeTime(ms: number): string {
   return `${Math.floor(minutes / 60)}h ago`;
 }
 
+function formatUAETime(ms: number): string {
+  return new Date(ms).toLocaleTimeString("en-AE", {
+    timeZone: "Asia/Dubai",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }) + " GST";
+}
+
 interface InterventionFeedProps {
   history: StoredIntervention[];
 }
@@ -59,7 +68,7 @@ export default function InterventionFeed({ history }: InterventionFeedProps) {
                   {item.recommendation.action}
                 </p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                  {item.zoneId} · {relativeTime(item.appliedAt)}
+                  {item.zoneId} · {relativeTime(item.appliedAt)} · {formatUAETime(item.appliedAt)}
                 </p>
               </div>
               <span className={`text-xs font-medium px-1.5 py-0.5 rounded shrink-0 ${
