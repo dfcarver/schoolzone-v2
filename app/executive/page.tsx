@@ -61,13 +61,49 @@ export default function ExecutivePage() {
 
   const emergingRisks = useMemo(() => {
     if (!liveState) return [];
+    if (selectedCity !== "springfield_il") {
+      const cityConfig = CITIES.find(c => c.id === selectedCity);
+      if (cityConfig) {
+        const now = new Date();
+        const minuteOfDay = now.getHours() * 60 + now.getMinutes();
+        return cityConfig.corridors
+          .map((corridor) => {
+            let peakRisk = 0;
+            let peakTime = "";
+            for (let i = 5; i <= 30; i += 5) {
+              const r = getCongestionForCorridor(corridor, minuteOfDay + i, 1.0, null);
+              if (r > peakRisk) { peakRisk = r; peakTime = `+${i}m`; }
+            }
+            return { zone_id: corridor.school.zone_id, zoneName: corridor.school.name, peakRisk, peakTime };
+          })
+          .sort((a, b) => b.peakRisk - a.peakRisk)
+          .slice(0, 3);
+      }
+    }
     return computeEmergingRisks(liveState);
-  }, [liveState]);
+  }, [liveState, selectedCity]);
 
   const activeMitigations = useMemo(() => {
     if (!liveState) return [];
+    if (selectedCity !== "springfield_il") {
+      // Use Supabase intervention history for Abu Dhabi zones
+      return appliedHistory
+        .filter(i => i.zoneId.startsWith("khalifa-") || i.zoneId.startsWith("mbz-"))
+        .slice(-6)
+        .reverse()
+        .map(i => {
+          const cityConfig = CITIES.flatMap(c => c.corridors).find(c => c.school.zone_id === i.zoneId);
+          return {
+            zone_id: i.zoneId,
+            zoneName: cityConfig?.school.name ?? i.zoneId,
+            action: i.recommendation.action,
+            appliedAt: new Date(i.appliedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            isOperatorDispatched: true,
+          };
+        });
+    }
     return computeActiveMitigations(liveState);
-  }, [liveState]);
+  }, [liveState, selectedCity, appliedHistory]);
 
   const [selectedZoneId, setSelectedZoneId] = useState<string>("");
 
