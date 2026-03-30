@@ -94,14 +94,14 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
   const baseStateRef = useRef<LiveState | null>(null);
   const pendingSnapshotRef = useRef<StoredIntervention[]>([]);
 
-  const fetchSnapshot = useCallback(async (phase: SnapshotPhase, scenario: ScenarioId, validate: boolean, dataMode: DataMode) => {
+  const fetchSnapshot = useCallback(async (phase: SnapshotPhase, scenario: ScenarioId, validate: boolean, dataMode: DataMode, city: string) => {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
 
     try {
       const file = snapshotFile(phase);
-      const data = await loadLiveState(file, scenario, controller.signal, undefined, undefined, dataMode);
+      const data = await loadLiveState(file, scenario, controller.signal, city, undefined, dataMode);
       if (controller.signal.aborted) return;
 
       if (data) {
@@ -126,21 +126,21 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const initialPhase = nextSnapshotPhase(phaseRef.current);
     phaseRef.current = initialPhase;
-    fetchSnapshot(initialPhase, config.scenario, config.runtimeValidationEnabled, config.dataMode);
+    fetchSnapshot(initialPhase, config.scenario, config.runtimeValidationEnabled, config.dataMode, config.selectedCity);
 
     if (config.timeMode === "paused") return;
 
     const interval = setInterval(() => {
       const next = nextSnapshotPhase(phaseRef.current);
       phaseRef.current = next;
-      fetchSnapshot(next, config.scenario, config.runtimeValidationEnabled, config.dataMode);
+      fetchSnapshot(next, config.scenario, config.runtimeValidationEnabled, config.dataMode, config.selectedCity);
     }, config.snapshotIntervalMs);
 
     return () => {
       clearInterval(interval);
       abortRef.current?.abort();
     };
-  }, [fetchSnapshot, config.scenario, config.timeMode, config.snapshotIntervalMs, config.runtimeValidationEnabled, config.dataMode]);
+  }, [fetchSnapshot, config.scenario, config.timeMode, config.snapshotIntervalMs, config.runtimeValidationEnabled, config.dataMode, config.selectedCity]);
 
   // Mirror baseState into ref and flush pending interventions
   const prevHighZones = useRef<Set<string>>(new Set());
