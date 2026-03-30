@@ -71,21 +71,6 @@ export default function LoginPage() {
           <p className="text-xs text-slate-600 mt-0.5">Abu Dhabi Department of Transport</p>
         </div>
 
-        {/* Demo entry */}
-        <button
-          onClick={() => doLogin("admin", "admin2026")}
-          disabled={submitting}
-          className="w-full py-3 mb-4 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_28px_rgba(59,130,246,0.45)]"
-        >
-          {submitting ? "Entering…" : "Enter Demo"}
-        </button>
-
-        <div className="flex items-center gap-3 mb-4">
-          <div className="flex-1 h-px bg-slate-800" />
-          <span className="text-xs text-slate-600">or sign in</span>
-          <div className="flex-1 h-px bg-slate-800" />
-        </div>
-
         {/* Form */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
