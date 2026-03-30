@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useLiveState } from "@/lib/useLiveState";
@@ -59,10 +59,12 @@ export default function OpsZoneDetailPage() {
     return computeAnomaly(buildAnomalyInput(zone));
   }, [zone]);
 
-  const appliedActions = useMemo(
-    () => new Set(zone?.interventions.filter((i) => i.id.startsWith("demo-int-")).map((i) => i.action)),
-    [zone]
-  );
+  const [localApplied, setLocalApplied] = useState<Set<string>>(new Set());
+
+  const appliedActions = useMemo(() => {
+    const fromZone = new Set(zone?.interventions.filter((i) => i.id.startsWith("demo-int-")).map((i) => i.action) ?? []);
+    return new Set([...fromZone, ...localApplied]);
+  }, [zone, localApplied]);
 
   const fallbackRecs: Recommendation[] = useMemo(() => {
     if (!zone) return [];
@@ -78,6 +80,7 @@ export default function OpsZoneDetailPage() {
     (recId: string) => {
       const rec = fallbackRecs.find((r) => r.id === recId);
       if (!rec) return;
+      setLocalApplied((prev) => new Set([...prev, rec.action]));
       applyDemo(zoneId, rec);
     },
     [fallbackRecs, zoneId, applyDemo]
