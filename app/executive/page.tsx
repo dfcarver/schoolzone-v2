@@ -38,7 +38,7 @@ export default function ExecutivePage() {
     return computeDistrictRollup(liveState, lastValidation, drift);
   }, [liveState, lastValidation]);
 
-  const [selectedCity, setSelectedCity] = useState<CityId>("springfield_il");
+  const [selectedCity, setSelectedCity] = useState<CityId>("khalifa_city_auh");
   const handleCityChange = useCallback((city: CityId) => setSelectedCity(city), []);
 
   const heatmap = useMemo(() => {

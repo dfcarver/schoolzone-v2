@@ -2,9 +2,6 @@
 
 import { useState } from "react";
 import { useDemoConfig, ScenarioId } from "@/lib/demoConfig";
-import { usePushNotifications } from "@/lib/hooks/usePushNotifications";
-import { useAuth } from "@/lib/auth/AuthProvider";
-import { useTheme } from "@/lib/ThemeProvider";
 import { useNotifications } from "@/lib/notifications";
 import { useLiveStateContext } from "@/lib/LiveStateProvider";
 import NotificationPanel from "@/components/NotificationPanel";
@@ -16,9 +13,9 @@ interface TopbarProps {
 }
 
 const SCENARIO_LABELS: Record<ScenarioId, string> = {
-  normal: "Normal",
-  surge: "Surge",
-  weather: "Weather",
+  normal:    "Normal",
+  surge:     "Surge",
+  weather:   "Weather",
   dismissal: "Dismissal",
 };
 
@@ -32,141 +29,102 @@ function formatTime(iso: string): string {
 
 export default function Topbar({ snapshotId, timestamp, title = "Operations Console" }: TopbarProps) {
   const { config, updateConfig } = useDemoConfig();
-  const { session, logout } = useAuth();
-  const { theme, toggle: toggleTheme } = useTheme();
   const { unreadCount } = useNotifications();
   const { syncStatus } = useLiveStateContext();
-  const { status: pushStatus, subscribed, subscribe, unsubscribe } = usePushNotifications();
   const [showNotifs, setShowNotifs] = useState(false);
   const formattedTime = timestamp ? formatTime(timestamp) : "--:--:--";
 
   return (
-    <header className="h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-3 sm:px-6 shrink-0">
-      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-        <h1 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{title}</h1>
+    <header className="h-12 bg-slate-900/80 border-b border-slate-800 flex items-center justify-between px-4 sm:px-6 shrink-0">
+      {/* Left: page title */}
+      <div className="flex items-center gap-3 min-w-0">
+        <h1 className="text-sm font-semibold text-slate-200 truncate">{title}</h1>
         {snapshotId && (
-          <span className="hidden sm:inline text-xs text-gray-500 dark:text-gray-400">
-            | Snapshot: {snapshotId}
-          </span>
+          <span className="hidden md:inline text-xs text-slate-600 font-mono">{snapshotId}</span>
         )}
       </div>
-      <div className="flex items-center gap-2 sm:gap-4">
-        {/* Data source toggle — only shown when AWS pipeline is configured */}
+
+      {/* Right: controls */}
+      <div className="flex items-center gap-2 sm:gap-3">
+
+        {/* Data source toggle */}
         {process.env.NEXT_PUBLIC_AWS_SNAPSHOT_API_URL && (
-          <div className="flex items-center rounded-md border border-gray-200 dark:border-gray-600 overflow-hidden text-xs">
+          <div className="flex items-center rounded-lg border border-slate-700 overflow-hidden text-xs">
             <button
               onClick={() => updateConfig({ dataMode: "live" })}
-              className={`px-2.5 py-1 transition-colors ${
-                config.dataMode === "live"
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-              }`}
+              className={`px-2.5 py-1 transition-colors ${config.dataMode === "live" ? "bg-blue-600 text-white" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"}`}
             >
-              AWS Live
+              AWS
             </button>
             <button
               onClick={() => updateConfig({ dataMode: "demo" })}
-              className={`px-2.5 py-1 transition-colors border-l border-gray-200 dark:border-gray-600 ${
-                config.dataMode === "demo"
-                  ? "bg-violet-600 text-white"
-                  : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-              }`}
+              className={`px-2.5 py-1 transition-colors border-l border-slate-700 ${config.dataMode === "demo" ? "bg-violet-600 text-white" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"}`}
             >
               Demo
             </button>
           </div>
         )}
-        {/* Scenario selector — only relevant in demo mode */}
+
+        {/* Scenario selector */}
         {config.dataMode === "demo" && (
-          <div className="flex items-center gap-1.5">
-            <span className="hidden sm:inline text-[10px] text-gray-400 dark:text-gray-500 font-medium">Demo</span>
-            <select
-              value={config.scenario}
-              onChange={(e) => updateConfig({ scenario: e.target.value as ScenarioId })}
-              className="text-xs border border-gray-200 dark:border-gray-600 rounded-md px-2 py-1 text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800"
-            >
-              {(Object.keys(SCENARIO_LABELS) as ScenarioId[]).map((s) => (
-                <option key={s} value={s}>{SCENARIO_LABELS[s]}</option>
-              ))}
-            </select>
-          </div>
+          <select
+            value={config.scenario}
+            onChange={(e) => updateConfig({ scenario: e.target.value as ScenarioId })}
+            className="text-xs border border-slate-700 rounded-lg px-2 py-1 text-slate-300 bg-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            {(Object.keys(SCENARIO_LABELS) as ScenarioId[]).map((s) => (
+              <option key={s} value={s}>{SCENARIO_LABELS[s]}</option>
+            ))}
+          </select>
         )}
+
+        {/* Live / Paused toggle */}
         <button
           onClick={() => updateConfig({ timeMode: config.timeMode === "live" ? "paused" : "live" })}
-          className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border ${
+          className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg border transition-colors ${
             config.timeMode === "live"
-              ? "border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-400"
-              : "border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-400"
+              ? "border-green-800 bg-green-950/50 text-green-400"
+              : "border-amber-800 bg-amber-950/50 text-amber-400"
           }`}
         >
           {config.timeMode === "live" ? (
             <>
-              <span className="relative flex h-2 w-2">
+              <span className="relative flex h-1.5 w-1.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
               </span>
               <span className="hidden sm:inline">Live</span>
             </>
           ) : (
             <>
-              <span className="inline-flex rounded-full h-2 w-2 bg-amber-500" />
+              <span className="inline-flex rounded-full h-1.5 w-1.5 bg-amber-500" />
               <span className="hidden sm:inline">Paused</span>
             </>
           )}
         </button>
-        <span className="hidden sm:inline text-xs font-mono text-gray-600 dark:text-gray-400">{formattedTime}</span>
+
+        {/* Timestamp */}
+        <span className="hidden md:inline text-xs font-mono text-slate-600">{formattedTime}</span>
+
+        {/* Sync status */}
         <span className={`hidden sm:flex items-center gap-1.5 text-xs ${
-          syncStatus === "live" ? "text-emerald-600 dark:text-emerald-400" :
-          syncStatus === "connecting" ? "text-amber-600 dark:text-amber-400" :
-          "text-red-600 dark:text-red-400"
+          syncStatus === "live" ? "text-emerald-400" :
+          syncStatus === "connecting" ? "text-amber-400" : "text-red-400"
         }`}>
-          <span className={`w-2 h-2 rounded-full ${
+          <span className={`w-1.5 h-1.5 rounded-full ${
             syncStatus === "live" ? "bg-emerald-500" :
-            syncStatus === "connecting" ? "bg-amber-400 animate-pulse" :
-            "bg-red-500"
+            syncStatus === "connecting" ? "bg-amber-400 animate-pulse" : "bg-red-500"
           }`} />
-          {syncStatus === "live" ? "Synced" : syncStatus === "connecting" ? "Connecting…" : "Disconnected"}
+          <span className="hidden md:inline">
+            {syncStatus === "live" ? "Synced" : syncStatus === "connecting" ? "Connecting…" : "Disconnected"}
+          </span>
         </span>
 
-        {/* Push notification subscribe button */}
-        {pushStatus !== "unsupported" && pushStatus !== "denied" && (
-          <button
-            onClick={subscribed ? unsubscribe : subscribe}
-            title={subscribed ? "Unsubscribe from push alerts" : "Subscribe to HIGH risk push alerts"}
-            className={`hidden sm:flex p-1.5 rounded-md transition-colors ${
-              subscribed
-                ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950 hover:bg-blue-100 dark:hover:bg-blue-900"
-                : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-            }`}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-          </button>
-        )}
-
-        {/* Theme toggle */}
-        <button
-          onClick={toggleTheme}
-          className="p-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          title={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
-        >
-          {theme === "light" ? (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-            </svg>
-          ) : (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-          )}
-        </button>
-
-        {/* Notification bell */}
+        {/* Notifications */}
         <div className="relative">
           <button
             onClick={() => setShowNotifs((v) => !v)}
-            className="p-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
+            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-colors relative"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -179,21 +137,6 @@ export default function Topbar({ snapshotId, timestamp, title = "Operations Cons
           </button>
           {showNotifs && <NotificationPanel onClose={() => setShowNotifs(false)} />}
         </div>
-
-        {session && (
-          <div className="flex items-center gap-2 sm:gap-3 border-l border-gray-200 dark:border-gray-700 pl-2 sm:pl-4">
-            <span className="hidden sm:inline text-xs text-gray-500 dark:text-gray-400 capitalize">{session.username}</span>
-            <button
-              onClick={logout}
-              className="flex items-center gap-1.5 text-xs px-2 sm:px-2.5 py-1 rounded-md border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-800 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              <span className="hidden sm:inline">Sign Out</span>
-            </button>
-          </div>
-        )}
       </div>
     </header>
   );
