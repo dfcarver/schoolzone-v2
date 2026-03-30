@@ -106,19 +106,21 @@ export default function Topbar({ snapshotId, timestamp, title = "Operations Cons
         {/* Timestamp */}
         <span className="hidden md:inline text-xs font-mono text-slate-600">{formattedTime}</span>
 
-        {/* Sync status */}
-        <span className={`hidden sm:flex items-center gap-1.5 text-xs ${
-          syncStatus === "live" ? "text-emerald-400" :
-          syncStatus === "connecting" ? "text-amber-400" : "text-red-400"
-        }`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${
-            syncStatus === "live" ? "bg-emerald-500" :
-            syncStatus === "connecting" ? "bg-amber-400 animate-pulse" : "bg-red-500"
-          }`} />
-          <span className="hidden md:inline">
-            {syncStatus === "live" ? "Synced" : syncStatus === "connecting" ? "Connecting…" : "Disconnected"}
+        {/* Sync status — only show when Supabase is configured or when actively synced */}
+        {(syncStatus === "live" || syncStatus === "connecting" || process.env.NEXT_PUBLIC_SUPABASE_URL) && (
+          <span className={`hidden sm:flex items-center gap-1.5 text-xs ${
+            syncStatus === "live" ? "text-emerald-400" :
+            syncStatus === "connecting" ? "text-amber-400" : "text-slate-500"
+          }`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${
+              syncStatus === "live" ? "bg-emerald-500" :
+              syncStatus === "connecting" ? "bg-amber-400 animate-pulse" : "bg-slate-600"
+            }`} />
+            <span className="hidden md:inline">
+              {syncStatus === "live" ? "Synced" : syncStatus === "connecting" ? "Connecting…" : "Offline"}
+            </span>
           </span>
-        </span>
+        )}
 
         {/* Notifications */}
         <div className="relative">
