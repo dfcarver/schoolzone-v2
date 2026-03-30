@@ -240,6 +240,17 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      // If zone is being simulated, increment the incident reduction directly
+      // so the spike score drops visibly with each dispatch
+      setIncidentOverrides((prev) => {
+        if (!prev.has(zoneId)) return prev;
+        const baseCut = recommendation.priority === RiskLevel.HIGH ? 0.20 : 0.13;
+        const cut = baseCut * recommendation.confidence;
+        const next = new Map(prev);
+        next.set(zoneId, Math.min(0.72, (prev.get(zoneId) ?? 0) + cut));
+        return next;
+      });
+
       // Optimistic local update — apply immediately without waiting for Supabase
       optimisticIds.current.add(recommendation.id);
       const optimisticEntry: StoredIntervention = { zoneId, recommendation, appliedAt: Date.now() };
@@ -260,27 +271,23 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
     [config.demoMutationEnabled]
   );
 
-  // Simulated incident overrides — temporary HIGH risk spikes for demo
+  // Simulated incident overrides — Map<zoneId, cumulativeReduction>
+  // Value is the total reduction applied via dispatch (0 = fresh spike at 94%)
   const [incidentOverrides, setIncidentOverrides] = useState<Map<string, number>>(new Map());
 
   const simulateIncident = useCallback((zoneId: string) => {
-    setIncidentOverrides((prev) => { const next = new Map(prev); next.set(zoneId, Infinity); return next; });
+    setIncidentOverrides((prev) => { const next = new Map(prev); next.set(zoneId, 0); return next; });
   }, []);
 
   const mergedState = useMemo(() => {
     if (!baseState) return null;
     let state = mergeSnapshotWithOverrides(baseState, demoState);
     if (incidentOverrides.size > 0) {
-      const now = Date.now();
       state = {
         ...state,
         zones: state.zones.map((z) => {
-          const until = incidentOverrides.get(z.zone_id);
-          if (!until || until < now) return z;
-          // Calculate how much dispatch has reduced this zone relative to base,
-          // and apply that same reduction on top of the 0.94 spike
-          const baseZone = baseState?.zones.find(b => b.zone_id === z.zone_id);
-          const reduction = baseZone ? Math.max(0, baseZone.risk_score - z.risk_score) : 0;
+          if (!incidentOverrides.has(z.zone_id)) return z;
+          const reduction = incidentOverrides.get(z.zone_id)!;
           const spikedScore = Math.max(0.22, 0.94 - reduction);
           const spikedLevel = deriveRiskLevel(spikedScore);
           const spikedForecast = z.forecast_30m.map((fp, i) => ({
@@ -295,12 +302,7 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
   }, [baseState, demoState, incidentOverrides]);
 
   const simulatedZones = useMemo(() => {
-    const now = Date.now();
-    return new Set(
-      Array.from(incidentOverrides.entries())
-        .filter(([, until]) => until > now)
-        .map(([zoneId]) => zoneId)
-    );
+    return new Set(incidentOverrides.keys());
   }, [incidentOverrides]);
 
   const contextValue = useMemo(
