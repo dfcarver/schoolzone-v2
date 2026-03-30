@@ -264,10 +264,7 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
   const [incidentOverrides, setIncidentOverrides] = useState<Map<string, number>>(new Map());
 
   const simulateIncident = useCallback((zoneId: string) => {
-    setIncidentOverrides((prev) => { const next = new Map(prev); next.set(zoneId, Date.now() + 60_000); return next; });
-    setTimeout(() => {
-      setIncidentOverrides((prev) => { const next = new Map(prev); next.delete(zoneId); return next; });
-    }, 60_000);
+    setIncidentOverrides((prev) => { const next = new Map(prev); next.set(zoneId, Infinity); return next; });
   }, []);
 
   const mergedState = useMemo(() => {
