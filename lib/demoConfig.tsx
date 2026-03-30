@@ -32,7 +32,10 @@ function loadConfig(): DemoConfig {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_CONFIG;
     const parsed = JSON.parse(raw);
-    return { ...DEFAULT_CONFIG, ...parsed };
+    const merged = { ...DEFAULT_CONFIG, ...parsed };
+    // Always use live data when AWS API is configured, regardless of stored preference
+    if (process.env.NEXT_PUBLIC_AWS_SNAPSHOT_API_URL) merged.dataMode = "live";
+    return merged;
   } catch {
     return DEFAULT_CONFIG;
   }

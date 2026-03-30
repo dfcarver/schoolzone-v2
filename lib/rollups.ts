@@ -63,9 +63,17 @@ export function computeDistrictRollup(
       }
     }
   }
-  const forecastedHighRiskWindow = peakTime
-    ? `~${new Date(peakTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
-    : "N/A";
+  let forecastedHighRiskWindow = "N/A";
+  if (peakTime) {
+    if (/^\d{2}:\d{2}/.test(peakTime)) {
+      forecastedHighRiskWindow = `~${peakTime}`;
+    } else {
+      const d = new Date(peakTime);
+      forecastedHighRiskWindow = isNaN(d.getTime())
+        ? `~${peakTime}`
+        : `~${d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+    }
+  }
   const forecastedHighRiskValue = Math.round(peakRisk * 100);
 
   // Interventions applied today
