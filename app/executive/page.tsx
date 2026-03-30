@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback, useEffect } from "react";
+import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import { useLiveState } from "@/lib/useLiveState";
 import Topbar from "@/components/Topbar";
 import ExecutiveKPI from "@/components/ExecutiveKPI";
@@ -40,6 +40,20 @@ export default function ExecutivePage() {
     const drift = deriveDriftStatus(liveState);
     return computeDistrictRollup(liveState, lastValidation, drift);
   }, [liveState, lastValidation]);
+
+  const prevRollupRef = useRef<{ districtRiskIndex: number; interventionsAppliedToday: number; activeAlerts: number } | null>(null);
+  const rollupTrend = useMemo(() => {
+    if (!rollup || !prevRollupRef.current) return { risk: undefined as "up" | "down" | "flat" | undefined, interventions: undefined as "up" | "down" | "flat" | undefined, alerts: undefined as "up" | "down" | "flat" | undefined };
+    const prev = prevRollupRef.current;
+    const trend = (cur: number, p: number): "up" | "down" | "flat" => cur > p ? "up" : cur < p ? "down" : "flat";
+    return { risk: trend(rollup.districtRiskIndex, prev.districtRiskIndex), interventions: trend(rollup.interventionsAppliedToday, prev.interventionsAppliedToday), alerts: trend(liveState?.active_alerts ?? 0, prev.activeAlerts) };
+  }, [rollup, liveState]);
+
+  useEffect(() => {
+    if (rollup && liveState) {
+      prevRollupRef.current = { districtRiskIndex: rollup.districtRiskIndex, interventionsAppliedToday: rollup.interventionsAppliedToday, activeAlerts: liveState.active_alerts };
+    }
+  }, [rollup, liveState]);
 
   const handleCityChange = useCallback((city: typeof selectedCity) => updateConfig({ selectedCity: city }), [updateConfig]);
 
@@ -158,6 +172,7 @@ export default function ExecutivePage() {
             value={rollup.districtRiskIndex}
             subtitle="Risk index (0–100)"
             governanceStatus={rollup.governanceStatus}
+            trend={rollupTrend.risk}
           />
           <ExecutiveKPI
             label="High-Risk Window"
@@ -168,6 +183,7 @@ export default function ExecutivePage() {
             label="Interventions"
             value={rollup.interventionsAppliedToday}
             subtitle="Applied today"
+            trend={rollupTrend.interventions}
           />
           <ExecutiveKPI
             label="Effectiveness"
@@ -183,6 +199,7 @@ export default function ExecutivePage() {
             label="Active Alerts"
             value={liveState.active_alerts}
             subtitle={`${liveState.zones.length} zones monitored`}
+            trend={rollupTrend.alerts}
           />
         </div>
 

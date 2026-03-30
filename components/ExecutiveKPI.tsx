@@ -7,6 +7,7 @@ interface ExecutiveKPIProps {
   value: string | number;
   subtitle?: string;
   governanceStatus?: GovernanceStatus;
+  trend?: "up" | "down" | "flat";
 }
 
 const GOV_STYLES: Record<GovernanceStatus, { border: string; dot: string }> = {
@@ -15,11 +16,24 @@ const GOV_STYLES: Record<GovernanceStatus, { border: string; dot: string }> = {
   RED: { border: "border-red-400", dot: "bg-red-500" },
 };
 
+const TREND_ICON: Record<"up" | "down" | "flat", string> = {
+  up:   "↑",
+  down: "↓",
+  flat: "→",
+};
+
+const TREND_COLOR: Record<"up" | "down" | "flat", string> = {
+  up:   "text-red-500",
+  down: "text-green-500",
+  flat: "text-gray-400",
+};
+
 export default function ExecutiveKPI({
   label,
   value,
   subtitle,
   governanceStatus,
+  trend,
 }: ExecutiveKPIProps) {
   const styles = governanceStatus
     ? GOV_STYLES[governanceStatus]
@@ -33,7 +47,14 @@ export default function ExecutiveKPI({
           {label}
         </span>
       </div>
-      <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">{value}</span>
+      <div className="flex items-baseline gap-1.5">
+        <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">{value}</span>
+        {trend && (
+          <span className={`text-sm font-semibold ${TREND_COLOR[trend]}`}>
+            {TREND_ICON[trend]}
+          </span>
+        )}
+      </div>
       {subtitle && (
         <span className="text-xs text-gray-500 dark:text-gray-400">{subtitle}</span>
       )}

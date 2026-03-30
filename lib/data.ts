@@ -50,9 +50,11 @@ export async function loadLiveState(
       const params = new URLSearchParams();
       if (city)    params.set("city",    city);
       if (weather) params.set("weather", weather);
-      // For non-Springfield cities the model is time-based; simulate dismissal
-      // hour (14:30 UTC ≈ 3 PM dismissal) so scores are realistic off-hours
-      if (city && city !== "springfield_il") params.set("sim_hour", "15");
+      // Abu Dhabi is UTC+4; only inject sim_hour when outside school hours (07–17 local)
+      if (city && city !== "springfield_il") {
+        const auhHour = (new Date().getUTCHours() + 4) % 24;
+        if (auhHour < 7 || auhHour >= 17) params.set("sim_hour", "10"); // 14:00 local = 10:00 UTC
+      }
       const url = params.size > 0 ? `${awsApiUrl}?${params}` : awsApiUrl;
       const res = await fetch(url, { signal, cache: "no-store" });
       if (!res.ok) throw new Error(`AWS snapshot API returned ${res.status}`);

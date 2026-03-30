@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useDemoConfig, ScenarioId } from "@/lib/demoConfig";
+import { useDemoConfig, ScenarioId, WeatherMode } from "@/lib/demoConfig";
 import { useNotifications } from "@/lib/notifications";
 import { useLiveStateContext } from "@/lib/LiveStateProvider";
 import NotificationPanel from "@/components/NotificationPanel";
@@ -76,6 +76,24 @@ export default function Topbar({ snapshotId, timestamp, title = "Operations Cons
               <option key={s} value={s}>{SCENARIO_LABELS[s]}</option>
             ))}
           </select>
+        )}
+
+        {/* Weather toggle — affects Lambda risk model */}
+        {config.dataMode === "live" && (
+          <div className="flex items-center rounded-lg border border-slate-700 overflow-hidden text-xs">
+            {(["clear", "rain", "fog"] as WeatherMode[]).map((w) => (
+              <button
+                key={w}
+                onClick={() => updateConfig({ weather: w })}
+                title={w.charAt(0).toUpperCase() + w.slice(1)}
+                className={`px-2 py-1 transition-colors border-l border-slate-700 first:border-l-0 ${
+                  config.weather === w ? "bg-slate-600 text-white" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"
+                }`}
+              >
+                {w === "clear" ? "☀️" : w === "rain" ? "🌧️" : "🌫️"}
+              </button>
+            ))}
+          </div>
         )}
 
         {/* Live / Paused toggle */}

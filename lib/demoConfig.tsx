@@ -6,6 +6,7 @@ export type ScenarioId = "normal" | "surge" | "weather" | "dismissal";
 export type TimeMode = "live" | "paused";
 export type DataMode = "live" | "demo";
 export type CityId = "springfield_il" | "khalifa_city_auh" | "mbz_city_auh";
+export type WeatherMode = "clear" | "rain" | "fog";
 
 export interface DemoConfig {
   scenario: ScenarioId;
@@ -15,6 +16,7 @@ export interface DemoConfig {
   runtimeValidationEnabled: boolean;
   dataMode: DataMode;
   selectedCity: CityId;
+  weather: WeatherMode;
 }
 
 const DEFAULT_CONFIG: DemoConfig = {
@@ -25,6 +27,7 @@ const DEFAULT_CONFIG: DemoConfig = {
   runtimeValidationEnabled: true,
   dataMode: process.env.NEXT_PUBLIC_AWS_SNAPSHOT_API_URL ? "live" : "demo",
   selectedCity: "khalifa_city_auh",
+  weather: "clear",
 };
 
 const STORAGE_KEY = "schoolzone-demo-config";
