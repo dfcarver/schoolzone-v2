@@ -263,9 +263,15 @@ export default function CorridorMap({ selectedCity: selectedCityProp, onCityChan
   });
   const { timeMin, setTimeMin, isPlaying, setIsPlaying, congestionData, getCongestion } = engine;
 
-  // Sync time slider → global simTimeMin so LiveStateProvider can blend congestion into risk scores
+  // Sync time slider → global simTimeMin only after user interaction (not on initial mount)
   const { config: demoConfig, updateConfig } = useDemoConfig();
+  const sliderTouchedRef = useRef(false);
+  const handleTimeChange = useCallback((val: number) => {
+    sliderTouchedRef.current = true;
+    setTimeMin(val);
+  }, [setTimeMin]);
   useEffect(() => {
+    if (!sliderTouchedRef.current) return;
     updateConfig({ simTimeMin: timeMin });
   }, [timeMin, updateConfig]);
   const { liveState, simulatedZones } = useLiveState();

@@ -287,7 +287,9 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
   const mergedState = useMemo(() => {
     if (!baseState) return null;
     let state = mergeSnapshotWithOverrides(baseState, demoState);
-    state = applyCongestionTimeBlend(state, config.simTimeMin, config.selectedCity, config.weather);
+    if (config.simTimeMin !== null) {
+      state = applyCongestionTimeBlend(state, config.simTimeMin, config.selectedCity, config.weather);
+    }
     if (incidentOverrides.size > 0) {
       state = {
         ...state,
