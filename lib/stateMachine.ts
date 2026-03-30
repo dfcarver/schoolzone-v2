@@ -11,6 +11,9 @@ import {
 import { recordDemoMutation } from "./metrics";
 import * as logger from "./logger";
 import type { ScenarioId } from "./demoConfig";
+import { CITIES } from "./cityConfig";
+import { getCongestionForCorridor } from "./hooks/useCongestionEngine";
+import { WEATHER_PROFILES, type WeatherCondition } from "./mapFeatures";
 
 // Per-scenario risk multipliers applied on top of live Lambda data.
 // "normal" is the baseline — no change.
@@ -77,6 +80,51 @@ export function applyScenarioOverlay(state: LiveState, scenario: ScenarioId): Li
     return { ...zone, ...extra, risk_score: newScore, risk_level: newLevel, forecast_30m: newForecast };
   });
 
+  return {
+    ...state,
+    active_alerts: zones.filter((z) => z.risk_level === RiskLevel.HIGH).length,
+    zones,
+  };
+}
+
+/**
+ * Blends congestion-model risk (computed from simTimeMin) into live state.
+ * Takes the MAX of Lambda risk and congestion-model risk so that when the
+ * time slider is at peak hours (e.g. 3:15 PM dismissal), risk scores rise
+ * to match what the parent queue panel is showing.
+ */
+export function applyCongestionTimeBlend(
+  state: LiveState,
+  simTimeMin: number,
+  city: string,
+  weather: string
+): LiveState {
+  const cityConfig = CITIES.find((c) => c.id === city);
+  if (!cityConfig) return state;
+
+  const weatherMultiplier = (WEATHER_PROFILES[weather as WeatherCondition]?.congestionMultiplier) ?? 1.0;
+  const corridorMap = new Map(cityConfig.corridors.map((c) => [c.school.zone_id, c]));
+
+  let changed = false;
+  const zones: ZoneLiveState[] = state.zones.map((zone) => {
+    const corridor = corridorMap.get(zone.zone_id);
+    if (!corridor) return zone;
+
+    const congestion = getCongestionForCorridor(corridor, simTimeMin, weatherMultiplier, null);
+    if (congestion <= zone.risk_score) return zone;
+
+    changed = true;
+    const newScore = Math.round(Math.min(0.97, congestion) * 1000) / 1000;
+    const newLevel = deriveRiskLevel(newScore);
+    const scaleFactor = zone.risk_score > 0 ? newScore / zone.risk_score : 1;
+    const newForecast = zone.forecast_30m.map((fp) => ({
+      ...fp,
+      risk: Math.min(0.97, Math.round(fp.risk * scaleFactor * 1000) / 1000),
+    }));
+    return { ...zone, risk_score: newScore, risk_level: newLevel, forecast_30m: newForecast };
+  });
+
+  if (!changed) return state;
   return {
     ...state,
     active_alerts: zones.filter((z) => z.risk_level === RiskLevel.HIGH).length,

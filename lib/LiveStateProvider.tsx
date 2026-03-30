@@ -26,6 +26,7 @@ import {
   applyDemoIntervention,
   mergeSnapshotWithOverrides,
   applyScenarioOverlay,
+  applyCongestionTimeBlend,
 } from "./stateMachine";
 import { useDemoConfig, ScenarioId, DataMode, WeatherMode } from "./demoConfig";
 import { validateLiveState, ValidationResult } from "./validate";
@@ -286,6 +287,7 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
   const mergedState = useMemo(() => {
     if (!baseState) return null;
     let state = mergeSnapshotWithOverrides(baseState, demoState);
+    state = applyCongestionTimeBlend(state, config.simTimeMin, config.selectedCity, config.weather);
     if (incidentOverrides.size > 0) {
       state = {
         ...state,
@@ -303,7 +305,7 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
       };
     }
     return state;
-  }, [baseState, demoState, incidentOverrides]);
+  }, [baseState, demoState, incidentOverrides, config.simTimeMin, config.selectedCity, config.weather]);
 
   const simulatedZones = useMemo(() => {
     return new Set(incidentOverrides.keys());

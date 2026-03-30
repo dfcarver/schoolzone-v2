@@ -17,6 +17,13 @@ export interface DemoConfig {
   dataMode: DataMode;
   selectedCity: CityId;
   weather: WeatherMode;
+  /** Current map time-slider position in minutes-of-day (0–1439). Not persisted. */
+  simTimeMin: number;
+}
+
+function currentTimeMin(): number {
+  const d = new Date();
+  return d.getHours() * 60 + d.getMinutes();
 }
 
 const DEFAULT_CONFIG: DemoConfig = {
@@ -28,6 +35,7 @@ const DEFAULT_CONFIG: DemoConfig = {
   dataMode: process.env.NEXT_PUBLIC_AWS_SNAPSHOT_API_URL ? "live" : "demo",
   selectedCity: "khalifa_city_auh",
   weather: "clear",
+  simTimeMin: currentTimeMin(),
 };
 
 const STORAGE_KEY = "schoolzone-demo-config";
@@ -50,7 +58,9 @@ function loadConfig(): DemoConfig {
 function saveConfig(config: DemoConfig): void {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { simTimeMin: _, ...toSave } = config;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
   } catch {
     // localStorage unavailable
   }

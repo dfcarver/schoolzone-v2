@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ZoneHeatmapEntry } from "@/lib/rollups";
 
@@ -25,7 +25,14 @@ function riskBg(value: number): string {
 
 export default function RiskHeatmap({ entries, linkPrefix = "/executive/zones" }: RiskHeatmapProps) {
   const [horizon, setHorizon] = useState<TimeHorizon>("NOW");
+  const [flashKey, setFlashKey] = useState(0);
+  const isFirstRender = useRef(true);
   const router = useRouter();
+
+  useEffect(() => {
+    if (isFirstRender.current) { isFirstRender.current = false; return; }
+    setFlashKey((k) => k + 1);
+  }, [entries]);
 
   function getRisk(entry: ZoneHeatmapEntry): number {
     switch (horizon) {
@@ -38,7 +45,12 @@ export default function RiskHeatmap({ entries, linkPrefix = "/executive/zones" }
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-xs font-semibold text-gray-900 dark:text-gray-100">Portfolio Heatmap</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-xs font-semibold text-gray-900 dark:text-gray-100">Portfolio Heatmap</h3>
+          <span key={flashKey} className="text-[9px] text-gray-400 dark:text-gray-500 animate-fade-up">
+            ↻ live
+          </span>
+        </div>
         <div className="flex items-center gap-0.5 bg-gray-100 dark:bg-gray-800 rounded-md p-0.5">
           {(["NOW", "+15", "+30"] as TimeHorizon[]).map((h) => (
             <button
@@ -60,9 +72,9 @@ export default function RiskHeatmap({ entries, linkPrefix = "/executive/zones" }
           const risk = getRisk(entry);
           return (
             <button
-              key={entry.zone_id}
+              key={`${entry.zone_id}-${flashKey}`}
               onClick={() => router.push(`${linkPrefix}/${entry.zone_id}`)}
-              className={`text-left border rounded-md p-1.5 hover:shadow-sm transition-shadow cursor-pointer ${riskBg(risk)}`}
+              className={`text-left border rounded-md p-1.5 hover:shadow-sm transition-shadow cursor-pointer animate-fade-up ${riskBg(risk)}`}
             >
               <div className="flex items-center justify-between mb-0.5">
                 <span className="text-[10px] font-medium text-gray-900 dark:text-gray-100 truncate leading-tight">{entry.name}</span>
