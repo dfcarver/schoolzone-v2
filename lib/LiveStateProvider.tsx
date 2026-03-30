@@ -97,6 +97,7 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
   const phaseRef = useRef<SnapshotPhase>(SnapshotPhase.INITIAL);
   const abortRef = useRef<AbortController | null>(null);
   const baseStateRef = useRef<LiveState | null>(null);
+  const optimisticIds = useRef<Set<string>>(new Set());
   const pendingSnapshotRef = useRef<StoredIntervention[]>([]);
 
   const fetchSnapshot = useCallback(async (phase: SnapshotPhase, scenario: ScenarioId, validate: boolean, dataMode: DataMode, city: string, weather: WeatherMode) => {
@@ -210,6 +211,11 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
         { event: "INSERT", schema: "public", table: "interventions" },
         (payload) => {
           const item = rowToStored(payload.new as SupabaseRow);
+          // Skip if already applied optimistically by this session
+          if (optimisticIds.current.has(item.recommendation.id)) {
+            optimisticIds.current.delete(item.recommendation.id);
+            return;
+          }
           setAppliedHistory((prev) => [...prev, item]);
           setDemoState((prev) => {
             const base = baseStateRef.current;
@@ -232,11 +238,23 @@ export function LiveStateProvider({ children }: { children: ReactNode }) {
         logger.info("Demo mutation disabled, ignoring apply");
         return;
       }
-      await fetch("/api/interventions", {
+
+      // Optimistic local update — apply immediately without waiting for Supabase
+      optimisticIds.current.add(recommendation.id);
+      const optimisticEntry: StoredIntervention = { zoneId, recommendation, appliedAt: Date.now() };
+      setAppliedHistory((prev) => [...prev, optimisticEntry]);
+      setDemoState((prev) => {
+        const base = baseStateRef.current;
+        if (!base) return prev;
+        return applyDemoIntervention(prev ?? base, zoneId, recommendation);
+      });
+
+      // Persist to Supabase for cross-session sync (fire and forget)
+      fetch("/api/interventions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ zoneId, recommendation }),
-      });
+      }).catch(() => {/* non-critical — local state already updated */});
     },
     [config.demoMutationEnabled]
   );
