@@ -76,6 +76,7 @@ export default function AnalyticsPage() {
     try {
       const res = await fetch(`/api/analytics?city=${city}&hours=${hours}`);
       const json = await res.json();
+      if (res.status === 503) throw new Error("AWS pipeline not configured — add AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and NEXT_PUBLIC_AWS_SNAPSHOT_API_URL to your environment.");
       if (!res.ok) throw new Error(json.error ?? "Query failed");
       setRows(json.rows ?? []);
       setSince(json.since ?? "");
