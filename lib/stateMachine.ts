@@ -60,10 +60,11 @@ export function applyDemoIntervention(
   const updatedZones: ZoneLiveState[] = liveState.zones.map((zone) => {
     if (zone.zone_id !== zoneId) return zone;
 
-    // Reduce risk score: HIGH-priority recs cut more, scaled by confidence
+    // Reduce risk score: HIGH-priority recs cut more, scaled by confidence.
+    // Floor at 0.22 so stacked interventions never collapse to 0%.
     const baseCut = recommendation.priority === RiskLevel.HIGH ? 0.20 : 0.13;
     const reduction = baseCut * recommendation.confidence;
-    const newScore = Math.max(0, Math.round((zone.risk_score - reduction) * 1000) / 1000);
+    const newScore = Math.max(0.22, Math.round((zone.risk_score - reduction) * 1000) / 1000);
     const newLevel = deriveRiskLevel(newScore);
 
     // Apply the same proportional reduction to the 30-min forecast
