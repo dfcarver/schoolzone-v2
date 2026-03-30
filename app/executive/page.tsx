@@ -25,7 +25,6 @@ import SimulationPanel from "@/components/intelligence/SimulationPanel";
 import CorridorMap from "@/components/CorridorMap";
 import { CITIES } from "@/lib/cityConfig";
 import { useDemoConfig } from "@/lib/demoConfig";
-import { getCongestionForCorridor } from "@/lib/hooks/useCongestionEngine";
 import { RiskLevel } from "@/lib/types";
 import AIPredictionPanel from "@/components/ai/AIPredictionPanel";
 import InterventionFeed from "@/components/InterventionFeed";
@@ -59,43 +58,13 @@ export default function ExecutivePage() {
 
   const heatmap = useMemo(() => {
     if (!liveState) return [];
-    if (selectedCity === "springfield_il") return computeHeatmap(liveState);
-    // For Abu Dhabi cities, generate heatmap entries from corridor definitions
-    const cityConfig = CITIES.find(c => c.id === selectedCity)!;
-    const now = new Date();
-    const minuteOfDay = now.getHours() * 60 + now.getMinutes();
-    return cityConfig.corridors.map((corridor) => {
-      const riskNow = Math.round(getCongestionForCorridor(corridor, minuteOfDay, 1.0, null) * 100);
-      const risk15  = Math.round(getCongestionForCorridor(corridor, minuteOfDay + 15, 1.0, null) * 100);
-      const risk30  = Math.round(getCongestionForCorridor(corridor, minuteOfDay + 30, 1.0, null) * 100);
-      const risk_level: RiskLevel = riskNow >= 60 ? RiskLevel.HIGH : riskNow >= 40 ? RiskLevel.MED : RiskLevel.LOW;
-      return { zone_id: corridor.school.zone_id, name: corridor.school.name, riskNow, risk15, risk30, risk_level, hasActiveIntervention: false };
-    });
-  }, [liveState, selectedCity]);
+    return computeHeatmap(liveState);
+  }, [liveState]);
 
   const emergingRisks = useMemo(() => {
     if (!liveState) return [];
-    if (selectedCity !== "springfield_il") {
-      const cityConfig = CITIES.find(c => c.id === selectedCity);
-      if (cityConfig) {
-        const now = new Date();
-        const minuteOfDay = now.getHours() * 60 + now.getMinutes();
-        return cityConfig.corridors
-          .map((corridor) => {
-            let peakRisk = 0;
-            let peakTime = "";
-            for (let i = 5; i <= 30; i += 5) {
-              const r = getCongestionForCorridor(corridor, minuteOfDay + i, 1.0, null);
-              if (r > peakRisk) { peakRisk = r; peakTime = `+${i}m`; }
-            }
-            return { zone_id: corridor.school.zone_id, zoneName: corridor.school.name, peakRisk, peakTime };
-          })
-          .sort((a, b) => b.peakRisk - a.peakRisk)
-          .slice(0, 3);
-      }
-    }
     return computeEmergingRisks(liveState);
-  }, [liveState, selectedCity]);
+  }, [liveState]);
 
   const activeMitigations = useMemo(() => {
     if (!liveState) return [];
