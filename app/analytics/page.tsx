@@ -5,14 +5,41 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend, BarChart, Bar,
 } from "recharts";
+import { CITIES, type CityId } from "@/lib/cityConfig";
+import { getCongestionForCorridor } from "@/lib/hooks/useCongestionEngine";
 
-type CityId = "springfield_il" | "khalifa_city_auh" | "mbz_city_auh";
+const CITY_LABELS: Record<CityId, string> = Object.fromEntries(
+  CITIES.map((c) => [c.id, c.label])
+) as Record<CityId, string>;
 
-const CITY_LABELS: Record<CityId, string> = {
-  springfield_il:  "Springfield, IL",
-  khalifa_city_auh: "Khalifa City, AUH",
-  mbz_city_auh:    "MBZ City, AUH",
-};
+function generateSyntheticRows(city: CityId, hours: number): AthenaRow[] {
+  const cityConfig = CITIES.find((c) => c.id === city);
+  if (!cityConfig) return [];
+  const now = Date.now();
+  const rows: AthenaRow[] = [];
+  for (const corridor of cityConfig.corridors) {
+    for (let i = 0; i < 24; i++) {
+      const minuteOfDay = (i * 60) % 1440;
+      const hourTs = new Date(now - (hours - 1 - i) * 60 * 60 * 1000);
+      hourTs.setMinutes(0, 0, 0);
+      const rawRisk = getCongestionForCorridor(corridor, minuteOfDay, 1.0, null);
+      const avg_risk = parseFloat(rawRisk.toFixed(3));
+      const avg_congestion = parseFloat((avg_risk * 0.9).toFixed(3));
+      const avg_speed = String(Math.round(25 - avg_risk * 15));
+      const avg_vehicles = String(Math.round(avg_risk * corridor.school.enrollment * 0.5));
+      rows.push({
+        zoneName: corridor.school.name,
+        zoneId: corridor.school.zone_id,
+        hour: hourTs.toISOString(),
+        avg_risk: String(avg_risk),
+        avg_congestion: String(avg_congestion),
+        avg_speed,
+        avg_vehicles,
+      });
+    }
+  }
+  return rows;
+}
 
 const ZONE_COLORS = [
   "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6",
@@ -63,22 +90,32 @@ function buildBarData(rows: AthenaRow[]): { name: string; avg_risk: number; avg_
 }
 
 export default function AnalyticsPage() {
-  const [city, setCity]     = useState<CityId>("springfield_il");
-  const [hours, setHours]   = useState(24);
-  const [rows, setRows]     = useState<AthenaRow[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError]   = useState<string | null>(null);
-  const [since, setSince]   = useState<string>("");
+  const [city, setCity]         = useState<CityId>("springfield_il");
+  const [hours, setHours]       = useState(24);
+  const [rows, setRows]         = useState<AthenaRow[]>([]);
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState<string | null>(null);
+  const [since, setSince]       = useState<string>("");
+  const [isSynthetic, setIsSynthetic] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setIsSynthetic(false);
     try {
       const res = await fetch(`/api/analytics?city=${city}&hours=${hours}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Query failed");
-      setRows(json.rows ?? []);
-      setSince(json.since ?? "");
+      const fetched: AthenaRow[] = json.rows ?? [];
+      if (fetched.length === 0 && city !== "springfield_il") {
+        const synthetic = generateSyntheticRows(city, hours);
+        setRows(synthetic);
+        setSince(json.since ?? "");
+        setIsSynthetic(true);
+      } else {
+        setRows(fetched);
+        setSince(json.since ?? "");
+      }
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -135,6 +172,12 @@ export default function AnalyticsPage() {
       {since && (
         <p className="text-[10px] text-gray-400 dark:text-gray-500">
           Data range: {new Date(since).toLocaleString()} → now · {rows.length} hourly aggregates across {zones.length} zones
+        </p>
+      )}
+
+      {isSynthetic && (
+        <p className="text-[10px] text-amber-500 dark:text-amber-400">
+          Synthetic data — S3 pipeline not yet active for this city
         </p>
       )}
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { useLiveState } from "@/lib/useLiveState";
 import Topbar from "@/components/Topbar";
 import ExecutiveKPI from "@/components/ExecutiveKPI";
@@ -106,6 +106,10 @@ export default function ExecutivePage() {
   }, [liveState, selectedCity, appliedHistory]);
 
   const [selectedZoneId, setSelectedZoneId] = useState<string>("");
+
+  useEffect(() => {
+    setSelectedZoneId("");
+  }, [selectedCity]);
 
   const driftStatus = useMemo(() => {
     if (!liveState) return "NORMAL" as const;

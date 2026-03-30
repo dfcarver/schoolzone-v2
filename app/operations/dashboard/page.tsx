@@ -53,6 +53,15 @@ export default function OperationsDashboardPage() {
     });
   }, [selectedCity]);
 
+  const corridorKpis = useMemo(() => {
+    if (!corridorZones) return null;
+    const avgRisk = corridorZones.reduce((sum, z) => sum + z.risk_score, 0) / corridorZones.length;
+    const districtRisk: RiskLevel = avgRisk >= 0.6 ? RiskLevel.HIGH : avgRisk >= 0.4 ? RiskLevel.MED : RiskLevel.LOW;
+    const activeAlerts = corridorZones.filter((z) => z.risk_level === RiskLevel.HIGH).length;
+    const totalCameras = corridorZones.reduce((sum, z) => sum + z.active_cameras, 0);
+    return { districtRisk, activeAlerts, totalCameras };
+  }, [corridorZones]);
+
   if (loading) return <PageSkeleton />;
   if (error || !liveState) return <ErrorState message={error ?? "Demo Data Unavailable"} />;
 
@@ -75,13 +84,13 @@ export default function OperationsDashboardPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           <KPI
             label="District Risk"
-            value={liveState.district_risk}
-            status={riskStatus(liveState.district_risk)}
+            value={corridorKpis ? corridorKpis.districtRisk : liveState.district_risk}
+            status={riskStatus(corridorKpis ? corridorKpis.districtRisk : liveState.district_risk)}
           />
           <KPI
             label="Active Alerts"
-            value={liveState.active_alerts}
-            status={liveState.active_alerts > 3 ? "critical" : "normal"}
+            value={corridorKpis ? corridorKpis.activeAlerts : liveState.active_alerts}
+            status={(corridorKpis ? corridorKpis.activeAlerts : liveState.active_alerts) > 3 ? "critical" : "normal"}
           />
           <KPI
             label="Avg Latency"
@@ -90,8 +99,8 @@ export default function OperationsDashboardPage() {
           />
           <KPI
             label="Camera Health"
-            value={`${liveState.camera_health_pct}%`}
-            status={liveState.camera_health_pct < 95 ? "warning" : "normal"}
+            value={`${corridorKpis ? corridorKpis.totalCameras : liveState.camera_health_pct}${corridorKpis ? "" : "%"}`}
+            status={corridorKpis ? "normal" : liveState.camera_health_pct < 95 ? "warning" : "normal"}
           />
           <KPI
             label="Forecast Horizon"
