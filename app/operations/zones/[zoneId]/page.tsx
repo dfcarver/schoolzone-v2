@@ -81,7 +81,7 @@ export default function OpsZoneDetailPage() {
     (recId: string) => {
       const rec = fallbackRecs.find((r) => r.id === recId);
       if (!rec) return;
-      setLocalApplied((prev) => new Set([...prev, rec.action]));
+      setLocalApplied((prev) => { const next = new Set(prev); next.add(rec.action); return next; });
       applyDemo(zoneId, rec);
     },
     [fallbackRecs, zoneId, applyDemo]
