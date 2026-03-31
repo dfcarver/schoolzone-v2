@@ -94,20 +94,18 @@ export default function AnalyticsPage() {
   const [hours, setHours]       = useState(24);
   const [rows, setRows]         = useState<AthenaRow[]>([]);
   const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState<string | null>(null);
   const [since, setSince]       = useState<string>("");
   const [isSynthetic, setIsSynthetic] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    setError(null);
     setIsSynthetic(false);
     try {
       const res = await fetch(`/api/analytics?city=${city}&hours=${hours}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Query failed");
       const fetched: AthenaRow[] = json.rows ?? [];
-      if (fetched.length === 0 && city !== "springfield_il") {
+      if (fetched.length === 0) {
         const synthetic = generateSyntheticRows(city, hours);
         setRows(synthetic);
         setSince(json.since ?? "");
@@ -116,8 +114,12 @@ export default function AnalyticsPage() {
         setRows(fetched);
         setSince(json.since ?? "");
       }
-    } catch (err) {
-      setError((err as Error).message);
+    } catch {
+      // API not configured or unavailable — render synthetic model data
+      const synthetic = generateSyntheticRows(city, hours);
+      setRows(synthetic);
+      setSince(new Date(Date.now() - hours * 60 * 60 * 1000).toISOString());
+      setIsSynthetic(true);
     } finally {
       setLoading(false);
     }
@@ -179,12 +181,6 @@ export default function AnalyticsPage() {
         <p className="text-[10px] text-gray-400 dark:text-gray-500">
           Projected model data · Historical pipeline activates upon sensor integration
         </p>
-      )}
-
-      {error && (
-        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg p-4 text-sm text-red-700 dark:text-red-400">
-          {error}
-        </div>
       )}
 
       {loading && (
