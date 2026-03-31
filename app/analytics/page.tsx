@@ -193,7 +193,7 @@ export default function AnalyticsPage() {
         </div>
       )}
 
-      {!loading && rows.length === 0 && !error && (
+      {!loading && rows.length === 0 && (
         <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-6 text-sm text-amber-700 dark:text-amber-400 text-center">
           No data found for the selected city and time range. The pipeline writes to S3 every 60s — data may take a few minutes to appear.
         </div>
