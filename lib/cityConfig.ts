@@ -79,7 +79,7 @@ export const SPRINGFIELD_CORRIDORS: CorridorDef[] = [
     baselineCongestion: 0.06,
     peaks: [
       { centerMin: 7 * 60 + 50, spread: 18, intensity: 0.65 },
-      { centerMin: 14 * 60 + 50, spread: 18, intensity: 0.72 },
+      { centerMin: 14 * 60 + 55, spread: 18, intensity: 0.72 },
     ],
   },
   {
@@ -113,7 +113,7 @@ export const KHALIFA_CORRIDORS: CorridorDef[] = [
     baselineCongestion: 0.09,
     peaks: [
       { centerMin: 7 * 60 + 15, spread: 25, intensity: 0.82 },
-      { centerMin: 14 * 60 + 30, spread: 25, intensity: 0.87 },
+      { centerMin: 15 * 60 + 25, spread: 25, intensity: 0.87 },
     ],
   },
   {
@@ -128,7 +128,7 @@ export const KHALIFA_CORRIDORS: CorridorDef[] = [
     baselineCongestion: 0.07,
     peaks: [
       { centerMin: 7 * 60 + 30, spread: 22, intensity: 0.74 },
-      { centerMin: 14 * 60 + 15, spread: 22, intensity: 0.79 },
+      { centerMin: 14 * 60 + 55, spread: 22, intensity: 0.79 },
     ],
   },
   {
@@ -143,7 +143,7 @@ export const KHALIFA_CORRIDORS: CorridorDef[] = [
     baselineCongestion: 0.08,
     peaks: [
       { centerMin: 7 * 60 + 45, spread: 20, intensity: 0.71 },
-      { centerMin: 14 * 60 + 45, spread: 20, intensity: 0.81 },
+      { centerMin: 15 * 60 + 10, spread: 20, intensity: 0.81 },
     ],
   },
 ];
@@ -161,7 +161,7 @@ export const MBZ_CORRIDORS: CorridorDef[] = [
     baselineCongestion: 0.10,
     peaks: [
       { centerMin: 7 * 60 + 20, spread: 24, intensity: 0.83 },
-      { centerMin: 14 * 60 + 30, spread: 25, intensity: 0.88 },
+      { centerMin: 15 * 60 + 25, spread: 25, intensity: 0.88 },
     ],
   },
   {
@@ -176,7 +176,7 @@ export const MBZ_CORRIDORS: CorridorDef[] = [
     baselineCongestion: 0.08,
     peaks: [
       { centerMin: 7 * 60 + 40, spread: 18, intensity: 0.70 },
-      { centerMin: 14 * 60 + 20, spread: 20, intensity: 0.75 },
+      { centerMin: 14 * 60 + 55, spread: 20, intensity: 0.75 },
     ],
   },
   {
@@ -191,7 +191,7 @@ export const MBZ_CORRIDORS: CorridorDef[] = [
     baselineCongestion: 0.09,
     peaks: [
       { centerMin: 7 * 60 + 30, spread: 22, intensity: 0.77 },
-      { centerMin: 14 * 60 + 45, spread: 22, intensity: 0.84 },
+      { centerMin: 15 * 60 + 10, spread: 22, intensity: 0.84 },
     ],
   },
 ];
