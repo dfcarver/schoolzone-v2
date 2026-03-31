@@ -1,0 +1,93 @@
+{
+  "snapshot_id": "snap-mbz-001",
+  "timestamp": "2025-07-14T10:12:00Z",
+  "district_risk": "LOW",
+  "active_alerts": 0,
+  "avg_latency_ms": 155,
+  "camera_health_pct": 95,
+  "forecast_horizon_min": 30,
+  "zones": [
+    {
+      "zone_id": "mbz-001",
+      "name": "Aldar Academies MBZ",
+      "risk_level": "LOW",
+      "risk_score": 0.19,
+      "speed_avg_mph": 23,
+      "pedestrian_count": 9,
+      "vehicle_count": 29,
+      "active_cameras": 7,
+      "total_cameras": 8,
+      "forecast_30m": [
+        { "time": "10:15", "risk": 0.19, "confidence": 0.91 },
+        { "time": "10:20", "risk": 0.21, "confidence": 0.89 },
+        { "time": "10:25", "risk": 0.23, "confidence": 0.87 },
+        { "time": "10:30", "risk": 0.22, "confidence": 0.85 },
+        { "time": "10:35", "risk": 0.20, "confidence": 0.83 },
+        { "time": "10:40", "risk": 0.18, "confidence": 0.81 },
+        { "time": "10:45", "risk": 0.17, "confidence": 0.79 }
+      ],
+      "recommendations": [
+        { "id": "rec-m001-a", "action": "Maintain current signal timing", "impact": "Sustain low-risk conditions", "confidence": 0.89, "priority": "LOW" }
+      ],
+      "events": [
+        { "time": "10:10:00", "type": "speed_check", "detail": "Avg speed within limit" }
+      ],
+      "interventions": []
+    },
+    {
+      "zone_id": "mbz-002",
+      "name": "Abu Dhabi Int'l School MBZ",
+      "risk_level": "LOW",
+      "risk_score": 0.17,
+      "speed_avg_mph": 24,
+      "pedestrian_count": 6,
+      "vehicle_count": 20,
+      "active_cameras": 5,
+      "total_cameras": 6,
+      "forecast_30m": [
+        { "time": "10:15", "risk": 0.17, "confidence": 0.92 },
+        { "time": "10:20", "risk": 0.18, "confidence": 0.90 },
+        { "time": "10:25", "risk": 0.19, "confidence": 0.88 },
+        { "time": "10:30", "risk": 0.18, "confidence": 0.86 },
+        { "time": "10:35", "risk": 0.17, "confidence": 0.84 },
+        { "time": "10:40", "risk": 0.16, "confidence": 0.82 },
+        { "time": "10:45", "risk": 0.15, "confidence": 0.80 }
+      ],
+      "recommendations": [
+        { "id": "rec-m002-a", "action": "No action required", "impact": "Conditions nominal", "confidence": 0.92, "priority": "LOW" }
+      ],
+      "events": [
+        { "time": "10:09:00", "type": "speed_check", "detail": "Avg speed within limit" }
+      ],
+      "interventions": []
+    },
+    {
+      "zone_id": "mbz-003",
+      "name": "Emirates National School MBZ",
+      "risk_level": "MEDIUM",
+      "risk_score": 0.34,
+      "speed_avg_mph": 18,
+      "pedestrian_count": 16,
+      "vehicle_count": 44,
+      "active_cameras": 6,
+      "total_cameras": 6,
+      "forecast_30m": [
+        { "time": "10:15", "risk": 0.34, "confidence": 0.88 },
+        { "time": "10:20", "risk": 0.37, "confidence": 0.86 },
+        { "time": "10:25", "risk": 0.39, "confidence": 0.84 },
+        { "time": "10:30", "risk": 0.37, "confidence": 0.82 },
+        { "time": "10:35", "risk": 0.34, "confidence": 0.80 },
+        { "time": "10:40", "risk": 0.30, "confidence": 0.78 },
+        { "time": "10:45", "risk": 0.27, "confidence": 0.76 }
+      ],
+      "recommendations": [
+        { "id": "rec-m003-a", "action": "Increase patrol frequency near main entrance", "impact": "Reduce pedestrian conflict risk by ~15%", "confidence": 0.81, "priority": "MEDIUM" }
+      ],
+      "events": [
+        { "time": "10:11:00", "type": "congestion_detected", "detail": "Moderate queue at main entrance" },
+        { "time": "10:07:00", "type": "pedestrian_detected", "detail": "16 pedestrians near crosswalk" }
+      ],
+      "interventions": []
+    }
+  ]
+}

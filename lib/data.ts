@@ -43,24 +43,35 @@ export async function loadLiveState(
 ): Promise<LiveState | null> {
   const start = performance.now();
 
-  // If an AWS Snapshot API URL is configured and we're not in demo mode, use live data.
+  // Non-Springfield cities have city-specific mock snapshots — the Lambda only covers Springfield.
+  // Always use city-specific files for these cities regardless of dataMode.
+  if (city && city !== "springfield_il") {
+    try {
+      const res = await fetch(`/mock/cities/${city}/${snapshot}`, { signal });
+      if (!res.ok) throw new Error(`City snapshot not found: ${res.status}`);
+      const data = (await res.json()) as LiveState;
+      recordFetch(performance.now() - start, true);
+      logger.info(`Loaded city snapshot for ${city}`);
+      return data;
+    } catch (err) {
+      if ((err as Error).name === "AbortError") return null;
+      logger.warn(`City snapshot failed for ${city}, falling back to default mock`, err);
+      // Fall through to default mock below
+    }
+  }
+
+  // If an AWS Snapshot API URL is configured and we're not in demo mode, use live data (Springfield).
   const awsApiUrl = process.env.NEXT_PUBLIC_AWS_SNAPSHOT_API_URL;
   if (awsApiUrl && dataMode !== "demo") {
     try {
       const params = new URLSearchParams();
-      if (city)    params.set("city",    city);
       if (weather) params.set("weather", weather);
-      // Abu Dhabi is UTC+4; only inject sim_hour when outside school hours (07–17 local)
-      if (city && city !== "springfield_il") {
-        const auhHour = (new Date().getUTCHours() + 4) % 24;
-        if (auhHour < 7 || auhHour >= 17) params.set("sim_hour", "10"); // 14:00 local = 10:00 UTC
-      }
       const url = params.size > 0 ? `${awsApiUrl}?${params}` : awsApiUrl;
       const res = await fetch(url, { signal, cache: "no-store" });
       if (!res.ok) throw new Error(`AWS snapshot API returned ${res.status}`);
       const data = (await res.json()) as LiveState;
       recordFetch(performance.now() - start, true);
-      logger.info(`Loaded live snapshot from AWS API (city=${city ?? "default"})`);
+      logger.info(`Loaded live snapshot from AWS API`);
       return data;
     } catch (err) {
       if ((err as Error).name === "AbortError") return null;
@@ -69,7 +80,7 @@ export async function loadLiveState(
     }
   }
 
-  // Default: load from static mock JSON files (demo mode)
+  // Default: load from static mock JSON files (demo mode, Springfield)
   try {
     const res = await fetch(`${scenarioBasePath(scenario)}/${snapshot}`, { signal });
     if (!res.ok) throw new Error(`Failed to load live state: ${res.status}`);
