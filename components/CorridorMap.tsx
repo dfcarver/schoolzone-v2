@@ -452,7 +452,7 @@ export default function CorridorMap({ selectedCity: selectedCityProp, onCityChan
   }, [cityConfig.defaultZoom]);
   const onUnmount = useCallback(() => { mapRef.current = null; }, []);
 
-  // Reset map position + school selection when city changes
+  // Reset map position + school selection + time blend when city changes
   useEffect(() => {
     const cfg = CITIES.find(c => c.id === selectedCity)!;
     setSelectedSchool("");
@@ -461,7 +461,15 @@ export default function CorridorMap({ selectedCity: selectedCityProp, onCityChan
       mapRef.current.panTo(cfg.overviewCenter);
       mapRef.current.setZoom(cfg.overviewZoom);
     }
-  }, [selectedCity]);
+    // Clear congestion blend so the new city starts from clean Lambda data
+    sliderTouchedRef.current = false;
+    updateConfig({ simTimeMin: null });
+  }, [selectedCity, updateConfig]);
+
+  // Clear congestion blend when the map unmounts (e.g. user navigates away)
+  useEffect(() => {
+    return () => { updateConfig({ simTimeMin: null }); };
+  }, [updateConfig]);
 
   useEffect(() => {
     if (!mapRef.current) return;

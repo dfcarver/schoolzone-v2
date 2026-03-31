@@ -334,6 +334,7 @@ export default function ExecutivePage() {
           </div>
           {aiBriefRequest ? (
             <AIBriefPanel
+              key={aiBriefRequest.corridor_id}
               request={aiBriefRequest}
               onApply={(action, impact, confidence) =>
                 applyDemo(selectedZoneId, { id: `ai-rec-${Date.now()}`, action, impact, confidence, priority: RiskLevel.HIGH })
