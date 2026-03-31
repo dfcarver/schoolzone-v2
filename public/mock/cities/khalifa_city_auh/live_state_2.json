@@ -1,0 +1,94 @@
+{
+  "snapshot_id": "snap-khalifa-002",
+  "timestamp": "2025-07-14T10:17:00Z",
+  "district_risk": "LOW",
+  "active_alerts": 0,
+  "avg_latency_ms": 138,
+  "camera_health_pct": 97,
+  "forecast_horizon_min": 30,
+  "zones": [
+    {
+      "zone_id": "khalifa-001",
+      "name": "Yasmina British Academy",
+      "risk_level": "LOW",
+      "risk_score": 0.23,
+      "speed_avg_mph": 21,
+      "pedestrian_count": 10,
+      "vehicle_count": 31,
+      "active_cameras": 8,
+      "total_cameras": 8,
+      "forecast_30m": [
+        { "time": "10:20", "risk": 0.23, "confidence": 0.91 },
+        { "time": "10:25", "risk": 0.25, "confidence": 0.89 },
+        { "time": "10:30", "risk": 0.27, "confidence": 0.87 },
+        { "time": "10:35", "risk": 0.25, "confidence": 0.85 },
+        { "time": "10:40", "risk": 0.23, "confidence": 0.83 },
+        { "time": "10:45", "risk": 0.21, "confidence": 0.81 },
+        { "time": "10:50", "risk": 0.19, "confidence": 0.79 }
+      ],
+      "recommendations": [
+        { "id": "rec-k001-b", "action": "Maintain current signal timing", "impact": "Sustain low-risk conditions", "confidence": 0.89, "priority": "LOW" }
+      ],
+      "events": [
+        { "time": "10:15:00", "type": "speed_check", "detail": "Avg speed within limit" }
+      ],
+      "interventions": []
+    },
+    {
+      "zone_id": "khalifa-002",
+      "name": "ADNOC Schools Khalifa City",
+      "risk_level": "LOW",
+      "risk_score": 0.14,
+      "speed_avg_mph": 26,
+      "pedestrian_count": 4,
+      "vehicle_count": 15,
+      "active_cameras": 6,
+      "total_cameras": 6,
+      "forecast_30m": [
+        { "time": "10:20", "risk": 0.14, "confidence": 0.94 },
+        { "time": "10:25", "risk": 0.15, "confidence": 0.92 },
+        { "time": "10:30", "risk": 0.16, "confidence": 0.90 },
+        { "time": "10:35", "risk": 0.15, "confidence": 0.88 },
+        { "time": "10:40", "risk": 0.14, "confidence": 0.86 },
+        { "time": "10:45", "risk": 0.13, "confidence": 0.84 },
+        { "time": "10:50", "risk": 0.12, "confidence": 0.82 }
+      ],
+      "recommendations": [
+        { "id": "rec-k002-b", "action": "No action required", "impact": "Conditions nominal", "confidence": 0.94, "priority": "LOW" }
+      ],
+      "events": [
+        { "time": "10:14:00", "type": "speed_check", "detail": "Avg speed within limit" }
+      ],
+      "interventions": []
+    },
+    {
+      "zone_id": "khalifa-003",
+      "name": "Int'l School of Choueifat",
+      "risk_level": "MEDIUM",
+      "risk_score": 0.41,
+      "speed_avg_mph": 16,
+      "pedestrian_count": 22,
+      "vehicle_count": 58,
+      "active_cameras": 7,
+      "total_cameras": 8,
+      "forecast_30m": [
+        { "time": "10:20", "risk": 0.41, "confidence": 0.87 },
+        { "time": "10:25", "risk": 0.45, "confidence": 0.85 },
+        { "time": "10:30", "risk": 0.47, "confidence": 0.83 },
+        { "time": "10:35", "risk": 0.44, "confidence": 0.81 },
+        { "time": "10:40", "risk": 0.40, "confidence": 0.79 },
+        { "time": "10:45", "risk": 0.36, "confidence": 0.77 },
+        { "time": "10:50", "risk": 0.32, "confidence": 0.75 }
+      ],
+      "recommendations": [
+        { "id": "rec-k003-c", "action": "Deploy crossing guard — Gate 2", "impact": "Reduce pedestrian conflict risk by ~18%", "confidence": 0.84, "priority": "MEDIUM" },
+        { "id": "rec-k003-d", "action": "Activate variable speed sign (40 km/h)", "impact": "Lower avg vehicle speed near entrance", "confidence": 0.79, "priority": "MEDIUM" }
+      ],
+      "events": [
+        { "time": "10:16:00", "type": "congestion_detected", "detail": "Vehicle queue increasing at Gate 2" },
+        { "time": "10:13:00", "type": "pedestrian_detected", "detail": "22 pedestrians near entrance" }
+      ],
+      "interventions": []
+    }
+  ]
+}
